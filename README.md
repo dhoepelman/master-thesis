@@ -1,2 +1,1 @@
-# master-thesis
-Master thesis
+# Master Thesis
