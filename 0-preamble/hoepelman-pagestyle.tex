@@ -1,0 +1,75 @@
+%%% STYLE OF PAGES NUMBERING
+%\pagestyle{companion} %\nouppercaseheads 
+%\pagestyle{headings}
+%\pagestyle{ruled}
+%\pagestyle{plain}
+%\makepagestyle{plain}
+% based on companion style
+\makepagestyle{hoepelman}
+%\newlength{\headwidth}
+\setlength{\headwidth}{\textwidth}
+  %\addtolength{\headwidth}{\marginparsep}
+  %\addtolength{\headwidth}{\marginparwidth}
+\makerunningwidth{hoepelman}{\headwidth}
+\makeheadrule{hoepelman}{\headwidth}{\normalrulethickness}
+\makeheadposition{hoepelman}{flushright}{flushleft}{}{}
+\makepsmarks{hoepelman}{%
+  \def\chaptermark##1{\markboth{##1}{##1}}    % left mark & right marks
+  \def\sectionmark##1{\markright{%
+    \ifnum \c@secnumdepth>\z@
+      \thesection. \ %
+    \fi
+    ##1}}
+  \def\tocmark{\markboth{\contentsname}{\contentsname}}
+  \def\lofmark{\markboth{\listfigurename}{\listfigurename}}
+  \def\lotmark{\markboth{\listtablename}{\listtablename}}
+  \def\bibmark{\markboth{\bibname}{\bibname}}
+  \def\indexmark{\markboth{\indexname}{\indexname}}}
+\makepsmarks{hoepelman}{%
+  \nouppercaseheads
+  \createmark{chapter}{both}{nonumber}{}{}
+  \createmark{section}{right}{shownumber}{}{. \space}
+  \createplainmark{toc}{both}{\contentsname}
+  \createplainmark{lof}{both}{\listfigurename}
+  \createplainmark{lot}{both}{\listtablename}
+  \createplainmark{bib}{both}{\bibname}
+  \createplainmark{index}{both}{\indexname}
+  \createplainmark{glossary}{both}{\glossaryname}}
+%\makeevenfoot{hoepelman}{}{}{}
+%\makeoddfoot{hoepelman}{}{}{}
+\makeevenhead{hoepelman}{\normalfont\bfseries\thepage}{}{\normalfont\bfseries\leftmark}
+\makeoddhead{hoepelman}{\normalfont\bfseries\thepage}{}{\normalfont\bfseries\leftmark}
+%\makeoddhead{hoepelman}{\normalfont\bfseries\rightmark}{}{\normalfont\bfseries\thepage}
+
+\pagestyle{hoepelman}
+
+%%% CHAPTER'S STYLE
+\makeatletter
+\newcommand\thickhrulefill{\leavevmode \leaders \hrule height 1ex \hfill \kern \z@}
+\setlength\midchapskip{10pt}
+\makechapterstyle{VZ14}{
+\renewcommand\chapternamenum{}
+\renewcommand\printchaptername{}
+\renewcommand\chapnamefont{\Large\scshape}
+\renewcommand\printchapternum{%
+\chapnamefont\null\thickhrulefill\quad
+\@chapapp\space\thechapter\quad\thickhrulefill}
+\renewcommand\printchapternonum{%
+\par\thickhrulefill\par\vskip\midchapskip
+\hrule\vskip\midchapskip
+}
+\renewcommand\chaptitlefont{\Huge\scshape\centering}
+\renewcommand\afterchapternum{%
+\par\nobreak\vskip\midchapskip\hrule\vskip\midchapskip}
+\renewcommand\afterchaptertitle{%
+\par\vskip\midchapskip\hrule\nobreak\vskip\afterchapskip}
+}
+\makeatother
+\chapterstyle{VZ14}
+
+
+%%% STYLE OF SECTIONS, SUBSECTIONS, AND SUBSUBSECTIONS
+\setsecheadstyle{\Large\bfseries\sffamily\raggedright}
+\setsubsecheadstyle{\large\bfseries\sffamily\raggedright}
+\setsubsubsecheadstyle{\bfseries\sffamily\raggedright}
+
