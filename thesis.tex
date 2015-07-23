@@ -1,5 +1,6 @@
 
-\documentclass[12pt,a4paper,twocolumn,twoside]{memoir}
+\documentclass[12pt,a4paper,onecolumn,oneside]{memoir}
+%twoside for print version
 \input{0-preamble/packages.tex}
 \input{0-preamble/hoepelman-pagestyle.tex}
 \input{0-preamble/commands.tex}
@@ -15,61 +16,132 @@
 \cleardoublepage
 
 %%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%
-
 \tableofcontents*
 
 \clearpage
-\twocolumn
+%\twocolumn
 
 %%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%
 %%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%
 
-\chapter{introduction}
+\chapter{Introduction}
+Blaatverhaal over waarom spreadsheets veel gebruikt worden en daarom belangrijk zijn, maintainability nightmare en hoe refactoring kan helpen.
 
-\section{First section}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\chapter{Spreadsheet anatomy}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Spreadsheets are cell-oriented dataflow programs which are Turing complete \cite{ExcelTuringComplete}.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+A single spreadsheet \emph{file} corresponds to a single (\emph{work})\emph{book}.
+A workbook can contain any number of (\emph{work})\emph{sheets}.
+A sheet consists of a two-dimensional grid of \emph{cells}.
+The grid consists or verticals \emph{rows} and horizontal \emph{columns}.
+Rows are numbered sequentially top-to-bottom starting at 1, while columns are numbered left-to-right alphabetically, i.e. base-26 using A to Z as digits, starting at `A', making column 27 `AA'.
 
-Citation of Einstein paper~\cite{Einstein}.
-\clearpage
-\section{Second section}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+A cell can be empty or contain a \emph{constant value}, a \emph{formula} or an \emph{array formula}.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\section{Formulas}
 
-\subsection{First subsection}
+Formulas consist of expressions which can contain constant values, arithmetic operators and \emph{function calls} such as \texttt{SUM(\ldots)} and, most importantly, \emph{references} to other cells.
+Function arguments are separated by commas.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\subsection{References}
+References are the core component of spreadsheets.
+The value of any cell can be used in a formula by concatenating its column and row number, producing a reference like \texttt{B5}.
+If the value of a cell changes this new value will be propagated to all formulas that use it.
 
-\clearpage
+When copying a cell to another cell by default references will be adjusted by the offset, for example copying \texttt{=A1} from cell B1 to C2 will cause the copied formula to become \texttt{=B2}.
+This can be prevented by making the reference absolute by prepending a \texttt{\$} to the column index, row index or both.
+The formula \texttt{=\$A\$1} will remain the same on copy while \texttt{=\$A1} will still have its row number adjusted.
 
-\subsection{Second subsection}
+An alternate style called R1C1 as opposed to the above A1 style exists, but it is very rarely seen or used by users.
+In R1C1 references one specifies either the offset to a cell between square brackets or its concrete location.
+In R1C1 style \texttt{R[4]C[-2]} means the cell two columns to the left and four rows down, while \texttt{R2C2} refers to cell B2.
+The biggest advantage of R1C1 is that it causes identical formulas to be the same even when they operate on different cells or data because of their position.
+These properties make R1C1 useful as an internal representation, but the grammar presented in this paper is intended for the common A1 reference style.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+References can also be \emph{ranges}, which are collections of cells.
+Ranges can be constructed by three operators: the range operator \texttt{:}, the union operator \texttt{,} (a comma) and the intersection operator \texttt{\char32} (a single whitespace).
+The range operator creates a rectangular range with the two cells as top-left and bottom-right corners, so \texttt{=SUM(A1:B10)} will sum all cells in columns A and B with row number 1 through 10.
+The range operator is also used to construct ranges of whole rows or columns, for example \texttt{3:5} is the range of the complete rows three through five, and \texttt{A:D} is the range of columns A through D.
+The union operator, which is different from the mathematical union as duplicates are allowed, combines two references, so \texttt{A1,C5} will be a range of two cells, \texttt{A1} and \texttt{C5}.
+Lastly the intersection operator takes only the cells which are in both arguments, \texttt{=A:A 5:5} will thus be equivalent to \texttt{=A5}.
 
-\chapter{Results}
+A user can also give a name to any collection of cells, thus creating a \emph{named range} which can be referenced in formulas by name.
 
-\section{Third section}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\subsection{Inter-sheet and external references}
+\label{subsection:ExternalRefsDDE}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+By default references are to cells or ranges in the same sheet as the formula, but this can be modified with a prefix. A prefix consists of some identifier, followed by an exclamation mark followed by the actual reference.
 
-\section{Fourth section}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+The most common use case is to reference another sheet in the same workbook, where the prefix is simply the sheetname: \texttt{=Sheetname!A1}. References to external spreadsheet files are also possible, which is done by prepending the file name in between square brackets: \texttt{=[Filename]Sheetname!A1} or \texttt{=[Filename]!NamedRange}.
+A peculiar type of prefix are those that indicate multiple sheets: \texttt{=Sheet1:Sheet10!A1} means A1 in Sheet1 through Sheet10.
+Sheet names can also be between single quotes: \texttt{='Sheetname with space'!A1}. 
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+In Windows versions of Microsoft Excel formulas can also call external programs through Dynamic Data Exchange (DDE). DDE links are a special case of references, used for receiving data from other applications. They take the form of \texttt{=Program|Topic!Arguments}, e.g. \texttt{=Database|TableA!Column1}.
 
-\appendix
+\subsection{Array Formulas and Arrays}
+\label{sec:arrayformulas}
+In spreadsheet programs it is possible to work with one- or two-dimensional matrices.
 
-\chapter{Additional}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+When constructed from constant values they are called \emph{array constants}, e.g. \texttt{\{1,2;3,4\}}.
+They are surrounded by curly brackets, columns are separated by commas, and rows by semicolons.
+Several matrix operations are available, for example \texttt{=SUM(\{1,2,3\}*10)} will evaluate to 60.
 
+\emph{Array Formulas} use the same syntax as normal formulas, except that the user must enter \emph{Ctrl} + \emph{Shift} + \emph{Enter} to signal that it is an Array formula.
+Excel and LibreOffice surround the formula with curly braces.
+Google docs works differently and requires the user to surround an array formula with \texttt{ARRAYFORMULA($\ldots$)}.
+
+Marking a formula as an array formula will enable one- or two-dimensional ranges to be treated as array.
+For example if \texttt{A1},\texttt{A3},\texttt{A3} contain the values \texttt{1},\texttt{2},\texttt{3} the array formula \texttt{\{=SUM(A1:A3*10)\}} will evaluate to \texttt{60}. Furthermore, an array formula allows the user to return multiple results, which will be presented in multiple cells.
+The array formula \texttt{\{=\{1,2,3\}*\{4,5,6\}\}} will show \texttt{4}, \texttt{10} and \texttt{18} in three different cells.
+
+\subsection{Other features}
+
+\chapter{Previous and related work}
+
+\section{Refactoring}
+
+\section{The BumbleBee spreadsheet refactoring suite}
+
+\section{Other spreadsheet refactoring efforts}
+
+
+\chapter{Candidate spreadsheet refactorings}
+
+\section{Translating refactorings to the spreadsheet domain}
+
+Tabel met mogelijke refactorings.
+Subsecties voor alle geïmplementeerde refactorings.
+
+\chapter{Implementation}
+
+\section{Parsing formulas}
+
+\subsection{Excel Formula Grammar}
+
+\section{Transforming formula ASTs}
+
+\section{Implementing refactorings}
+
+\subsection{Extract formula}
+
+\subsection{Inline formula}
+
+\subsection{Addition to SUMIF}
+
+\subsection{\textasciicircum\textasciicircum or Aggregate to conditional Aggregate}
+
+\subsection{Group References}
+
+\chapter{Evaluation}
+
+
+\chapter{Conclusion}
+
+\section{Future Work}
 
 \bibliographystyle{unsrt}
-\bibliography{sample}
+\bibliography{thesis}
 
 \end{document}
 
