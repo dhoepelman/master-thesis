@@ -9,6 +9,11 @@
 \maxsecnumdepth{subsection} % chapters, sections, and subsections are numbered
 \maxtocdepth{subsection} % chapters, sections, and subsections are in the Table of Contents
 
+\newcommand{\todo}[1]{\textbf{TODO: #1}}
+\newcommand{\ignore}[1]{}
+\newcommand{\f}[1]{\texttt{#1}}
+\newcommand{\key}[1]{\textbf{#1}}
+
 \begin{document}
 
 \include{0-title/title}
@@ -29,42 +34,100 @@ Blaatverhaal over waarom spreadsheets veel gebruikt worden en daarom belangrijk 
 
 \chapter{Spreadsheet anatomy}
 
-Spreadsheets are cell-oriented dataflow programs which are Turing complete \cite{ExcelTuringComplete}.
+Spreadsheets are cell-oriented dataflow programs.
+The spreadsheet model is Turing complete, as proven by an Excel 2010 implementation of a Turing machine \cite{ExcelTuringComplete}.
 
-A single spreadsheet \emph{file} corresponds to a single (\emph{work})\emph{book}.
-A workbook can contain any number of (\emph{work})\emph{sheets}.
-A sheet consists of a two-dimensional grid of \emph{cells}.
-The grid consists or verticals \emph{rows} and horizontal \emph{columns}.
-Rows are numbered sequentially top-to-bottom starting at 1, while columns are numbered left-to-right alphabetically, i.e. base-26 using A to Z as digits, starting at `A', making column 27 `AA'.
+Altough exotic forms of spreadsheets are available and have been researched, all currently widely used implementation use the following model:
+\begin{itemize}
+\item A single spreadsheet \key{file} corresponds to a single (\key{work})\key{book}.
+\item A workbook can contain any number of (\key{work})\key{sheets}.
+\item A sheet consists of a \key{two-dimensional grid} (table) of \key{cells}.
+\item A vertical unit in the grid is called a \key{column} and a horizontal unit a \key{row}.
+Rows are numbered sequentially top-to-bottom starting at 1, while columns are numbered left-to-right alphabetically, i.e. base-26 using A to Z as digits.
+A column or row can also mean all cells contained in that column or row.
+\item A \key{cell} can contain a \key{constant value} of any type, a calculation called a \key{formula} or a matrix calculation called an \key{array formula}.
+\end{itemize}
 
-A cell can be empty or contain a \emph{constant value}, a \emph{formula} or an \emph{array formula}.
+\section{Type system}
+
+The type system in Microsoft Excel is weak with most typed being able to be coerced into others.
+Explicit type conversion is done by certain built-in functions.
+This description omits matrix and array types, which are used in array formulas. These types are explained in the section \ref{sec:arrayformulas}.
+For values inside formulas, the following types exist:
+
+\begin{itemize}
+\item[Boolean] values are either \f{TRUE} or \f{FALSE}. Booleans can be coerced to numbers where \f{TRUE} will become 1 and \f{FALSE} will become 0 and strings.
+\item[Numeric] values are in the range of 8-byte IEEE doubles. Numbers can be provided as integers, decimals or in scientific notation.
+When coerced to booleans 0 will become \f{FALSE}, all other values will be \f{TRUE}. Number can also be coerced into strings.
+\item[String] values are any Unicode character enclosed in quotation marks \f{"}.
+Two quotation marks serve as the escape character, thus \f{""""} represent the string ".
+If the contents of a cell start with a \texttt{'} the rest of that cell content is interpreted as a string.
+
+When coerced to booleans all strings except the empty string are \f{TRUE}, the empty string is \f{FALSE}.
+When coerced to a numeric value the spreadsheet program will accept any string representing valid numeric user input and otherwise give the error \f{\#VALUE!}.
+\item[Error] values are \f{\#DIV/0!}, \f{\#NAME?}, \f{\#NULL!}, \f{\#NUM!}, \f{\#N/A!}, \f{\#VALUE!} and \f{\#REF!}.
+Errors behave similar to exceptions or the maybe monad in that they will propagate throughout a calculation.
+
+Errors cannot be coerced, but can be explicitly converted by functions such as \f{ISERROR}.
+\end{itemize}
+
+Some other "types" exists, these can change the way the data is presented to the user and can have implications when inter-operating with other programs.
+Usually the user can mark a cell as containing one of these types, or Excel can automatically mark a cell to be of this type based on heuristics.
+In formulas and internally these types are all represented by one of the above types.
+The following is a non-exhaustive list of such types:
+\begin{itemize}
+\item[Dates and times] are internally stored as a floating point with the integer portion being the number of days since an the epoch January 1st 1900, incorrectly considering 1900 a leap year, and the remainder being the portion of the day that passed.
+Excel displays dates and times as is customary in the locale of the user.
+When interoperating a date or time value will be exported as a datetime type value of that system.
+\item[Currency] is stored as other numbers and displayed in the format customary for the specific currency. When interoperating with some other systems currency values will be exported using arbitrary-precision arithmetic formats.
+\item[Percentages] are stored as other numbers, but displayed as if multiplied by 100\%.
+\end{itemize}
 
 \section{Formulas}
 
-Formulas consist of expressions which can contain constant values, arithmetic operators and \emph{function calls} such as \texttt{SUM(\ldots)} and, most importantly, \emph{references} to other cells.
+Formulas consist of expressions which can contain constant values, \key{function calls} and \key{operators} and, most importantly, \key{references} to other cells.
+A cell is identified as a formula cell because all formulas must start with the equals sign \f{=}.
+
+\subsection{Case sensitivity}
+Formulas are case-insensitive outside string literals.
+The canonical form of identifiers not defined by the user is uppercase and the spreadsheet program will display only the canonical form after the user entered a formula.
+The formula \f{=Sum(a1)} and \f{=SUM(A1)} are identical and only the latter will be displayed after the user entered them.
+The canonical name a an user-defined object is as the user defined it.
+
+\subsection{Whitespace sensitivity}
+
+Outside of string literals formulas are whitespace independent except as a token separator, e.g. \f{=A B} is a formula that uses named ranges \f{A} and \f{B} while the formula \f{=AB} uses only the named range \f{=AB}.
+
+An important quirk in this the intersection operator, which is a binary operator with the operator being an amount of whitespace.
+Thus the formula \f{=A B} is the intersection of \f{A} and \f{B}, and so is \f{=A \hspace{3em} B}.
+
+\subsection{Function calls and operators}
+
+
+
 Function arguments are separated by commas.
 
 \subsection{References}
 References are the core component of spreadsheets.
-The value of any cell can be used in a formula by concatenating its column and row number, producing a reference like \texttt{B5}.
+The value of any cell can be used in a formula by concatenating its column and row number, producing a reference like \f{B5}.
 If the value of a cell changes this new value will be propagated to all formulas that use it.
 
-When copying a cell to another cell by default references will be adjusted by the offset, for example copying \texttt{=A1} from cell B1 to C2 will cause the copied formula to become \texttt{=B2}.
-This can be prevented by making the reference absolute by prepending a \texttt{\$} to the column index, row index or both.
-The formula \texttt{=\$A\$1} will remain the same on copy while \texttt{=\$A1} will still have its row number adjusted.
+When copying a cell to another cell by default references will be adjusted by the offset, for example copying \f{=A1} from cell B1 to C2 will cause the copied formula to become \f{=B2}.
+This can be prevented by making the reference absolute by prepending a \f{\$} to the column index, row index or both.
+The formula \f{=\$A\$1} will remain the same on copy while \f{=\$A1} will still have its row number adjusted.
 
 An alternate style called R1C1 as opposed to the above A1 style exists, but it is very rarely seen or used by users.
 In R1C1 references one specifies either the offset to a cell between square brackets or its concrete location.
-In R1C1 style \texttt{R[4]C[-2]} means the cell two columns to the left and four rows down, while \texttt{R2C2} refers to cell B2.
+In R1C1 style \f{R[4]C[-2]} means the cell two columns to the left and four rows down, while \f{R2C2} refers to cell B2.
 The biggest advantage of R1C1 is that it causes identical formulas to be the same even when they operate on different cells or data because of their position.
 These properties make R1C1 useful as an internal representation, but the grammar presented in this paper is intended for the common A1 reference style.
 
 References can also be \emph{ranges}, which are collections of cells.
-Ranges can be constructed by three operators: the range operator \texttt{:}, the union operator \texttt{,} (a comma) and the intersection operator \texttt{\char32} (a single whitespace).
-The range operator creates a rectangular range with the two cells as top-left and bottom-right corners, so \texttt{=SUM(A1:B10)} will sum all cells in columns A and B with row number 1 through 10.
-The range operator is also used to construct ranges of whole rows or columns, for example \texttt{3:5} is the range of the complete rows three through five, and \texttt{A:D} is the range of columns A through D.
-The union operator, which is different from the mathematical union as duplicates are allowed, combines two references, so \texttt{A1,C5} will be a range of two cells, \texttt{A1} and \texttt{C5}.
-Lastly the intersection operator takes only the cells which are in both arguments, \texttt{=A:A 5:5} will thus be equivalent to \texttt{=A5}.
+Ranges can be constructed by three operators: the range operator \f{:}, the union operator \f{,} (a comma) and the intersection operator \f{\char32} (a single whitespace).
+The range operator creates a rectangular range with the two cells as top-left and bottom-right corners, so \f{=SUM(A1:B10)} will sum all cells in columns A and B with row number 1 through 10.
+The range operator is also used to construct ranges of whole rows or columns, for example \f{3:5} is the range of the complete rows three through five, and \f{A:D} is the range of columns A through D.
+The union operator, which is different from the mathematical union as duplicates are allowed, combines two references, so \f{A1,C5} will be a range of two cells, \f{A1} and \f{C5}.
+Lastly the intersection operator takes only the cells which are in both arguments, \f{=A:A 5:5} will thus be equivalent to \f{=A5}.
 
 A user can also give a name to any collection of cells, thus creating a \emph{named range} which can be referenced in formulas by name.
 
@@ -73,27 +136,37 @@ A user can also give a name to any collection of cells, thus creating a \emph{na
 
 By default references are to cells or ranges in the same sheet as the formula, but this can be modified with a prefix. A prefix consists of some identifier, followed by an exclamation mark followed by the actual reference.
 
-The most common use case is to reference another sheet in the same workbook, where the prefix is simply the sheetname: \texttt{=Sheetname!A1}. References to external spreadsheet files are also possible, which is done by prepending the file name in between square brackets: \texttt{=[Filename]Sheetname!A1} or \texttt{=[Filename]!NamedRange}.
-A peculiar type of prefix are those that indicate multiple sheets: \texttt{=Sheet1:Sheet10!A1} means A1 in Sheet1 through Sheet10.
-Sheet names can also be between single quotes: \texttt{='Sheetname with space'!A1}. 
+The most common use case is to reference another sheet in the same workbook, where the prefix is simply the sheetname: \f{=Sheetname!A1}. References to external spreadsheet files are also possible, which is done by prepending the file name in between square brackets: \f{=[Filename]Sheetname!A1} or \f{=[Filename]!NamedRange}.
+A peculiar type of prefix are those that indicate multiple sheets: \f{=Sheet1:Sheet10!A1} means A1 in Sheet1 through Sheet10.
+Sheet names can also be between single quotes: \f{='Sheetname with space'!A1}. 
 
-In Windows versions of Microsoft Excel formulas can also call external programs through Dynamic Data Exchange (DDE). DDE links are a special case of references, used for receiving data from other applications. They take the form of \texttt{=Program|Topic!Arguments}, e.g. \texttt{=Database|TableA!Column1}.
+In Windows versions of Microsoft Excel formulas can also call external programs through Dynamic Data Exchange (DDE). DDE links are a special case of references, used for receiving data from other applications. They take the form of \f{=Program|Topic!Arguments}, e.g. \f{=Database|TableA!Column1}.
 
 \subsection{Array Formulas and Arrays}
 \label{sec:arrayformulas}
 In spreadsheet programs it is possible to work with one- or two-dimensional matrices.
 
-When constructed from constant values they are called \emph{array constants}, e.g. \texttt{\{1,2;3,4\}}.
+When constructed from constant values they are called \emph{array constants}, e.g. \f{\{1,2;3,4\}}.
 They are surrounded by curly brackets, columns are separated by commas, and rows by semicolons.
-Several matrix operations are available, for example \texttt{=SUM(\{1,2,3\}*10)} will evaluate to 60.
+Several matrix operations are available, for example \f{=SUM(\{1,2,3\}*10)} will evaluate to 60.
 
 \emph{Array Formulas} use the same syntax as normal formulas, except that the user must enter \emph{Ctrl} + \emph{Shift} + \emph{Enter} to signal that it is an Array formula.
 Excel and LibreOffice surround the formula with curly braces.
-Google docs works differently and requires the user to surround an array formula with \texttt{ARRAYFORMULA($\ldots$)}.
+Google docs works differently and requires the user to surround an array formula with \f{ARRAYFORMULA($\ldots$)}.
 
 Marking a formula as an array formula will enable one- or two-dimensional ranges to be treated as array.
-For example if \texttt{A1},\texttt{A3},\texttt{A3} contain the values \texttt{1},\texttt{2},\texttt{3} the array formula \texttt{\{=SUM(A1:A3*10)\}} will evaluate to \texttt{60}. Furthermore, an array formula allows the user to return multiple results, which will be presented in multiple cells.
-The array formula \texttt{\{=\{1,2,3\}*\{4,5,6\}\}} will show \texttt{4}, \texttt{10} and \texttt{18} in three different cells.
+For example if \f{A1},\f{A3},\f{A3} contain the values \f{1},\f{2},\f{3} the array formula \f{\{=SUM(A1:A3*10)\}} will evaluate to \f{60}. Furthermore, an array formula allows the user to return multiple results, which will be presented in multiple cells.
+The array formula \f{\{=\{1,2,3\}*\{4,5,6\}\}} will show \f{4}, \f{10} and \f{18} in three different cells.
+
+\section{Comparison to other programming paradigms}
+
+\todo{Notificatie dat dit hoofdstuk deels al gepubliceerd is (niet hopen)}
+
+
+In the dataflow programming model a calculation is a directed graph where data flows between calculation nodes along the edges.
+In a spreadsheet program, nodes are represented by cells which contain a calculation and references to other cells which represent an edge.
+
+Most 
 
 \subsection{Other features}
 
