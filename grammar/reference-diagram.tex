@@ -1,0 +1,9 @@
+\begin{grammar}
+		<Reference> ::= \begin{syntdiag}[\scriptsize\sdlengths]
+		\begin{stack} '$($' \begin{rep} <Reference> \\  '$,$' \end{rep} '$)$'\\ <Reference> \begin{stack} '$:$' \\ '\char32' \end{stack} <Reference> \\
+		\begin{stack} \\ \begin{stack} \\ "FILE" \end{stack} \begin{stack} "SHEET" \\ "MULTIPLE_SHEETS" \end{stack} \\ "FILE" '$!$' \\ "QUOTED_FILE_SHEET" \end{stack}
+		\begin{stack} \begin{stack} "CELL" \\ "VERTICAL-RANGE" \\ "HORIZONTAL-RANGE" \\ \begin{stack} "NAMED-RANGE" \\ "NAMED-RANGE-COMBINED" \end{stack} \\ "ERROR-REF" \end{stack} \\  \begin{stack} "REFERENCE-FUNCTION" \\ "UDF" \end{stack} \begin{rep} \begin{stack} \\ <Formula> \end{stack} \\  '$,$' \end{rep} '$)$'\end{stack}
+		\\"FILE" '$!$' "DDECALL"
+		\end{stack}
+		\end{syntdiag}
+	\end{grammar}

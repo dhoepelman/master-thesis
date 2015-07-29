@@ -1,7 +1,7 @@
 \RequirePackage[xetex]{graphicx}
 \graphicspath{ {}{img/} }
 
-\usepackage[xetex]{xcolor}
+\usepackage[xetex,table,xcdraw]{xcolor}
 
 \usepackage[
 breaklinks=true,colorlinks=true,
@@ -25,13 +25,14 @@ bindingoffset=10mm, top=25mm,bottom=25mm}
 \usepackage{cite}
 
 % TABLES
+\usepackage{tablefootnote}
 \usepackage{booktabs}
 \usepackage{pbox}
-%\renewcommand{\arraystretch}{1.2} 
+\renewcommand{\arraystretch}{1.2} 
 %\renewcommand*\cmidrule{} % No table middle lines
 %\renewcommand{\arraystretch}{1.5} % Additional spacing with no middle lines
 %\renewcommand*\cmidrule{\hdashline[1pt/2pt]}% Dashed middle lines
-%\renewcommand*\cmidrule{\midrule[0.001em]} % Thin table middle lines
+\renewcommand*\cmidrule{\midrule[0.001em]} % Thin table middle lines
 %\renewcommand*\cmidrule{\midrule} % Thick table middle lines
 
 % GRAMMAR
@@ -40,3 +41,6 @@ bindingoffset=10mm, top=25mm,bottom=25mm}
 
 \usepackage{amsmath}
 \usepackage{amssymb}
+
+\usepackage{multicol}
+\setlength{\columnsep}{1cm}
