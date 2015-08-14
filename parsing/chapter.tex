@@ -1,0 +1,167 @@
+\chapter{Parsing spreadsheet formulas}
+
+\todo{Notificatie dat deze sectie deels al gepubliceerd is (niet hopen)}
+
+The formula parser component of Bumblebee is called XLParser which is the reference implementation of the grammar by by Aivaloglou, Hoepelman and Hermans \cite{xlparser}.
+This component is fully independent, open-source and freely available \footnote{https://github.com/PerfectXL/XLParser}.
+
+XLParser takes a formula and returns a parse tree.
+While technically not strictly an AST as it retains several lexical elements, it is also not .
+We will indicate the tree returned by XLParser as an AST from here on.
+
+XLParser is built using the Irony Parser framework \footnote{https://irony.codeplex.com}, which uses a grammar defined in C\# to produce a parser based on the LALR(1) algorithm and .NET regular expressions for tokens.
+
+The parser has evolved from previous research efforts, and is intended to be used for ongoing and future research into Microsoft Excel spreadsheet formulas.
+With this intent in mind, the following design goals were formulated:
+
+\begin{enumerate}
+\label{sec:designgoals}
+\item The parser must be compatible with the official language
+\item Produced parse trees must be suited for further manipulation and analysis with minimal post-processing required
+\item The grammar must be compact enough to feasibly implement with a parser generator
+\end{enumerate}
+
+While an official grammar for Excel formulas is published \cite{ExcelOfficialGrammar}, it does not meet the above requirements for two reasons.
+Firstly, it is over 30 pages long and contains hundreds of production rules and thus fails requirement 3.
+Secondly, because of the detail of the grammar and the large number of production rules the resulting parse trees are very complex and fail requirement 2.
+
+\section{Lexical Analysis}
+\label{sec:lexanalysis}
+
+\begin{table}
+\tiny
+\caption{Lexical tokens used in the XLParser grammar, as refered to in section \ref{sec:lexanalysis}.}
+\label{table:tokens}
+\centerfloat
+%\advance\leftskip-1cm
+\input{parsing/tokens.tex}
+\end{table}
+
+\todo{Move table to appendix}
+
+Table \ref{table:tokens} contains the lexical tokens of the grammar, along with their identification patterns in a simple regular expression language. All tokens are case-insensitive.
+
+This token list requires the scanner to support token priorities, which the Irony framework does.
+While it is possible to remove this necessity by altering the tokens and production rules, this would make the resulting grammar and AST harder to use.
+
+Some simple tokens are directly defined in the production rules in Figure \ref{figure:productions} in between quotes for readability and compactness.
+
+\section{Syntactical Analysis}
+
+\begin{figure}
+\small
+\caption{Production rules}
+\label{figure:productions}
+\begin{multicols*}{2}
+\input{parsing/productionrules.tex}
+\end{multicols*}
+\end{figure}
+
+The complete production rules of the used grammar can be found in Figure \ref{figure:productions} in Extended BNF syntax.
+The start symbol is $Start$.
+
+\synt{Formula} and \synt{Reference} are the two most important production rules in this grammar.
+They model respectively all expressions inside formulas, and expressions consisting purely of references.
+This distinction is important because in some places in the language only reference expression can be used.
+An example of this is the the range operator \f{:} which only accepts reference expressions as operands.
+Thus a formula like \f{=1.5:2.5} will result in a parse error in both Microsoft Excel and XLParser, while a formula like \f{="a" + 2} will result in a runtime type system error.
+
+The \synt{Formula} and \synt{Reference} production rules are also illustrated as syntax diagrams, with most production rules expanded, in Figures \ref{figure:Formula} and \ref{figure:Reference}.
+
+\todo{Move these figures to appendix?}
+
+\begin{figure}
+	\caption{Syntax diagram of the \synt{Formula} production rule with most production rules expanded}
+	\label{figure:Formula}
+	%\centerfloat
+	\input{parsing/formula-diagram.tex}
+\end{figure}
+
+\begin{figure}
+	\caption{Syntax diagram of the \synt{Reference} production rule with most production rules expanded}
+	\label{figure:Reference}
+	\input{parsing/reference-diagram.tex}
+\end{figure}
+
+\section{Precedence and ambiguity}
+
+\begin{table}
+\small
+\caption{Operator precedence in formulas}
+\label{table:operatorprec}
+\begin{tabular}{lll}
+Precedence & Operator(s) & Associativity \\
+1 & = \textless \  \textgreater \  \textless= \  \textgreater= \  \textless\textgreater & Left         \\
+2 & \& & Left \\
+3 & + - (binary) & Left \\
+4 & $\ast$ / & Left \\
+5 & \textasciicircum & Left\footnotemark \\
+6 & \% & \\
+7 & + - (unary) & \\
+8 & : , \texttt{\char32} & Left
+\end{tabular}
+\end{table}
+
+\footnotetext{This is contrary to most other languages, where the exponentiation operator is right-associative. \\
+In Excel \f{2\textasciicircum 1\textasciicircum 2} will be $(2^1)^2 = 4$, while in most other languages it will be $2^{1^2} = 2$}
+
+The production rules are ambiguous, which means they cannot be directly used in a parser generator based on the LALR algorithm like Irony.
+
+To resolve ambiguity with operators, e.g. whether to parse \f{=1+2*3} as \f{=(1+2)*3} or \f{=1+(2*3)}, operator precedence and associativity rules are defined.
+These can be found in table \ref{table:operatorprec}.
+
+However, even with precedence and associativity rules the grammar is still not fully un-ambigious.
+This is due to trade-offs on parsing references, see section \ref{tradeoff:references}, and parsing unions (see section \ref{subsec:desing:unions}).
+Ambiguity exists between the following production rules:
+\begin{enumerate}
+\item \begin{grammar}<Reference> ::= `(' <Reference> `)'\end{grammar}
+\item \begin{grammar}<Reference> ::= `(' <Union> `)'\end{grammar}
+\item \begin{grammar}<Formula> ::= `(' <Formula> `)'\end{grammar}
+\end{enumerate}
+
+A formula like \texttt{=(A1)} can be interpreted as either a bracketed reference, a union of one reference, or a reference within a bracketed formula.
+
+In a LALR like the one Irony produces this ambiguity manifests in a state where, on a \texttt{')'} token, shifting on rule 1 and reducing on either rule 2 or 3 are possibilities, causing a shift-reduce conflict.
+This was solved by instructing the parser generator to shift on rule 1 in case of this conflict, because this always is a correct interpretation and thus results in correct ASTs.
+
+\section{Trade-offs and quirks}
+
+The grammar presented in this chapter (\todo{section?}) contains some quirks on sub-optimalities, partly due to the Excel language itself, partly due to design decisions.
+These are detailed here
+
+\subsection{\textbf{References}}
+\label{tradeoff:references}
+
+In some places only reference expressions are accepted, instead of all expressions.
+Furthermore references are of great importance in spreadsheet formulas, and thus of interest for analysis.
+To support easier analysis (design goal 2) references have different production rules than other expressions.
+This causes references to be easily identified and isolated, but has the downside of increasing ambiguity, as explained in Section \ref{sec:ambiguity}. 
+
+Another approach would be to parse all expressions with the same production rules and implement a type system, however this would be very detrimental to both ease of analysis (design goal 2) and to ease of implementation (design goal 3).
+
+\subsection{\textbf{Unions}}
+\label{subsec:desing:unions}
+
+The comma serves both as an union operator and a function argument separator.
+This proves challenging to correctly implement in a LALR(1) grammar.
+
+A straightforward implementation would use production rules similar to this:
+\begin{grammar}
+<Union> ::= <Reference> `,' <Reference>
+
+<Arguments> ::= <Argument>
+	\alt <Argument> `,' <Arguments>
+\end{grammar}
+
+However, this will cause a reduce-reduce conflict because the parser will have a state wherein it can reduce to both a \synt{Union} or \synt{Argument} on a \texttt{,} token.
+Unfortunately there is no correct choice: in a formula like \texttt{=SUM(A1,1)} the parser must reduce on the \synt{Argument} nonterminal, while in a formula like \texttt{=A1,A1} the parser must reduce to the \synt{Union} nonterminal.
+With the above production rules a LALR(1) parser could not correctly parse the language.
+
+The presented grammar only parsers unions in between parentheses, e.g. \texttt{=SMALL((A1,A2),1)}.
+This is a trade-off between a lower compatibility (design goal 1) and an easier implementation (design goal 3).
+Because unions are very rare \cite{grammarpaper} this lower compatibility is deemed acceptable.
+
+Additionally formulas that this grammar does not parse often result in runtime errors after evaluation.
+For example \texttt{=A1,A1} does parse in a spreadsheet program, but produces the error \texttt{\#VALUE!} on evaluation.
+
+Implementing the straightforward rules above, while desirable, is not possible without using a more powerful grammar class.

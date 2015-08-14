@@ -32,154 +32,8 @@
 \chapter{Introduction}
 Blaatverhaal over waarom spreadsheets veel gebruikt worden en daarom belangrijk zijn, maintainability nightmare en hoe refactoring kan helpen.
 
-\chapter{Spreadsheet anatomy}
-
-\todo{Notificatie dat dit hoofdstuk deels al gepubliceerd is (niet hopen)}
-
-Spreadsheets are cell-oriented dataflow programs.
-The spreadsheet model is Turing complete, as proven by an Excel 2010 implementation of a Turing machine \cite{ExcelTuringComplete}.
-
-Altough exotic forms of spreadsheets are available and have been researched, all currently widely used implementation use the following model:
-\begin{itemize}
-\item A single spreadsheet \key{file} corresponds to a single (\key{work})\key{book}.
-\item A workbook can contain any number of (\key{work})\key{sheets}.
-\item A sheet consists of a \key{two-dimensional grid} (table) of \key{cells}.
-\item A vertical unit in the grid is called a \key{column} and a horizontal unit a \key{row}.
-Rows are numbered sequentially top-to-bottom starting at 1, while columns are numbered left-to-right alphabetically, i.e. base-26 using A to Z as digits.
-A column or row can also mean all cells contained in that column or row.
-\item A \key{cell} can contain a \key{constant value} of any type, a calculation called a \key{formula} or a matrix calculation called an \key{array formula}.
-\end{itemize}
-
-\section{Formulas}
-
-Formulas consist of expressions which can contain constant values, \key{function calls} and \key{operators} and, most importantly, \key{references} to other cells.
-A cell is identified as a formula cell because all formulas must start with the equals sign \f{=}.
-
-\subsection{Function calls and operators}
-
-Function calls are done by starting with the function name, followed by the arguments in parentheses, separated by a comma.
-All spreadsheet implementations provide a range of built-in functions, and in most spreadsheet implementations it is possible to define new functions yourself.
-However this is not done directly inside the spreadsheet, and uses an alternate programming language.
-In Microsoft Excel and Openoffice.org/Libreoffice this is done with a variant of the BASIC programming language, while in Google Docs this is done with Javascript.
-
-The operators \f{+ - * / = <> <= < >} and \f{>=} can be used according to their usual semantics.
-\f{+} and \f{-} are available both unary (\f{=-1}) and binary (\f{=1-1}).
-Additionally the \f{\%} unary operator is defined to transform a number into a percentage, \f{\^} is the exponentiation operator and \f{\&} is the text concatenation operator.
-
-Spreadsheets contain three fairly unique binary operators with the range operator \f{:}, the union operator \f{,} and the intersection operator \f{\char32}.
-Te semantics of these operators are detailed in section \ref{sec:references}.
-
-\subsection{References}
-\label{sec:references}
-References are the core component of spreadsheets.
-The value of any cell can be used in a formula by concatenating its column and row number, producing a reference like \f{B5}.
-This is called A1-style referencing and is by far the most comment in modern spreadsheet implementations.
-If the value of a cell changes this new value will be propagated to all formulas that use it.
-
-When copying a cell to another cell by default references will be adjusted by the offset, for example copying \f{=A1} from cell B1 to C2 will cause the copied formula to become \f{=B2}.
-This can be prevented by making the reference absolute by prepending a \f{\$} to the column index, row index or both.
-The formula \f{=\$A\$1} will remain the same on copy while \f{=\$A1} will still have its row number adjusted when copied.
-
-References can also be \emph{ranges}, which are collections of cells.
-Ranges can be constructed by three operators: the range operator \f{:}, the union operator \f{,} (a comma) and the intersection operator \f{\char32} (an amount of whitespace).
-The range operator \f{:} creates a rectangular range with the two cells as top-left and bottom-right corners, so \f{=SUM(A1:B10)} will sum all cells in columns A and B with row number 1 through 10.
-The range operator is also used to construct ranges of whole rows or columns, for example \f{3:5} is the range of the complete rows three through five, and \f{A:D} is the range of columns A through D.
-The union operator, which is different from the mathematical union as duplicates are allowed, combines two references, so \f{A1,C5} will be a range of two cells, \f{A1} and \f{C5}.
-Lastly the intersection operator takes only the cells which are in both arguments, \f{=A:A 5:5} will thus be equivalent to \f{=A5}.
-
-A user can also give a name to any collection of cells, thus creating a \emph{named range} which can be referenced in formulas by name.
-
-\subsection{R1C1 reference style}
-
-An alternate style called R1C1 as opposed to the above A1 style exists, but it is very rarely seen or used by users.
-In R1C1 reference style one specifies either the offset to a cell between square brackets or its concrete location.
-In R1C1 style \f{R[4]C[-2]} means the cell two columns to the left and four rows down, while \f{R2C2} refers to cell B2.
-The biggest advantage of R1C1 is that it causes identical formulas to be the same even when they operate on different cells or data because of their position.
-These properties make R1C1 useful as an internal representation in spreadsheet implementations.
-
-\subsection{Inter-sheet and external references}
-\label{subsection:ExternalRefsDDE}
-
-By default references are to cells or ranges in the same sheet as the formula, but this can be modified with a prefix. A prefix consists of some identifier, followed by an exclamation mark followed by the actual reference.
-
-The most common use case is to reference another sheet in the same workbook, where the prefix is simply the sheet name: \f{=Sheetname!A1}.
-References to external spreadsheet files are also possible, which is done by prepending the file name in between square brackets: \f{=[Filename]Sheetname!A1} or \f{=[Filename]!NamedRange}.
-A peculiar type of prefix are those that indicate multiple sheets: \f{=Sheet1:Sheet10!A1} means A1 in Sheet1 through Sheet10.
-Sheet names can also be between single quotes: \f{='Sheetname with space'!A1}. 
-
-In Windows versions of Microsoft Excel formulas can also call external programs through Dynamic Data Exchange (DDE).
-DDE links are a special case of references, used for receiving data from other applications.
-They take the form of \f{=Program|Topic!Arguments}, e.g. \f{=Database|TableA!Column1}.
-
-\subsection{Case sensitivity}
-
-Formulas are case-insensitive outside string literals.
-Identifiers have a canonical capitalization, and while user can type the identifier with any casing only the canonical form will be displayed.
-While the canonical capitalization of built-in identifiers,functions and reserved names, is usually uppercase, the canonical capitalization of an user-defined identifier, an user defined function or a named range, is as the user defined it originally.
-
-\subsection{Whitespace sensitivity}
-
-Outside of string literals formulas are whitespace independent except as a token separator, e.g. \f{=A B} is a formula that uses named ranges \f{A} and \f{B} while the formula \f{=AB} uses only the named range \f{AB}.
-
-An important quirk in this the intersection operator, which acts like a binary operator with the operator being whitespace.
-Thus the formula \f{=A\char32B} is the intersection of \f{A} and \f{B}, and so is \f{=A\char32\char32\char32\char32B}.
-
-\section{Array Formulas and Arrays}
-\label{sec:arrayformulas}
-In spreadsheet programs it is possible to work with one- or two-dimensional matrices.
-
-When constructed from constant values they are called \emph{array constants}, e.g. \f{\{1,2;3,4\}}.
-They are surrounded by curly brackets, columns are separated by commas, and rows by semicolons.
-Several matrix operations are available, for example \f{=SUM(\{1,2,3\}*10)} will evaluate to 60.
-
-\emph{Array Formulas} use the same syntax as normal formulas, except that the user must enter \emph{Ctrl} + \emph{Shift} + \emph{Enter} to signal that it is an Array formula.
-Excel and LibreOffice surround the formula with curly braces.
-Google docs works differently and requires the user to surround an array formula with \f{ARRAYFORMULA($\ldots$)}.
-
-Marking a formula as an array formula will enable one- or two-dimensional reference ranges to be treated as matrices, and several matrix operators and functions will be available and allow a formula to return multiple values, to be displayed in multiple cells.
-For example if \f{A1},\f{A3},\f{A3} contain the values \f{1},\f{2},\f{3} the array formula \f{\{=SUM(A1:A3*10)\}} will evaluate to \f{60}.
-Furthermore, an array formula allows the user to return multiple results, which will be presented in multiple cells.
-The array formula \f{\{=\{1,2,3\}*\{4,5,6\}\}} will show \f{4}, \f{10} and \f{18} in three different cells.
-
-While array formulas are powerful, they are also considered complex and not widely used.  \cite{Something}
-
-\section{Type system}
-
-The type system in Microsoft Excel is weak with most typed being able to be coerced into others.
-Explicit type conversion is done by certain built-in functions.
-For values inside formulas, the following types exist:
-
-\begin{itemize}
-\item[Boolean] values are either \f{TRUE} or \f{FALSE}. Booleans can be coerced to numbers where \f{TRUE} will become 1 and \f{FALSE} will become 0 and strings.
-\item[Numeric] values are in the range of 8-byte IEEE doubles. Numbers can be provided as integers, decimals or in scientific notation.
-When coerced to booleans 0 will become \f{FALSE}, all other values will be \f{TRUE}. Number can also be coerced into strings.
-\item[String] values are any Unicode character enclosed in quotation marks \f{"}.
-Two quotation marks serve as the escape character, thus \f{""""} represent the string ".
-If the contents of a cell start with a \texttt{'} the rest of that cell content is interpreted as a string.
-
-When coerced to booleans all strings except the empty string are \f{TRUE}, the empty string is \f{FALSE}.
-When coerced to a numeric value the spreadsheet program will accept any string representing valid numeric user input and otherwise give the error \f{\#VALUE!}.
-\item[Error] values are \f{\#DIV/0!}, \f{\#NAME?}, \f{\#NULL!}, \f{\#NUM!}, \f{\#N/A!}, \f{\#VALUE!} and \f{\#REF!}.
-Errors behave similar to exceptions or the maybe monad in that they will propagate throughout a calculation.
-
-Errors cannot be coerced, but can be explicitly converted by functions such as \f{ISERROR}.
-
-\item[Ranges and arrays] are one- or two-dimensional matrices of any non-array values. Arrays are rarely used outside of array formulas, but ranges are very common in formulas.
-However, these types usually only serve as inputs for functions and are thus fairly transparent to the user outside of array formulas.
-Both types usually cannot generally be, doing so will result in the \f{\#VALUE!} error.
-\end{itemize}
-
-Some other "display types" exists, these can change the way the data is presented to or validated from the user and can have implications when inter-operating with other programs.
-Usually the user can mark a cell as containing one of these types, or Excel can automatically mark a cell to be of this type based on heuristics.
-In formulas and internally these types are all represented by one of the above types.
-A few of these are commonly used:
-\begin{itemize}
-\item[Dates and times] are internally stored as a floating point with the integer portion being the number of days since an the epoch January 1st 1900, incorrectly considering 1900 a leap year, and the remainder being the portion of the day that passed.
-Excel displays dates and times as is customary in the locale of the user.
-When interoperating a date or time value will be exported as a datetime type value of that system.
-\item[Currency] is stored as other numbers and displayed in the format customary for the specific currency. When interoperating with some other systems currency values will be exported using arbitrary-precision arithmetic formats.
-\item[Percentages] are stored as other numbers, but displayed as if multiplied by 100\%.
-\end{itemize}
+%\chapter{Spreadsheet anatomy}
+\include{anatomy/chapter}
 
 \chapter{Previous and related work}
 
@@ -192,196 +46,40 @@ When interoperating a date or time value will be exported as a datetime type val
 
 \chapter{Candidate spreadsheet refactorings}
 
-\section{Comparison to other programming paradigms}
+\section{Comparing spreadsheets to other programming paradigms}
 
-In the dataflow programming model a calculation is a directed graph where data flows between calculation nodes along the edges.
-In a spreadsheet program, nodes are represented by cells which contain a calculation and references to other cells which represent an edge.
+\subsection{Reactive programming}
+As explained in chapter \ref{chapter:anatomy}, the spreadsheet programming model is a variation of the dataflow programming model.
+Thus the most natural first comparison for spreadsheet is the \emph{reactive programming} paradigm.
+However for the purpose of finding refactorings this is not an useful comparison, as no literature on refactoring reactive programs is known to the authors.
 
-Most 
+\subsection{Functional programming}
+Spreadsheets program do not contain state (mutable variables) or side-effects\footnote{As long as one remains within the spreadsheet model. User-defined functions and inter-operation with external programs can cause side-effects.} and this immutability aspect is also present in functional programming and functional reactive programming.
+However spreadsheets lack several other concepts of functional languages such as first-class and higher-order functions, recursion\footnote{Several spreadsheet implementations allow for a form of recursion in the form of cycles in the computational graph called circular references. However this is not the normal modus-operandi, triggers a warning and is generally only used to perform iterative calculations which are not otherwise possible in spreadsheets.}, lazy evaluation or type interference.
+This makes all of the current literature on refactoring functional programs not applicable.
+\todo{Cite functional refactoring literature}
+
+\subsection{Object-oriented programming}
+
+By far 
+
+
 
 \section{Translating refactorings to the spreadsheet domain}
 
 Tabel met mogelijke refactorings.
 Subsecties voor alle geïmplementeerde refactorings.
 
-\chapter{Implementation}
+%\chapter{Parsing spreadsheet formulas}
+\include{parsing/chapter}
 
-\section{Parsing formulas}
+\chapter{Implementing refactorings}
 
-\todo{Notificatie dat deze sectie deels al gepubliceerd is (niet hopen)}
-
-The formula parser component of Bumblebee is called XLParser which is the reference implementation of the grammar by by Aivaloglou, Hoepelman and Hermans \cite{xlparser}.
-This component is fully independent, open-source and freely available \footnote{https://github.com/PerfectXL/XLParser}.
-
-XLParser takes a formula and returns a parse tree.
-While technically not strictly an AST as it retains several lexical elements, it is also not .
-We will indicate the tree returned by XLParser as an AST from here on.
-
-XLParser is built using the Irony Parser framework \footnote{https://irony.codeplex.com}, which uses a grammar defined in C\# to produce a parser based on the LALR(1) algorithm and .NET regular expressions for tokens.
-
-The parser has evolved from previous research efforts, and is intended to be used for ongoing and future research into Microsoft Excel spreadsheet formulas.
-With this intent in mind, the following design goals were formulated:
-
-\begin{enumerate}
-\label{sec:designgoals}
-\item The parser must be compatible with the official language
-\item Produced parse trees must be suited for further manipulation and analysis with minimal post-processing required
-\item The grammar must be compact enough to feasibly implement with a parser generator
-\end{enumerate}
-
-While an official grammar for Excel formulas is published \cite{ExcelOfficialGrammar}, it does not meet the above requirements for two reasons.
-Firstly, it is over 30 pages long and contains hundreds of production rules and thus fails requirement 3.
-Secondly, because of the detail of the grammar and the large number of production rules the resulting parse trees are very complex and fail requirement 2.
-
-\subsection{Lexical Analysis}
-\label{sec:lexanalysis}
-
-\begin{table}
-\tiny
-\caption{Lexical tokens used in the XLParser grammar, as refered to in section \ref{sec:lexanalysis}.}
-\label{table:tokens}
-\centerfloat
-%\advance\leftskip-1cm
-\input{grammar/tokens.tex}
-\end{table}
-
-\todo{Move table to appendix}
-
-Table \ref{table:tokens} contains the lexical tokens of the grammar, along with their identification patterns in a simple regular expression language. All tokens are case-insensitive.
-
-This token list requires the scanner to support token priorities, which the Irony framework does.
-While it is possible to remove this necessity by altering the tokens and production rules, this would make the resulting grammar and AST harder to use.
-
-Some simple tokens are directly defined in the production rules in Figure \ref{figure:productions} in between quotes for readability and compactness.
-
-\subsection{Syntactical Analysis}
-
-\begin{figure}
-\small
-\caption{Production rules}
-\label{figure:productions}
-\begin{multicols*}{2}
-\input{grammar/productionrules.tex}
-\end{multicols*}
-\end{figure}
-
-The complete production rules of the used grammar can be found in Figure \ref{figure:productions} in Extended BNF syntax.
-The start symbol is $Start$.
-
-\synt{Formula} and \synt{Reference} are the two most important production rules in this grammar.
-They model respectively all expressions inside formulas, and expressions consisting purely of references.
-This distinction is important because in some places in the language only reference expression can be used.
-An example of this is the the range operator \f{:} which only accepts reference expressions as operands.
-Thus a formula like \f{=1.5:2.5} will result in a parse error in both Microsoft Excel and XLParser, while a formula like \f{="a" + 2} will result in a runtime type system error.
-
-The \synt{Formula} and \synt{Reference} production rules are also illustrated as syntax diagrams, with most production rules expanded, in Figures \ref{figure:Formula} and \ref{figure:Reference}.
-
-\todo{Move these figures to appendix?}
-
-\begin{figure}
-	\caption{Syntax diagram of the \synt{Formula} production rule with most production rules expanded}
-	\label{figure:Formula}
-	%\centerfloat
-	\input{grammar/formula-diagram.tex}
-\end{figure}
-
-\begin{figure}
-	\caption{Syntax diagram of the \synt{Reference} production rule with most production rules expanded}
-	\label{figure:Reference}
-	\input{grammar/reference-diagram.tex}
-\end{figure}
-
-\subsection{Precedence and ambiguity}
-
-\begin{table}
-\small
-\caption{Operator precedence in formulas}
-\label{table:operatorprec}
-\begin{tabular}{lll}
-Precedence & Operator(s) & Associativity \\
-1 & = \textless \  \textgreater \  \textless= \  \textgreater= \  \textless\textgreater & Left         \\
-2 & \& & Left \\
-3 & + - (binary) & Left \\
-4 & $\ast$ / & Left \\
-5 & \textasciicircum & Left\footnotemark \\
-6 & \% & \\
-7 & + - (unary) & \\
-8 & : , \texttt{\char32} & Left
-\end{tabular}
-\end{table}
-
-\footnotetext{This is contrary to most other languages, where the exponentiation operator is right-associative. \\
-In Excel \f{2\textasciicircum 1\textasciicircum 2} will be $(2^1)^2 = 4$, while in most other languages it will be $2^{1^2} = 2$}
-
-The production rules are ambiguous, which means they cannot be directly used in a parser generator based on the LALR algorithm like Irony.
-
-To resolve ambiguity with operators, e.g. whether to parse \f{=1+2*3} as \f{=(1+2)*3} or \f{=1+(2*3)}, operator precedence and associativity rules are defined.
-These can be found in table \ref{table:operatorprec}.
-
-However, even with precedence and associativity rules the grammar is still not fully un-ambigious.
-This is due to trade-offs on parsing references, see section \ref{tradeoff:references}, and parsing unions (see section \ref{subsec:desing:unions}).
-Ambiguity exists between the following production rules:
-\begin{enumerate}
-\item \begin{grammar}<Reference> ::= `(' <Reference> `)'\end{grammar}
-\item \begin{grammar}<Reference> ::= `(' <Union> `)'\end{grammar}
-\item \begin{grammar}<Formula> ::= `(' <Formula> `)'\end{grammar}
-\end{enumerate}
-
-A formula like \texttt{=(A1)} can be interpreted as either a bracketed reference, a union of one reference, or a reference within a bracketed formula.
-
-In a LALR like the one Irony produces this ambiguity manifests in a state where, on a \texttt{')'} token, shifting on rule 1 and reducing on either rule 2 or 3 are possibilities, causing a shift-reduce conflict.
-This was solved by instructing the parser generator to shift on rule 1 in case of this conflict, because this always is a correct interpretation and thus results in correct ASTs.
-
-\subsection{Trade-offs and quirks}
-
-The grammar presented in this chapter (\todo{section?}) contains some quirks on sub-optimalities, partly due to the Excel language itself, partly due to design decisions.
-These are detailed here
-
-\subsubsection{\textbf{References}}
-\label{tradeoff:references}
-
-In some places only reference expressions are accepted, instead of all expressions.
-Furthermore references are of great importance in spreadsheet formulas, and thus of interest for analysis.
-To support easier analysis (design goal 2) references have different production rules than other expressions.
-This causes references to be easily identified and isolated, but has the downside of increasing ambiguity, as explained in Section \ref{sec:ambiguity}. 
-
-Another approach would be to parse all expressions with the same production rules and implement a type system, however this would be very detrimental to both ease of analysis (design goal 2) and to ease of implementation (design goal 3).
-
-\subsubsection{\textbf{Unions}}
-\label{subsec:desing:unions}
-
-The comma serves both as an union operator and a function argument separator.
-This proves challenging to correctly implement in a LALR(1) grammar.
-
-A straightforward implementation would use production rules similar to this:
-\begin{grammar}
-<Union> ::= <Reference> `,' <Reference>
-
-<Arguments> ::= <Argument>
-	\alt <Argument> `,' <Arguments>
-\end{grammar}
-
-However, this will cause a reduce-reduce conflict because the parser will have a state wherein it can reduce to both a \synt{Union} or \synt{Argument} on a \texttt{,} token.
-Unfortunately there is no correct choice: in a formula like \texttt{=SUM(A1,1)} the parser must reduce on the \synt{Argument} nonterminal, while in a formula like \texttt{=A1,A1} the parser must reduce to the \synt{Union} nonterminal.
-With the above production rules a LALR(1) parser could not correctly parse the language.
-
-The presented grammar only parsers unions in between parentheses, e.g. \texttt{=SMALL((A1,A2),1)}.
-This is a trade-off between a lower compatibility (design goal 1) and an easier implementation (design goal 3).
-Because unions are very rare \cite{grammarpaper} this lower compatibility is deemed acceptable.
-
-Additionally formulas that this grammar does not parse often result in runtime errors after evaluation.
-For example \texttt{=A1,A1} does parse in a spreadsheet program, but produces the error \texttt{\#VALUE!} on evaluation.
-
-Implementing the straightforward rules above, while desirable, is not possible without using a more powerful grammar class.
-
-
-\subsection{Trade-offs and quirks in the grammar}
-
-\subsection{Excel Formula Grammar}
+Parse -> Transform -> Print
 
 \section{Transforming formula ASTs}
 
-\section{Implementing refactorings}
+\section{Refactoring-specific implementation}
 
 \subsection{Extract formula}
 
