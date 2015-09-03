@@ -1,7 +1,7 @@
-\chapter{Spreadsheet anatomy}
+\chapter{Anatomy of spreadsheets and spreadsheet formulas}
 \label{chapter:anatomy}
 
-\todo{Notificatie dat dit hoofdstuk deels al gepubliceerd is (niet hopen)}
+\todo{Notificatie dat dit hoofdstuk deels al gepubliceerd is}
 
 Altough exotic forms of spreadsheets are available and have been researched, all currently widely used implementation use the following model:
 \begin{itemize}
@@ -84,14 +84,28 @@ When copying a cell to another cell by default references will be adjusted by th
 This can be prevented by making the reference absolute by prepending a \f{\$} to the column index, row index or both.
 The formula \f{=\$A\$1} will remain the same on copy while \f{=\$A1} will still have its row number adjusted when copied.
 
+\subsection{Ranges}
 References can also be \emph{ranges}, which are collections of cells.
-Ranges can be constructed by three operators: the range operator \f{:}, the union operator \f{,} (a comma) and the intersection operator \f{\char32} (an amount of whitespace).
+Ranges can be constructed by three operators: the range operator \f{:}, the union operator \f{,} (a comma) and the intersection operator \f{\char32} (a space).
 The range operator \f{:} creates a rectangular range with the two cells as top-left and bottom-right corners, so \f{=SUM(A1:B10)} will sum all cells in columns A and B with row number 1 through 10.
 The range operator is also used to construct ranges of whole rows or columns, for example \f{3:5} is the range of the complete rows three through five, and \f{A:D} is the range of columns A through D.
 The union operator, which is different from the mathematical union as duplicates are allowed, combines two references, so \f{A1,C5} will be a range of two cells, \f{A1} and \f{C5}.
 Lastly the intersection operator takes only the cells which are in both arguments, \f{=A:A 5:5} will thus be equivalent to \f{=A5}.
 
 A user can also give a name to any collection of cells, thus creating a \emph{named range} which can be referenced in formulas by name.
+
+\subsection{Structured References}
+
+A recent addition to the formula language introduced in Excel 2007 are structured (table) references.
+To use this feature, a table can be given a name and must have headers.
+One can then reference a column in the table by entering \f{TableName[ColumnName]}.
+Inside the square brackets reference operators can be used to construct more complex references, \f{TableName[Column1,Column4]} references two columns.
+Several keywords 
+
+There is no way to reference a specific row, except the current row, for example if a formula is places in \f{A3} it can only reference row number 3.
+The \f{\#This Row} keyword and the \f{@} operator are used for this: \f{TableName[\#This Row]} and \f{TableName[@]} both reference the current row number in the provided table, and \f{TableName[@ColumnName]} references the cell in the provided column of the current row number.
+
+This feature is meant to make formulas easier to read, by references in a formula like \f{=SUM(F1:F10)-SUM(I1:I10)} with human-readable names like \f{=SUM(Budget[Revenue]) - SUM(Budget[Expenses])}.
 
 \subsection{R1C1 reference style}
 
@@ -123,10 +137,14 @@ While the canonical capitalization of built-in identifiers,functions and reserve
 
 \subsection{Whitespace sensitivity}
 
-Outside of string literals formulas are whitespace independent except as a token separator, e.g. \f{=A B} is a formula that uses named ranges \f{A} and \f{B} while the formula \f{=AB} uses only the named range \f{AB}.
-
-An important quirk in this the intersection operator, which acts like a binary operator with the operator being whitespace.
-Thus the formula \f{=A\char32B} is the intersection of \f{A} and \f{B}, and so is \f{=A\char32\char32\char32\char32B}.
+The excel formula language is whitespace sensitive in several places:
+\begin{itemize}
+\item Inside string literals
+\item To separate syntactic units: \f{=AB} has a different meaning than \f{=A B}
+\item Whitespace is not allowed between function names and the argument list: \f{=SUM  (1)} is invalid.
+\item Whitespace is not allowed inside internal or external references: \f{=Sheet1 !A1} is invalid.
+\item The intersection operator is a single space: \f{=A:A 3:3} is the intersection of column \f{A} and row \f{3}, equivalent to \f{=A3}
+\end{itemize}
 
 \section{Array Formulas and Arrays}
 \label{sec:arrayformulas}
@@ -144,8 +162,6 @@ Marking a formula as an array formula will enable one- or two-dimensional refere
 For example if \f{A1},\f{A3},\f{A3} contain the values \f{1},\f{2},\f{3} the array formula \f{\{=SUM(A1:A3*10)\}} will evaluate to \f{60}.
 Furthermore, an array formula allows the user to return multiple results, which will be presented in multiple cells.
 The array formula \f{\{=\{1,2,3\}*\{4,5,6\}\}} will show \f{4}, \f{10} and \f{18} in three different cells.
-
-While array formulas are powerful, they are also considered complex and not widely used.  \cite{Something}
 
 \section{Type system}
 

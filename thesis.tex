@@ -61,6 +61,8 @@ Spreadsheets program do not contain state (mutable variables) or side-effects
 and this immutability aspect is often associated with functional programming languages.
 However spreadsheets lack several other important concepts of functional languages such as first-class and higher-order functions, recursion\footnote{Most spreadsheet implementations allow for a form of recursion in the form of cycles in the dependency graph called circular references. However this is not the normal modus-operandi, triggers a warning and is generally only used to perform iterative calculations which are not otherwise possible in spreadsheets.}, lazy evaluation and type interference.
 
+\subsection{Translation of concepts}
+
 Some literature exist on refactoring functional programs, most prominent is the tool \textbf{Ha}skell \textbf{Re}factoring tool (HaRe) \cite{thompson2005refactoring}.
 Most of the described refactorings are either specific to Haskell, or only applicable because of concepts not available in spreadsheets.
 
