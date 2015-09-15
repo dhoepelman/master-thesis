@@ -7,15 +7,16 @@ This chapter assumes the reader is familiar with basic compiler construction the
 
 \section{Motivation}
 
-In order to implement refactorings of spreadsheets Bumblebee must be able to manipulate to manipulate spreadsheets.
+In order to implement refactorings of spreadsheets a refactoring tool must be able to manipulate to manipulate spreadsheets.
 Excel exposes an API to retrieve and set the contents of a spreadsheet file, but this API only works on a formula string level.
 The usual way to implement refactorings is by manipulating the AST so that it represents the desired program, and then print that back to a string.
-Because Excel does not expose the AST or parse tree of formulas, Bumblebee needs to contain a parser for Excel formulas.
+Because Excel does not expose the AST or parse tree of formulas, a refactoring tool needs to contain a parser for Excel formulas.
 
 Bumblebee relied on a parser developed over the years for previous research, however this parser suffered from having new rules tacked on over time, often in an inconsistent manner and not fully supporting the whole language.
-Furthermore the parser interperted some lanuage constructs from and missed several features, which made implementing refactorings hard.
+Furthermore the parser interpreted some language constructs wrong and missed several features, which made implementing refactorings hard.
 For example operator precedence was not taken into account, causing the formula \f{=A1 + A2 * A3} was parsed as \f{=(A1 + A2) * A3}, which breakes the "Plus to SUM" refactoring.
 The existing parser thus was insufficient to implement the Bumblebee refactorings.
+A better parser was needed, thus the goal of this thesis shifted toward procuring a better parser for Excel formulas.
 
 For Bumblebee and other research on spreadsheet formulas the following requirements about the parser and grammar were formulated:
 
@@ -142,13 +143,13 @@ Ambiguity exists between the following production rules:
 
 A formula like \texttt{=(A1)} can be interpreted as either a bracketed reference, a union of one reference, or a reference within a bracketed formula.
 
-In a LALR like the one Irony produces this ambiguity manifests in a state where, on a \texttt{')'} token, shifting on rule 1 and reducing on either rule 2 or 3 are possibilities, causing a shift-reduce conflict.
+In a LALR parser, which Irony produces, this ambiguity manifests in a state where, on a \texttt{')'} token, shifting on rule 1 and reducing on either rule 2 or 3 are possibilities, causing a shift-reduce conflict.
 This was solved by instructing the parser generator to shift on rule 1 in case of this conflict, because this always is a correct interpretation and thus results in correct ASTs.
 
 \section{Trade-offs and quirks}
 
 The grammar presented in this chapter (\todo{section?}) contains some quirks on sub-optimalities, partly due to the Excel language itself, partly due to design decisions.
-These are detailed here
+These are detailed in this section.
 
 \subsection{\textbf{References}}
 \label{tradeoff:references}

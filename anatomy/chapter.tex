@@ -4,7 +4,13 @@
 \emph{\small{Parts of this chapter have been published in "A grammar for Spreadsheet Formulas Evaluated on Two Large Datasets" by by Aivaloglou, Hoepelman and Hermans\cite{xlparser}.}}
 \vspace{1em}
 
-Altough exotic forms of spreadsheets are available and have been researched, all currently widely used implementation use the following model:
+\todo{Introductie van dit chapter: "Er is een goed begrip nodig van spreadsheets, omdat ..."}
+
+The most widely used spreadsheet system is Microsoft Office Excel, by a large margin.
+Two less-popular but still common implementation are Openoffice.org and Libreoffice Calc (which evolved from the same product and thus have largely identical semantics) and Google Docs Sheets, a web-based collaborative spreadsheet program. \todo{Markaandeel van deze implementaties}.
+When referencing "all" spreadsheet programs, the previous three common implementations are referenced.
+
+Although exotic forms of spreadsheets are available and have been researched, all currently widely used implementation use the following model:
 \begin{itemize}
 \item A single spreadsheet \key{file} corresponds to a single (\key{work})\key{book}.
 \item A workbook can contain any number of (\key{work})\key{sheets}.
@@ -57,21 +63,28 @@ The spreadsheet model is Turing complete, as proven by an Excel 2010 implementat
 
 \section{Formulas}
 
+Currently two major formula language exist in spreadsheets. The first is the Office Open XML spreadsheet language which is a standarization of the Excel language, which is currently used by Microsoft Excel.
+The second is OASIS OpenDocument OpenFormula, which is part of the OpenDocument format which is based on the OpenOffice.org format.
+Google Sheets claims to implement OpenFormula, but has some differences.
+Both languages are very similar and this section covers both unless otherwise noted.
+
 Formulas consist of expressions which can contain constant values, \key{function calls} and \key{operators} and, most importantly, \key{references} to other cells.
 A cell is identified as a formula cell because all formulas must start with the equals sign \f{=}.
 
 \subsection{Function calls and operators}
 
-Function calls are done by starting with the function name, followed by the arguments in parentheses, separated by a comma.
+Function calls are performed by starting with the function name, followed by the arguments in parentheses, separated by a comma.
 All spreadsheet implementations provide a range of built-in functions, and in most spreadsheet implementations it is possible to define new functions yourself.
-However this is not done directly inside the spreadsheet, and uses an alternate programming language.
+However in current implementations this is not done directly inside the spreadsheet, and uses an alternate programming language.
 In Microsoft Excel and Openoffice.org/Libreoffice this is done with a variant of the BASIC programming language, while in Google Docs this is done with Javascript.
+A way for the user to define functions in the spreadsheet intself has been proposed by Jones \cite{jones2003user}, but as of now has not been implemented in mainstream spreadsheet programs yet.
 
-The operators \f{+ - * / = <> <= < >} and \f{>=} can be used according to their usual semantics.
+The operators \f{+ - * / = >= <= < >} and \f{<>} (inequality) can be used according to their usual semantics.
 \f{+} and \f{-} are available both unary (\f{=-1}) and binary (\f{=1-1}).
-Additionally the \f{\%} unary operator is defined to transform a number into a percentage, \f{\^} is the exponentiation operator and \f{\&} is the text concatenation operator.
+Additionally the \f{\%} unary operator is defined to transform a number into a percentage (divining it by 100), \f{\^} is the exponentiation operator and \f{\&} is the text concatenation operator.
 
-Spreadsheets contain three fairly unique binary operators with the range operator \f{:}, the union operator \f{,} and the intersection operator \f{\char32}.
+Spreadsheet program contain three fairly unique binary operators: the range operator \f{:}, the union operator \f{,} in Excel, \f{~} in OpenFormula and the intersection operator \f{\char32} in Excel, \f{!} in OpenFormula.
+The Excel characters for the operators will be used from now on.
 Te semantics of these operators are detailed in section \ref{sec:references}.
 
 \subsection{References}
@@ -84,6 +97,8 @@ If the value of a cell changes this new value will be propagated to all formulas
 When copying a cell to another cell by default references will be adjusted by the offset, for example copying \f{=A1} from cell B1 to C2 will cause the copied formula to become \f{=B2}.
 This can be prevented by making the reference absolute by prepending a \f{\$} to the column index, row index or both.
 The formula \f{=\$A\$1} will remain the same on copy while \f{=\$A1} will still have its row number adjusted when copied.
+
+\todo{Screenshot van copy-pasten van cell}
 
 \subsection{Ranges}
 References can also be \emph{ranges}, which are collections of cells.
@@ -101,9 +116,8 @@ A recent addition to the formula language introduced in Excel 2007 are structure
 To use this feature, a table can be given a name and must have headers.
 One can then reference a column in the table by entering \f{TableName[ColumnName]}.
 Inside the square brackets reference operators can be used to construct more complex references, \f{TableName[Column1,Column4]} references two columns.
-Several keywords 
 
-There is no way to reference a specific row, except the current row, for example if a formula is places in \f{A3} it can only reference row number 3.
+There is no way to reference a specific row, except the current row, for example if a formula is placed in \f{A3} it can only reference row number 3.
 The \f{\#This Row} keyword and the \f{@} operator are used for this: \f{TableName[\#This Row]} and \f{TableName[@]} both reference the current row number in the provided table, and \f{TableName[@ColumnName]} references the cell in the provided column of the current row number.
 
 This feature is meant to make formulas easier to read, by references in a formula like \f{=SUM(F1:F10)-SUM(I1:I10)} with human-readable names like \f{=SUM(Budget[Revenue]) - SUM(Budget[Expenses])}.
@@ -115,6 +129,8 @@ In R1C1 reference style one specifies either the offset to a cell between square
 In R1C1 style \f{R[4]C[-2]} means the cell two columns to the left and four rows down, while \f{R2C2} refers to cell B2.
 The biggest advantage of R1C1 is that it causes identical formulas to be the same even when they operate on different cells or data because of their position.
 These properties make R1C1 useful as an internal representation in spreadsheet implementations.
+
+\todo{Plaatje van R1C1 en A1 style formule naast elkaar}
 
 \subsection{Inter-sheet and external references}
 \label{subsection:ExternalRefsDDE}
@@ -138,7 +154,7 @@ While the canonical capitalization of built-in identifiers,functions and reserve
 
 \subsection{Whitespace sensitivity}
 
-The excel formula language is whitespace sensitive in several places:
+The Excel formula language is whitespace sensitive in several places:
 \begin{itemize}
 \item Inside string literals
 \item To separate syntactic units: \f{=AB} has a different meaning than \f{=A B}
@@ -159,31 +175,30 @@ Several matrix operations are available, for example \f{=SUM(\{1,2,3\}*10)} will
 Excel and LibreOffice surround the formula with curly braces.
 Google docs works differently and requires the user to surround an array formula with \f{ARRAYFORMULA($\ldots$)}.
 
-Marking a formula as an array formula will enable one- or two-dimensional reference ranges to be treated as matrices, and several matrix operators and functions will be available and allow a formula to return multiple values, to be displayed in multiple cells.
+Marking a formula as an array formula will enable one- or two-dimensional reference ranges to be treated as matrices, and several matrix operators and functions will be available. 
 For example if \f{A1},\f{A3},\f{A3} contain the values \f{1},\f{2},\f{3} the array formula \f{\{=SUM(A1:A3*10)\}} will evaluate to \f{60}.
 Furthermore, an array formula allows the user to return multiple results, which will be presented in multiple cells.
 The array formula \f{\{=\{1,2,3\}*\{4,5,6\}\}} will show \f{4}, \f{10} and \f{18} in three different cells.
 
 \section{Type system}
 
-The type system in Microsoft Excel is weak with most typed being able to be coerced into others.
-Explicit type conversion is done by certain built-in functions.
+The type system in Microsoft Excel is weak with most types being able to be coerced into others.
 For values inside formulas, the following types exist:
 
 \begin{itemize}
 \item[Boolean] values are either \f{TRUE} or \f{FALSE}. Booleans can be coerced to numbers where \f{TRUE} will become 1 and \f{FALSE} will become 0 and strings.
 \item[Numeric] values are in the range of 8-byte IEEE doubles. Numbers can be provided as integers, decimals or in scientific notation.
-When coerced to booleans 0 will become \f{FALSE}, all other values will be \f{TRUE}. Number can also be coerced into strings.
+When coerced to booleans 0 will become \f{FALSE}, all other values will be \f{TRUE}. Numbers can also be coerced into strings, or type-casted with the \f{TEXT} function.
+
 \item[String] values are any Unicode character enclosed in quotation marks \f{"}.
 Two quotation marks serve as the escape character, thus \f{""""} represent the string ".
 If the contents of a cell start with a \texttt{'} the rest of that cell content is interpreted as a string.
 
 When coerced to booleans all strings except the empty string are \f{TRUE}, the empty string is \f{FALSE}.
-When coerced to a numeric value the spreadsheet program will accept any string representing valid numeric user input and otherwise give the error \f{\#VALUE!}.
-\item[Error] values are \f{\#DIV/0!}, \f{\#NAME?}, \f{\#NULL!}, \f{\#NUM!}, \f{\#N/A!}, \f{\#VALUE!} and \f{\#REF!}.
-Errors behave similar to exceptions or the maybe monad in that they will propagate throughout a calculation.
+When coerced to a numeric value the spreadsheet program will accept any string representing valid numeric user input and otherwise give the error \f{\#VALUE!}. Explicit conversion to a numeric value is done with the \f{VALUE} function.
 
-Errors cannot be coerced, but can be explicitly converted by functions such as \f{ISERROR}.
+\item[Error] values are \f{\#DIV/0!}, \f{\#NAME?}, \f{\#NULL!}, \f{\#NUM!}, \f{\#N/A!}, \f{\#VALUE!} and \f{\#REF!}.
+Errors behave similar to exceptions in that they will propagate throughout a calculation. Errors cannot be coerced.
 
 \item[Ranges and arrays] are one- or two-dimensional matrices of any non-array values. Arrays are rarely used outside of array formulas, but ranges are very common in formulas.
 However, these types usually only serve as inputs for functions and are thus fairly transparent to the user outside of array formulas.
@@ -195,7 +210,7 @@ Usually the user can mark a cell as containing one of these types, or Excel can 
 In formulas and internally these types are all represented by one of the above types.
 A few of these are commonly used:
 \begin{itemize}
-\item[Dates and times] are internally stored as a floating point with the integer portion being the number of days since an the epoch January 1st 1900, incorrectly considering 1900 a leap year, and the remainder being the portion of the day that passed.
+\item[Dates and times] are internally stored as a floating point with the integer portion being the number of days since the epoch January 1st 1900, incorrectly considering 1900 a leap year, and the remainder being the portion of the day that passed.
 Excel displays dates and times as is customary in the locale of the user.
 When interoperating a date or time value will be exported as a datetime type value of that system.
 \item[Currency] is stored as other numbers and displayed in the format customary for the specific currency. When interoperating with some other systems currency values will be exported using arbitrary-precision arithmetic formats.

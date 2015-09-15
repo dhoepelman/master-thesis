@@ -53,7 +53,7 @@ As explained in chapter \ref{chapter:anatomy}, the spreadsheet programming model
 Thus the most natural first comparison for spreadsheet is the \emph{reactive programming} paradigm, which is another variation of the dataflow programming model.
 Viewed from the RP model, all spreadsheet cells are observable values and every formula is an observer.
 One can attach a formula observer to a cell observable by making a reference, e.g. a formula \f{=A1+1} in cell B1 listens to the value of A1 and produces the value for B1.
-However for the purpose of finding refactorings this is not an useful comparison, as no literature on refactoring reactive programs is known to the author.
+However currently no literature on refactoring reactive programs is known to the author, so no additional refactoring were found by comparing spreadsheets to reactive programs.
 
 \subsection{Functional programming}
 Spreadsheets program do not contain state (mutable variables) or side-effects
