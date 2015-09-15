@@ -83,9 +83,10 @@ The operators \f{+ - * / = >= <= < >} and \f{<>} (inequality) can be used accord
 \f{+} and \f{-} are available both unary (\f{=-1}) and binary (\f{=1-1}).
 Additionally the \f{\%} unary operator is defined to transform a number into a percentage (divining it by 100), \f{\^} is the exponentiation operator and \f{\&} is the text concatenation operator.
 
-Spreadsheet program contain three fairly unique binary operators: the range operator \f{:}, the union operator \f{,} in Excel, \f{~} in OpenFormula and the intersection operator \f{\char32} in Excel, \f{!} in OpenFormula.
+Spreadsheet program contain three fairly unique binary operators, the semantics of whichare detailed in section \ref{sec:references}.
+Firstly there is the range operator \f{:} then the union operator (\f{,} in Excel, \f{\~} in OpenFormula) and lastly the intersection operator (\f{\char32} in Excel, \f{!} in OpenFormula).
+Note that OpenFormula diverges from the Excel syntax, possibly because the comma already is used in other places in the language and a single space as an operator is highly unusual.
 The Excel characters for the operators will be used from now on.
-Te semantics of these operators are detailed in section \ref{sec:references}.
 
 \subsection{References}
 \label{sec:references}
@@ -96,9 +97,15 @@ If the value of a cell changes this new value will be propagated to all formulas
 
 When copying a cell to another cell by default references will be adjusted by the offset, for example copying \f{=A1} from cell B1 to C2 will cause the copied formula to become \f{=B2}.
 This can be prevented by making the reference absolute by prepending a \f{\$} to the column index, row index or both.
-The formula \f{=\$A\$1} will remain the same on copy while \f{=\$A1} will still have its row number adjusted when copied.
+The formula \f{=\$A\$1} will remain the same on copy while \f{=\$A1} will still have its row number adjusted when copied, as ilustrated in Figure \ref{fig:copy-modifiers}.
 
-\todo{Screenshot van copy-pasten van cell}
+\begin{figure}
+\caption{Different copy-paste behavior depending on \f{\$} modifier, copy-direction is given by the arrow.}
+\label{fig:copy-modifiers}
+\centerfloat
+\includegraphics[width=0.5\textwidth]{anatomy/copying}
+\end{figure}
+
 
 \subsection{Ranges}
 References can also be \emph{ranges}, which are collections of cells.
