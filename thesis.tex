@@ -36,11 +36,25 @@ When I tell someone I am writing my master thesis in Computer Science, their eye
 I then tell them my thesis is about spreadsheets and ask if they have ever worked with Excel, and nearly everyone who has ever worked in business or research has.
 Nearly everyone has a horror story about that one unmaintainable spreadsheet that they had to work on, or that day their reporting system broke down because 2009 turned into 2010 and the spreadsheet only looked at the last digit.
 
+\vspace{0.3em}
+
 This anecdotal evidence is mirrored in research.
 Panko \cite{panko2006facing} estimates that 80\% to 95\% of businesses use spreadsheets in one of their processes.
 Furthermore, almost all spreadsheets contains at least one error and 1 to 5\% of spreadsheet cells contains an error according to Panko \cite{panko1998we}.
 Spreadsheets perform roles very similar to software in that they perform business-critical roles, are inherited throughout the organization and maintained by different users and accrue technical dept during and after the initial development period \cite{panko1998we}.
 In short, spreadsheets can be classified as programs, and spreadsheet creators are end-user programmers.
+
+\vspace{0.3em}
+
+This view, "spreadsheets are code", could be the 1-sentence summary of the ideology of the Spreadsheet Lab, which is a part of the TU Delft Software Engineering Research Group (SERG).
+Using this view as a baseline, the group has tried to translate tried and proven software engineering methods to the spreadsheet domain so that they could be used to improve spreadsheets, spreadsheet development practices and help spreadsheet programmers.
+As part of this effort, a spreadsheet formula refactoring tool called BumbleBee was developed by Hermans and Dig \cite{hermans2014bumblebee}.
+This tool allows a formula to be transformed into another by defining a transformation rule, which works very similar to a pattern or regular expression replacement in a text editor.
+However this approach has the downside that it can only considers the contents of one formula, and not of the spreadsheet as a whole.
+This limits the capabilities of the approach, and makes it not powerful enough to implement all spreadsheet refactorings, such as those implemented by Badame and Dig \cite{badame2012refactoring} in earlier work.
+I joined the group to extend the capabilities of BumbleBee so that it could take context into account when performing refactorings, and implement more refactorings in BumbleBee.
+
+
 
 %\chapter{Spreadsheet anatomy}
 \include{anatomy/chapter}
@@ -117,6 +131,12 @@ Parse -> Transform -> Print
 \chapter{Conclusion}
 
 \section{Future Work}
+
+\chapter{Thesis timeline and decisions taken}
+
+\chapter{Appendix A: paper}
+
+\todo{Paper hier inserten? Staat in regulaties dat dat kan (/de bedoeling is?)}
 
 \bibliographystyle{unsrt}
 \bibliography{thesis}
