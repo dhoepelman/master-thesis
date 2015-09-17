@@ -54,12 +54,70 @@ However this approach has the downside that it can only considers the contents o
 This limits the capabilities of the approach, and makes it not powerful enough to implement all spreadsheet refactorings, such as those implemented by Badame and Dig \cite{badame2012refactoring} in earlier work.
 I joined the group to extend the capabilities of BumbleBee so that it could take context into account when performing refactorings, and implement more refactorings in BumbleBee.
 
+\vspace{0.3em}
 
+After the initial literature research I started implementing refactorings, but encountered a fundamental problem in doing so.
+The standard way of implementing refactorings is by parsing the source code to an Abstract Syntax Tree (AST), which represents the structure of the program.
+This AST can then be manipulated into the desired form, after which it can be converted back to source code (this is called pretty-printing).
+While BumbleBee contained a home-grown parser, I found a range of formulas that were either not parsable, or parsed into an incorrect AST.
+This made me refocus the purpose of my thesis into making a better parser for Excel formulas, as this would not only be very useful for implementing refactorings but would be beneficial to all future spreadsheet research projects.
+
+The contributions of this thesis are twofold. Firstly there is the stand-alone parser for Excel formulas called XLParser, which is open-source and available online\footnote{\url{https://github.com/spreadsheetlab/XLParser}}. The parser was tested on over a million formulas and failed to parse merely two formulas.
+Details of this parser are published by Aivaloglou, Hoepelman and Hermans \cite{xlparser}.
+This paper is partially re-used in this thesis report, and the parts re-used are my contribution to the paper.
+The second contribution is an improved version of BumbleBee, which implements the refactorings described in chapter \ref{chapter:implementingrefactorings}.
+BumbleBee is also available online\footnote{TODO: URL Bumblebee.}.
+
+\section{Thesis outline}
+
+A passing knowledge of Excel and more in-depth knowledge of Excel formulas is needed to read the rest of this thesis.
+This knowledge is bundled in chapter \ref{chapter:anatomy} "\nameref{chapter:anatomy}".
+Chapter \ref{chapter:previouswork} details previous and related work on spreadsheet refactoring.
+In chapter \ref{chapter:candidaterefactorings} potential spreadsheet refactorings which were not yet implemented in BumbleBee are identified.
+
+The following chapters describe the implementation of the spreadsheet refactorings.
+Chapter \ref{chapter:parsing} covers how XLParser parses spreadsheet formulas and why it was designed as it was.
+Chapter \ref{chapter:implementingrefactorings} describes how spreadsheet refactorings are performed and the implementation details of the new refactorings.
+
+\todo{Meer zodra thesis wat meer vlees heeft}
+
+\clearpage
+\section{Thesis timeline and decisions taken}
+
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+December 2014 & Literature study on refactoring, refactoring spreadsheets, converting spreadsheets to programs. \\
+& Thesis topic selection. \\
+January 2015 & Studied practicality of generic spreadsheet refactoring language based on Bumblebee transformation language, deemed inviable. \\
+& Gathered existing refactorings from spreadsheet literature and translated Fowler refactorings. \\
+& Decided which refactorings to initially implement \\
+& Familiarization with existing BumbleBee code \\
+February 2015 & Implementating of "Inline Formula" \\
+& Extended Bumblebee and parser to account for sheet and file names \\
+March 2015 & Implementing of "Extract formula" \\
+& Writing of paper "End user programming" \todo{} \\
+April 2015 & Writing of paper "End user programming" \todo{} \\
+& Various improvements to parser \\
+May 2015 & Decided to rewrite parser to solve several fundamental problems \\
+& Implementing of Op to Agregate refactoring \\
+& Implementing of Group references refactoring \\
+June 2015 & Continued work on XLParser \\
+& Writing of XLParser paper \\
+July 2015 & Continued work on XLParser \\
+& Changing of refactoring UI to context-aware right-click menu, similar to IDE's \\
+August 2015 & Continued work on XLParser \\
+& Camera-ready adjustment of XLParser paper \\
+& Porting BumbleBee and refactorings to XLParser \\
+September 2015 & Continued work on XLParser \\
+& Porting BumbleBee and refactorings to XLParser-based implementations \\
+\bottomrule
+\end{tabularx}
 
 %\chapter{Spreadsheet anatomy}
 \include{anatomy/chapter}
 
 \chapter{Previous and related work}
+\label{chapter:previouswork}
 
 \section{Refactoring}
 
@@ -69,6 +127,7 @@ I joined the group to extend the capabilities of BumbleBee so that it could take
 
 
 \chapter{Candidate spreadsheet refactorings}
+\label{chapter:candidaterefactorings}
 
 \section{Comparing spreadsheets to other programming paradigms}
 
@@ -108,6 +167,7 @@ Subsecties voor alle geïmplementeerde refactorings.
 \include{parsing/chapter}
 
 \chapter{Implementing refactorings}
+\label{chapter:implementingrefactorings}
 
 Parse -> Transform -> Print
 
@@ -132,7 +192,7 @@ Parse -> Transform -> Print
 
 \section{Future Work}
 
-\chapter{Thesis timeline and decisions taken}
+
 
 \chapter{Appendix A: paper}
 

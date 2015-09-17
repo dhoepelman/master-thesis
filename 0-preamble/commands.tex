@@ -1,2 +1,9 @@
 % Custom commands
 \newcommand\textlcsc[1]{\textsc{\MakeLowercase{#1}}}
+
+\newcommand{\tablelist}[1]{%
+%\tightlist%
+\begin{itemize}[nosep]%
+#1%
+\end{itemize}%
+\vspace{-\baselineskip}\mbox{}}
