@@ -169,21 +169,30 @@ Subsecties voor alle geïmplementeerde refactorings.
 \chapter{Implementing refactorings}
 \label{chapter:implementingrefactorings}
 
-Parse -> Transform -> Print
+Refactoring a spreadsheet involves changing the sheets, cells and formulas in a workbook in such a way that the desired change is performed.
+Excel provides an API to change the worksheet and cells, and most other elements of a workbook.
+When it is desired to refactor formulas this means the original formula string must be changed into a new formula string.
+This is usually implemented by parsing the formula, performing the desired transformations on the AST and then printing the AST back to a string form \cite{fowler1999refactoring}.
+The inner workings of the parser are described in \ref{chapter:parsing}.
+This chapter covers how the AST is transformed for each refactoring and how it is printed.
 
-\section{Transforming formula ASTs}
+Printing a formula AST is quite simple.
+It can be done by describing for each node type how it can be translated back into a string, usually this is the exact reverse of the production rule.
+Nodes with children usually need to know the printed form of their children,t his was satisfied by starting at the root of the tree and calling the print function recursively for each child.
 
-\section{Refactoring-specific implementation}
+The refactorings were implemented in the BumbleBee Excel Add-In, and presented to the user through a context menu as seen in Figure X.
+This context-menu automatically determines if a refactoring can be performed on the specific selected cell(s) and grays out inapplicable refactorings.
+\todo{Screenshot van het bumblebee refactoring context-menu}
 
-\subsection{Extract formula}
+\section{Extract formula}
 
-\subsection{Inline formula}
+The extract formula refactoring is analogous to the extract method or extract function refactoring.
 
-\subsection{Addition to SUMIF}
+\section{Inline formula}
 
-\subsection{\textasciicircum\textasciicircum or Aggregate to conditional Aggregate}
+\section{Introduce (Conditional) Aggregate}
 
-\subsection{Group References}
+\section{Group References}
 
 \chapter{Evaluation}
 
