@@ -1,10 +1,15 @@
 \chapter{Parsing spreadsheet formulas}
 \label{chapter:parsing}
 
-\emph{\small{Parts of this chapter have been published in "A grammar for Spreadsheet Formulas Evaluated on Two Large Datasets" by Aivaloglou, Hoepelman and Hermans\cite{xlparser}.}}
-\vspace{1em}
+\noindent
+\begin{figure}[h]
+\centerfloat
+\input{parsing/refactoring-process-parsing}
+\end{figure}
 
-This chapter assumes the reader is familiar with basic compiler construction theory.
+
+\noindent
+This chapter assumes the reader is familiar with basic parser theory, a good overview of which can be found in \cite{dragonbook}.
 
 \section{Motivation}
 
@@ -15,7 +20,7 @@ Because Excel does not expose the AST or parse tree of formulas, a refactoring t
 
 Bumblebee relied on a parser developed over the years for previous research, however this parser suffered from having new rules added on over time, often in an inconsistent manner and not fully supporting the whole language.
 Furthermore the parser interpreted some language constructs wrong and missed several features, which made implementing refactorings hard.
-For example operator precedence was not taken into account, causing the formula \f{=A1 + A2 * A3} was parsed as \f{=(A1 + A2) * A3}, which breakes the "Plus to SUM" refactoring.
+For example operator precedence was not taken into account, causing the formula \f{=A1 + A2 * A3} to be parsed as \f{=(A1 + A2) * A3}, which breaks the \rf{Introduce Aggregate} refactoring.
 The existing parser thus was insufficient to implement the Bumblebee refactorings.
 A better parser was needed, thus the goal of this thesis shifted toward procuring a better parser for Excel formulas.
 
@@ -174,8 +179,7 @@ A straightforward implementation would use production rules similar to this:
 \begin{grammar}
 <Union> ::= <Reference> `,' <Reference>
 
-<Arguments> ::= <Argument>
-	\alt <Argument> `,' <Arguments>
+<Arguments> ::= <Argument> | <Argument> `,' <Arguments>
 \end{grammar}
 
 However, this will cause a reduce-reduce conflict because the parser will have a state wherein it can reduce to both a \synt{Union} or \synt{Argument} on a \texttt{,} token.

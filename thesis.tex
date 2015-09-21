@@ -14,6 +14,9 @@
 \newcommand{\f}[1]{\texttt{#1}}
 \newcommand{\key}[1]{\textbf{#1}}
 \newcommand{\rf}[1]{\textsc{\lowercase{#1}}}
+\newcommand{\noparskip}[1]{{\parskip=0pt
+#1
+}}
 
 \nonzeroparskip
 
@@ -55,8 +58,8 @@ This leads to a lack of power to implement all spreadsheet refactorings, such as
 I joined the group to extend the capabilities of BumbleBee so that it could take context into account when performing refactorings, and implement more refactorings in BumbleBee.
 
 After the initial literature research I started implementing refactorings, but encountered a fundamental problem in doing so.
-The standard way of implementing refactorings is by parsing the source code to an Abstract Syntax Tree (AST), which represents the structure of the program.
-This AST can then be manipulated into the desired form, after which it can be converted back to source code (this is called pretty-printing).
+The standard way of implementing refactorings, illustrated in Figure \ref{fig:refactoring-process}, is by parsing the source code to an Abstract Syntax Tree (AST), which represents the structure of the program.
+This AST can then be manipulated into the desired form, after which it can be converted back to source code (this is called printing or pretty-printing).
 While BumbleBee contained a home-grown parser, I found a range of formulas that were either not parsable, or parsed into an incorrect AST.
 This made me refocus the purpose of my thesis into making a better parser for Excel formulas, as this would not only be very useful for implementing refactorings but would be beneficial to all future spreadsheet research projects.
 
@@ -69,58 +72,8 @@ BumbleBee is also available online\footnote{TODO: URL Bumblebee.}.
 \begin{figure}
 \caption{Overview of refactoring process}
 \label{fig:refactoring-process}
-%\centerfloat
-\begin{subfigure}[c]{0.12\textwidth}
-\f{=1+2+3}
-\end{subfigure}
-\begin{subfigure}[c]{0.1\textwidth}
-$\xrightarrow[Ch.~\ref{chapter:parsing}]{Parsing}$
-\end{subfigure}
-\begin{subfigure}[c]{0.15\textwidth}
-\begin{tikzpicture}[-latex ,auto ,node distance =1.3 cm and 0.5cm ,on grid , semithick,
-,
-state/.style ={ circle ,top color =white ,
-draw, minimum width =0.75 cm}]
-\node[state] (RootPlus) {$+$};
-\node[state] (SecondPlus) [below right=of RootPlus] {$+$};
-\node[state] (Input1) [below left=of RootPlus] {1};
-\node[state] (Input2) [below left=of SecondPlus] {2};
-\node[state] (Input3) [below right=of SecondPlus] {3};
-
-\path (RootPlus) edge node {} (Input1);
-\path (RootPlus) edge node {} (SecondPlus);
-\path (SecondPlus) edge node {} (Input2);
-\path (SecondPlus) edge node {} (Input3);
-\end{tikzpicture}
-\end{subfigure}
-\begin{subfigure}[c]{0.15\textwidth}
-$\xrightarrow[Ch.~\ref{chapter:implementingrefactorings}]{Refactoring}$
-\end{subfigure}
-\begin{subfigure}[c]{0.17\textwidth}
-\begin{tikzpicture}[-latex ,auto ,node distance =1.3 cm and 0.5cm ,on grid , semithick,
-,
-state/.style ={ circle ,top color =white ,
-draw, minimum width =0.75 cm}]
-\node[state] (Root) {$F$};
-\node[state] (11) [below left=of Root] {\tiny{\f{SUM}}};
-\node[state] (12) [below right=of Root] {[]};
-\node[state, node distance = 1.3cm and 0.85cm] (21) [below left =of 12] {1};
-\node[state, node distance = 1.32cm and 0.85cm] (22) [below =of 12] {2};
-\node[state, node distance = 1.3cm and 0.85cm] (23) [below right=of 12] {3};
-
-\path (Root) edge node {} (11);
-\path (Root) edge node {} (12);
-\path (12) edge node {} (21);
-\path (12) edge node {} (22);
-\path (12) edge node {} (23);
-\end{tikzpicture}
-\end{subfigure}
-\begin{subfigure}[c]{0.12\textwidth}
-$\xrightarrow[Ch.~\ref{chapter:implementingrefactorings}]{Printing}$
-\end{subfigure}
-\begin{subfigure}[c]{0.1\textwidth}
-\f{=SUM(1,2,3)}
-\end{subfigure}
+\centerfloat
+\input{intro/refactoring-process}
 \end{figure}
 
 \section{Thesis outline}
@@ -234,21 +187,37 @@ The refactorings were implemented in the BumbleBee Excel Add-In, and presented t
 This context-menu automatically determines if a refactoring can be performed on the specific selected cell(s) and disables inapplicable refactorings.
 \todo{Screenshot van het bumblebee refactoring context-menu}
 
-\subsubsection{Printing formula AST}
-
 Printing a formula AST is quite simple.
 It can be done by describing for each node type how it can be translated back into a string, usually this is the exact reverse of the production rule.
 Nodes with children usually need to know the printed form of their children,t his was satisfied by starting at the root of the tree and calling the print function recursively for each child.
 
-\section{\rf{Extract formula}}
+\section{Refactoring implementations}
+
+\noindent
+\begin{figure}[h!]
+\hspace*{0.003\textwidth}
+\input{implementation/refactoring-process-impl}
+\end{figure}
+
+\FloatBarrier
+
+\subsection{\rf{Extract formula}}
 
 The \rf{extract formula} refactoring is analogous to the extract method or extract function refactoring.
 
-\section{\rf{Inline formula}}
+\subsection{\rf{Inline formula}}
 
-\section{\rf{Introduce (Conditional) Aggregate}}
+\subsection{\rf{Introduce (Conditional) Aggregate}}
 
-\section{\rf{Group References}}
+\subsection{\rf{Group References}}
+
+\section{Printing formula AST}
+
+\noindent
+\begin{figure}[h!]
+\hspace*{0.003\textwidth}
+\input{implementation/refactoring-process-print}
+\end{figure}
 
 \chapter{Evaluation}
 
