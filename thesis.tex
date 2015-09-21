@@ -57,18 +57,6 @@ However this approach has the downside that it can only considers one formula, a
 This leads to a lack of power to implement all spreadsheet refactorings, such as those implemented by Badame and Dig \cite{badame2012refactoring} in earlier work.
 I joined the group to extend the capabilities of BumbleBee so that it could take context into account when performing refactorings, and implement more refactorings in BumbleBee.
 
-After the initial literature research I started implementing refactorings, but encountered a fundamental problem in doing so.
-The standard way of implementing refactorings, illustrated in Figure \ref{fig:refactoring-process}, is by parsing the source code to an Abstract Syntax Tree (AST), which represents the structure of the program.
-This AST can then be manipulated into the desired form, after which it can be converted back to source code (this is called printing or pretty-printing).
-While BumbleBee contained a home-grown parser, I found a range of formulas that were either not parsable, or parsed into an incorrect AST.
-This made me refocus the purpose of my thesis into making a better parser for Excel formulas, as this would not only be very useful for implementing refactorings but would be beneficial to all future spreadsheet research projects.
-
-The contributions of this thesis are twofold. Firstly there is the stand-alone parser for Excel formulas called XLParser, which is open-source and available online\footnote{\url{https://github.com/spreadsheetlab/XLParser}}. The parser was tested on over a million formulas and failed to parse merely two formulas.
-Details of this parser are published by Aivaloglou, Hoepelman and Hermans \cite{xlparser}.
-This paper is partially re-used in this thesis report, and the parts re-used are my contribution to the paper.
-The second contribution is an improved version of BumbleBee, which implements the refactorings described in Chapter \ref{chapter:implementingrefactorings}: \rf{Extract Formula}, \rf{Inline Formula}, \rf{Group References} and \rf{Introduce Conditional Aggregate}.
-BumbleBee is also available online\footnote{TODO: URL Bumblebee.}.
-
 \begin{figure}
 \caption{Overview of refactoring process}
 \label{fig:refactoring-process}
@@ -76,7 +64,26 @@ BumbleBee is also available online\footnote{TODO: URL Bumblebee.}.
 \input{intro/refactoring-process}
 \end{figure}
 
-\section{Thesis outline}
+After the initial literature research I started implementing refactorings, but encountered a fundamental problem in doing so.
+The standard way of implementing refactorings, illustrated in Figure \ref{fig:refactoring-process}, is by parsing the source code to an Abstract Syntax Tree (AST), which represents the structure of the program.
+This AST can then be manipulated into the desired form, after which it can be converted back to source code (this is called printing or pretty-printing).
+While BumbleBee contained a home-grown parser, I found a range of formulas that were either not parsable, or parsed into an incorrect AST.
+This made me refocus the purpose of my thesis into making a better parser for Excel formulas, as this would not only be very useful for implementing refactorings but would be beneficial to all future spreadsheet research projects.
+
+\section{About this thesis}
+
+\subsection{Contributions}
+
+The contributions of this thesis are twofold. Firstly there is the stand-alone parser for Excel formulas called XLParser, which is open-source and available online\footnote{\url{https://github.com/spreadsheetlab/XLParser}}. The parser was tested on over a million formulas and failed to parse merely two formulas.
+Details of this parser are published by Aivaloglou, Hoepelman and Hermans \cite{xlparser}.
+This paper is partially re-used in this thesis report, and the parts re-used are my contribution to the paper.
+
+The second contribution is an improved version of BumbleBee, which implements the refactorings described in Chapter \ref{chapter:implementingrefactorings}: \rf{Extract Formula}, \rf{Inline Formula}, \rf{Group References} and \rf{Introduce Conditional Aggregate}.
+BumbleBee is also available online\footnote{TODO: URL Bumblebee.}.
+
+\subsection{Attribution}
+
+\subsection{Outline}
 
 A passing knowledge of Excel and more in-depth knowledge of Excel formulas is needed to read the rest of this thesis, which is bundled in chapter \ref{chapter:anatomy} "\nameref{chapter:anatomy}".
 Chapter \ref{chapter:previouswork} details previous and related work on spreadsheet refactoring.
@@ -89,7 +96,7 @@ Chapter \ref{chapter:implementingrefactorings} describes how spreadsheet refacto
 \todo{Meer zodra thesis wat meer vlees heeft}
 
 \clearpage
-\section{Thesis timeline and decisions taken}
+\section{Timeline and decisions taken}
 
 \begin{tabularx}{\textwidth}{lX}
 \toprule
@@ -187,10 +194,6 @@ The refactorings were implemented in the BumbleBee Excel Add-In, and presented t
 This context-menu automatically determines if a refactoring can be performed on the specific selected cell(s) and disables inapplicable refactorings.
 \todo{Screenshot van het bumblebee refactoring context-menu}
 
-Printing a formula AST is quite simple.
-It can be done by describing for each node type how it can be translated back into a string, usually this is the exact reverse of the production rule.
-Nodes with children usually need to know the printed form of their children,t his was satisfied by starting at the root of the tree and calling the print function recursively for each child.
-
 \section{Refactoring implementations}
 
 \noindent
@@ -219,6 +222,11 @@ The \rf{extract formula} refactoring is analogous to the extract method or extra
 \input{implementation/refactoring-process-print}
 \end{figure}
 
+Printing a formula AST is quite simple.
+It can be done by describing for each node type how it can be translated back into a string, usually this is the exact reverse of the parser production rule.
+Nodes with children usually need to know the printed form of their children, this can be satisfied by starting at the root of the tree and calling the print function recursively for each child.
+A slightly simplified and compacted version of the XLParser code responsible can be found in Appendix \ref{lst:xlparserprint}.
+
 \chapter{Evaluation}
 
 
@@ -226,11 +234,41 @@ The \rf{extract formula} refactoring is analogous to the extract method or extra
 
 \section{Future Work}
 
+\appendix
 
+\chapter{Code listings}
 
-\chapter{Appendix A: paper}
+\lstset{style=sharpc}
+\begin{lstlisting}[float,caption={XLParser Print method (simplified)}, label={lst:xlparserprint}]
+public static string Print(this ParseTreeNode node) {
+  // Print token values
+  if(node is Terminal) return node.Token.Text;
+  
+  // Select is C#'s map function
+  var ch = node.ChildNodes.Select(Print).ToList();
+  
+  switch(node.Type()) {
+     case "ArrayFormula":
+       return "{=" + ch[0] + "}";
+     case "FunctionCall":
+       if(node.IsBinaryOperation()) {
+          return ch[0] + " " + ch[1] + " " + ch[2];
+       }
+       if(node.isNamedFunction()) {
+          return String.Join("", ch) + ")";
+       }
+       // some more conditions
+       break;
+     // More cases for every node type
+  }
+}
+\end{lstlisting}
 
-\todo{Paper hier inserten? Staat in regulaties dat dat kan (/de bedoeling is?)}
+\chapter{A Grammar for Spreadsheet Formulas Evaluated on Two Large Datasets}
+
+The following is a verbatim copy of the papers as it was published in the proceedings of SCAM 2015.
+
+\todo{Paper hier inserten zodra published}
 
 \bibliographystyle{unsrt}
 \bibliography{thesis}

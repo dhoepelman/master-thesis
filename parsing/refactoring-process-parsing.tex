@@ -2,24 +2,24 @@
 \begin{subfigure}[c]{0.1\textwidth}
 \f{=1+2+3}
 \end{subfigure}
-\begin{subfigure}[c]{0.1\textwidth}
+\begin{subfigure}[c]{0.08\textwidth}
 $\xrightarrow{Parsing}$
 \end{subfigure}
-\begin{subfigure}[c]{0.15\textwidth}
+\begin{subfigure}[c]{0.17\textwidth}
 \begin{tikzpicture}[-latex ,auto ,node distance =1.3 cm and 0.5cm ,on grid , semithick,
 ,
 state/.style ={ circle ,top color =white ,
 draw, minimum width =0.75 cm}]
 \node[state] (RootPlus) {$+$};
-\node[state] (SecondPlus) [below right=of RootPlus] {$+$};
-\node[state] (Input1) [below left=of RootPlus] {1};
-\node[state] (Input2) [below left=of SecondPlus] {2};
-\node[state] (Input3) [below right=of SecondPlus] {3};
+\node[state] (SecondPlus) [below left=of RootPlus] {$+$};
+\node[state] (Input1) [below left=of SecondPlus] {1};
+\node[state] (Input2) [below right=of SecondPlus] {2};
+\node[state] (Input3) [below right=of RootPlus] {3};
 
-\path (RootPlus) edge node {} (Input1);
+\path (RootPlus) edge node {} (Input3);
 \path (RootPlus) edge node {} (SecondPlus);
+\path (SecondPlus) edge node {} (Input1);
 \path (SecondPlus) edge node {} (Input2);
-\path (SecondPlus) edge node {} (Input3);
 \end{tikzpicture}
 \end{subfigure}
 }
