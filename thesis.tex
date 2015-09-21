@@ -1,5 +1,5 @@
 
-\documentclass[12pt,a4paper,onecolumn,oneside]{memoir}
+\documentclass[12pt,a4paper,onecolumn,oneside,parskip]{memoir}
 %twoside for print version
 \input{0-preamble/packages.tex}
 \input{0-preamble/hoepelman-pagestyle.tex}
@@ -13,6 +13,9 @@
 \newcommand{\ignore}[1]{}
 \newcommand{\f}[1]{\texttt{#1}}
 \newcommand{\key}[1]{\textbf{#1}}
+\newcommand{\rf}[1]{\textsc{\lowercase{#1}}}
+
+\nonzeroparskip
 
 \begin{document}
 
@@ -36,25 +39,20 @@ When I tell someone I am writing my master thesis in Computer Science, their eye
 I then tell them my thesis is about spreadsheets and ask if they have ever worked with Excel, and nearly everyone who has ever worked in business or research has.
 Nearly everyone has a horror story about that one unmaintainable spreadsheet that they had to work on, or that day their reporting system broke down because 2009 turned into 2010 and the spreadsheet only looked at the last digit.
 
-\vspace{0.3em}
-
 This anecdotal evidence is mirrored in research.
 Panko \cite{panko2006facing} estimates that 80\% to 95\% of businesses use spreadsheets in one of their processes.
-Furthermore, almost all spreadsheets contains at least one error and 1 to 5\% of spreadsheet cells contains an error according to Panko \cite{panko1998we}.
+Furthermore, almost all spreadsheets contain at least one error and 1 to 5\% of spreadsheet cells contains an error according to Panko \cite{panko1998we}.
 Spreadsheets perform roles very similar to software in that they perform business-critical roles, are inherited throughout the organization and maintained by different users and accrue technical dept during and after the initial development period \cite{panko1998we}.
-In short, spreadsheets can be classified as programs, and spreadsheet creators are end-user programmers.
+In short, spreadsheets can be classified as programs, and spreadsheet creators as end-user programmers.
 
-\vspace{0.3em}
-
-This view, "spreadsheets are code", could be the 1-sentence summary of the ideology of the Spreadsheet Lab, which is a part of the TU Delft Software Engineering Research Group (SERG).
+This view, "spreadsheets are code", could be the one-sentence summary of the ideology of the Spreadsheet Lab, which is a part of the TU Delft Software Engineering Research Group (SERG).
 Using this view as a baseline, the group has tried to translate tried and proven software engineering methods to the spreadsheet domain so that they could be used to improve spreadsheets, spreadsheet development practices and help spreadsheet programmers.
 As part of this effort, a spreadsheet formula refactoring tool called BumbleBee was developed by Hermans and Dig \cite{hermans2014bumblebee}.
 This tool allows a formula to be transformed into another by defining a transformation rule, which works very similar to a pattern or regular expression replacement in a text editor.
-However this approach has the downside that it can only considers the contents of one formula, and not of the spreadsheet as a whole.
-This limits the capabilities of the approach, and makes it not powerful enough to implement all spreadsheet refactorings, such as those implemented by Badame and Dig \cite{badame2012refactoring} in earlier work.
-I joined the group to extend the capabilities of BumbleBee so that it could take context into account when performing refactorings, and implement more refactorings in BumbleBee.
 
-\vspace{0.3em}
+However this approach has the downside that it can only considers one formula, and not the spreadsheet as a whole.
+This leads to a lack of power to implement all spreadsheet refactorings, such as those implemented by Badame and Dig \cite{badame2012refactoring} in earlier work.
+I joined the group to extend the capabilities of BumbleBee so that it could take context into account when performing refactorings, and implement more refactorings in BumbleBee.
 
 After the initial literature research I started implementing refactorings, but encountered a fundamental problem in doing so.
 The standard way of implementing refactorings is by parsing the source code to an Abstract Syntax Tree (AST), which represents the structure of the program.
@@ -65,17 +63,73 @@ This made me refocus the purpose of my thesis into making a better parser for Ex
 The contributions of this thesis are twofold. Firstly there is the stand-alone parser for Excel formulas called XLParser, which is open-source and available online\footnote{\url{https://github.com/spreadsheetlab/XLParser}}. The parser was tested on over a million formulas and failed to parse merely two formulas.
 Details of this parser are published by Aivaloglou, Hoepelman and Hermans \cite{xlparser}.
 This paper is partially re-used in this thesis report, and the parts re-used are my contribution to the paper.
-The second contribution is an improved version of BumbleBee, which implements the refactorings described in chapter \ref{chapter:implementingrefactorings}.
+The second contribution is an improved version of BumbleBee, which implements the refactorings described in Chapter \ref{chapter:implementingrefactorings}: \rf{Extract Formula}, \rf{Inline Formula}, \rf{Group References} and \rf{Introduce Conditional Aggregate}.
 BumbleBee is also available online\footnote{TODO: URL Bumblebee.}.
+
+\begin{figure}
+\caption{Overview of refactoring process}
+\label{fig:refactoring-process}
+%\centerfloat
+\begin{subfigure}[c]{0.12\textwidth}
+\f{=1+2+3}
+\end{subfigure}
+\begin{subfigure}[c]{0.1\textwidth}
+$\xrightarrow[Ch.~\ref{chapter:parsing}]{Parsing}$
+\end{subfigure}
+\begin{subfigure}[c]{0.15\textwidth}
+\begin{tikzpicture}[-latex ,auto ,node distance =1.3 cm and 0.5cm ,on grid , semithick,
+,
+state/.style ={ circle ,top color =white ,
+draw, minimum width =0.75 cm}]
+\node[state] (RootPlus) {$+$};
+\node[state] (SecondPlus) [below right=of RootPlus] {$+$};
+\node[state] (Input1) [below left=of RootPlus] {1};
+\node[state] (Input2) [below left=of SecondPlus] {2};
+\node[state] (Input3) [below right=of SecondPlus] {3};
+
+\path (RootPlus) edge node {} (Input1);
+\path (RootPlus) edge node {} (SecondPlus);
+\path (SecondPlus) edge node {} (Input2);
+\path (SecondPlus) edge node {} (Input3);
+\end{tikzpicture}
+\end{subfigure}
+\begin{subfigure}[c]{0.15\textwidth}
+$\xrightarrow[Ch.~\ref{chapter:implementingrefactorings}]{Refactoring}$
+\end{subfigure}
+\begin{subfigure}[c]{0.17\textwidth}
+\begin{tikzpicture}[-latex ,auto ,node distance =1.3 cm and 0.5cm ,on grid , semithick,
+,
+state/.style ={ circle ,top color =white ,
+draw, minimum width =0.75 cm}]
+\node[state] (Root) {$F$};
+\node[state] (11) [below left=of Root] {\tiny{\f{SUM}}};
+\node[state] (12) [below right=of Root] {[]};
+\node[state, node distance = 1.3cm and 0.85cm] (21) [below left =of 12] {1};
+\node[state, node distance = 1.32cm and 0.85cm] (22) [below =of 12] {2};
+\node[state, node distance = 1.3cm and 0.85cm] (23) [below right=of 12] {3};
+
+\path (Root) edge node {} (11);
+\path (Root) edge node {} (12);
+\path (12) edge node {} (21);
+\path (12) edge node {} (22);
+\path (12) edge node {} (23);
+\end{tikzpicture}
+\end{subfigure}
+\begin{subfigure}[c]{0.12\textwidth}
+$\xrightarrow[Ch.~\ref{chapter:implementingrefactorings}]{Printing}$
+\end{subfigure}
+\begin{subfigure}[c]{0.1\textwidth}
+\f{=SUM(1,2,3)}
+\end{subfigure}
+\end{figure}
 
 \section{Thesis outline}
 
-A passing knowledge of Excel and more in-depth knowledge of Excel formulas is needed to read the rest of this thesis.
-This knowledge is bundled in chapter \ref{chapter:anatomy} "\nameref{chapter:anatomy}".
+A passing knowledge of Excel and more in-depth knowledge of Excel formulas is needed to read the rest of this thesis, which is bundled in chapter \ref{chapter:anatomy} "\nameref{chapter:anatomy}".
 Chapter \ref{chapter:previouswork} details previous and related work on spreadsheet refactoring.
 In chapter \ref{chapter:candidaterefactorings} potential spreadsheet refactorings which were not yet implemented in BumbleBee are identified.
 
-The following chapters describe the implementation of the spreadsheet refactorings.
+The Chapters thereafter describe the implementation of the spreadsheet refactorings.
 Chapter \ref{chapter:parsing} covers how XLParser parses spreadsheet formulas and why it was designed as it was.
 Chapter \ref{chapter:implementingrefactorings} describes how spreadsheet refactorings are performed and the implementation details of the new refactorings.
 
@@ -92,23 +146,23 @@ January 2015 & Studied practicality of generic spreadsheet refactoring language 
 & Gathered existing refactorings from spreadsheet literature and translated Fowler refactorings. \\
 & Decided which refactorings to initially implement \\
 & Familiarization with existing BumbleBee code \\
-February 2015 & Implementating of "Inline Formula" \\
+February 2015 & Implementing \rf{Inline Formula} \\
 & Extended Bumblebee and parser to account for sheet and file names \\
-March 2015 & Implementing of "Extract formula" \\
+March 2015 & Implementing \rf{Extract formula} \\
 & Writing of paper "End user programming" \todo{} \\
 April 2015 & Writing of paper "End user programming" \todo{} \\
 & Various improvements to parser \\
-May 2015 & Decided to rewrite parser to solve several fundamental problems \\
-& Implementing of Op to Agregate refactoring \\
-& Implementing of Group references refactoring \\
-June 2015 & Continued work on XLParser \\
+May 2015 & Decision to rewrite parser to solve several fundamental problems \\
+& Start work on XLParser \\
+& Implementing \rf{Introduce (Conditional) Aggregate} \\
+& Implementing \rf{Group references} \\
+June 2015 & Continued work on XLParser: Initial release \\
 & Writing of XLParser paper \\
-July 2015 & Continued work on XLParser \\
-& Changing of refactoring UI to context-aware right-click menu, similar to IDE's \\
-August 2015 & Continued work on XLParser \\
+July 2015 & Changing of refactoring UI to context-aware right-click menu, similar to IDE's \\
+August 2015 & Continued work on XLParser: Several fixes to XLParser parse trees \\
 & Camera-ready adjustment of XLParser paper \\
-& Porting BumbleBee and refactorings to XLParser \\
-September 2015 & Continued work on XLParser \\
+& Constructed demo application\footnote{\url{http://xlparser.perfectxl.nl/demo/}} for XLParser which shows the parse trees. \\
+September 2015 & Continued work on XLParser: Adding structured references, file paths \\
 & Porting BumbleBee and refactorings to XLParser-based implementations \\
 \bottomrule
 \end{tabularx}
@@ -176,23 +230,25 @@ This is usually implemented by parsing the formula, performing the desired trans
 The inner workings of the parser are described in \ref{chapter:parsing}.
 This chapter covers how the AST is transformed for each refactoring and how it is printed.
 
+The refactorings were implemented in the BumbleBee Excel Add-In, and presented to the user through a context menu as seen in Figure X.
+This context-menu automatically determines if a refactoring can be performed on the specific selected cell(s) and disables inapplicable refactorings.
+\todo{Screenshot van het bumblebee refactoring context-menu}
+
+\subsubsection{Printing formula AST}
+
 Printing a formula AST is quite simple.
 It can be done by describing for each node type how it can be translated back into a string, usually this is the exact reverse of the production rule.
 Nodes with children usually need to know the printed form of their children,t his was satisfied by starting at the root of the tree and calling the print function recursively for each child.
 
-The refactorings were implemented in the BumbleBee Excel Add-In, and presented to the user through a context menu as seen in Figure X.
-This context-menu automatically determines if a refactoring can be performed on the specific selected cell(s) and grays out inapplicable refactorings.
-\todo{Screenshot van het bumblebee refactoring context-menu}
+\section{\rf{Extract formula}}
 
-\section{Extract formula}
+The \rf{extract formula} refactoring is analogous to the extract method or extract function refactoring.
 
-The extract formula refactoring is analogous to the extract method or extract function refactoring.
+\section{\rf{Inline formula}}
 
-\section{Inline formula}
+\section{\rf{Introduce (Conditional) Aggregate}}
 
-\section{Introduce (Conditional) Aggregate}
-
-\section{Group References}
+\section{\rf{Group References}}
 
 \chapter{Evaluation}
 

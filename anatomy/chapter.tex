@@ -1,9 +1,6 @@
 \chapter{Anatomy of spreadsheets and spreadsheet formulas}
 \label{chapter:anatomy}
 
-\emph{\small{Parts of this chapter have been published in "A grammar for Spreadsheet Formulas Evaluated on Two Large Datasets" by by Aivaloglou, Hoepelman and Hermans\cite{xlparser}.}}
-\vspace{1em}
-
 \todo{Introductie van dit chapter: "Er is een goed begrip nodig van spreadsheets, omdat ..."}
 
 The most widely used spreadsheet system is Microsoft Office Excel, by a large margin.
@@ -63,7 +60,7 @@ The spreadsheet model is Turing complete, as proven by an Excel 2010 implementat
 
 \section{Formulas}
 
-Currently two major formula language exist in spreadsheets. The first is the Office Open XML spreadsheet language which is a standarization of the Excel language, which is currently used by Microsoft Excel.
+Currently two major formula languages exist in spreadsheets. The first is the Office Open XML spreadsheet language which is a standarization of the Excel language, which is currently used by Microsoft Excel.
 The second is OASIS OpenDocument OpenFormula, which is part of the OpenDocument format which is based on the OpenOffice.org format.
 Google Sheets claims to implement OpenFormula, but has some differences.
 Both languages are very similar and this section covers both unless otherwise noted.
@@ -73,10 +70,10 @@ A cell is identified as a formula cell because all formulas must start with the 
 
 \subsection{Function calls and operators}
 
-Function calls are performed by starting with the function name, followed by the arguments in parentheses, separated by a comma.
+Function calls are performed similar to other programming languages by starting with the function name, followed by the arguments in parentheses, separated by a comma.
 All spreadsheet implementations provide a range of built-in functions, and in most spreadsheet implementations it is possible to define new functions yourself.
 However in current implementations this is not done directly inside the spreadsheet, and uses an alternate programming language.
-In Microsoft Excel and Openoffice.org/Libreoffice this is done with a variant of the BASIC programming language, while in Google Docs this is done with Javascript.
+In Microsoft Excel and Libreoffice this is done with a variant of the BASIC programming language, while in Google Sheets this is done with Javascript.
 A way for the user to define functions in the spreadsheet intself has been proposed by Jones \cite{jones2003user}, but as of now has not been implemented in mainstream spreadsheet programs yet.
 
 The operators \f{+ - * / = >= <= < >} and \f{<>} (inequality) can be used according to their usual semantics.
@@ -84,7 +81,7 @@ The operators \f{+ - * / = >= <= < >} and \f{<>} (inequality) can be used accord
 Additionally the \f{\%} unary operator is defined to transform a number into a percentage (divining it by 100), \f{\^} is the exponentiation operator and \f{\&} is the text concatenation operator.
 
 Spreadsheet program contain three fairly unique binary operators, the semantics of whichare detailed in section \ref{sec:references}.
-Firstly there is the range operator \f{:} then the union operator (\f{,} in Excel, \f{\~} in OpenFormula) and lastly the intersection operator (\f{\char32} in Excel, \f{!} in OpenFormula).
+Firstly there is the range operator \f{:} then the union operator (\f{,} in Excel and \f{\textasciitilde} in OpenFormula) and lastly the intersection operator (\f{\char32} in Excel and \f{!} in OpenFormula).
 Note that OpenFormula diverges from the Excel syntax, possibly because the comma already is used in other places in the language and a single space as an operator is highly unusual.
 The Excel characters for the operators will be used from now on.
 
@@ -93,7 +90,7 @@ The Excel characters for the operators will be used from now on.
 References are the core component of spreadsheets.
 The value of any cell can be used in a formula by concatenating its column and row number, producing a reference like \f{B5}.
 This is called A1-style referencing and is by far the most comment in modern spreadsheet implementations.
-If the value of a cell changes this new value will be propagated to all formulas that use it.
+If the value of a cell changes, this new value will be propagated to all formulas that use it.
 
 When copying a cell to another cell by default references will be adjusted by the offset, for example copying \f{=A1} from cell B1 to C2 will cause the copied formula to become \f{=B2}.
 This can be prevented by making the reference absolute by prepending a \f{\$} to the column index, row index or both.
@@ -116,10 +113,11 @@ The union operator, which is different from the mathematical union as duplicates
 Lastly the intersection operator takes only the cells which are in both arguments, \f{=A:A 5:5} will thus be equivalent to \f{=A5}.
 
 A user can also give a name to any collection of cells, thus creating a \emph{named range} which can be referenced in formulas by name.
+For example one can give the name \f{TAX\_RATE} to cell \f{A2} and then use this in a formula: \f{=C3+C3*TAX\_RATE} instead of \f{=C3+C3*\$A\$2}.
 
 \subsection{Structured References}
 
-A recent addition to the formula language introduced in Excel 2007 are structured (table) references.
+A recent, Excel 2007, addition to the Excel formula language are structured (table) references.
 To use this feature, a table can be given a name and must have headers.
 One can then reference a column in the table by entering \f{TableName[ColumnName]}.
 Inside the square brackets reference operators can be used to construct more complex references, \f{TableName[Column1,Column4]} references two columns.
@@ -139,15 +137,15 @@ These properties make R1C1 useful as an internal representation in spreadsheet i
 
 \todo{Plaatje van R1C1 en A1 style formule naast elkaar}
 
-\subsection{Inter-sheet and external references}
+\subsection{Non-local references}
 \label{subsection:ExternalRefsDDE}
 
-By default references are to cells or ranges in the same sheet as the formula, but this can be modified with a prefix. A prefix consists of some identifier, followed by an exclamation mark followed by the actual reference.
+References refer to cells or ranges in the same sheet as the formula by default, but this can be modified with a prefix. A non-local reference consists a prefix indicating the location, followed by an exclamation mark, followed by the actual reference.
 
 The most common use case is to reference another sheet in the same workbook, where the prefix is simply the sheet name: \f{=Sheetname!A1}.
-References to external spreadsheet files are also possible, which is done by prepending the file name in between square brackets: \f{=[Filename]Sheetname!A1} or \f{=[Filename]!NamedRange}.
+Sheet names can also be between single quotes if they contain special characters: \f{='Sheetname with space'!A1}. 
+References to external spreadsheet files are also possible, which is done by providing the file name in between square brackets and optionally the file path: \f{=[Filename]Sheetname!A1} or \f{='C:{\textbackslash}Path{\textbackslash}[Filename]Sheet'!A1}.
 A peculiar type of prefix are those that indicate multiple sheets: \f{=Sheet1:Sheet10!A1} means A1 in Sheet1 through Sheet10.
-Sheet names can also be between single quotes: \f{='Sheetname with space'!A1}. 
 
 In Windows versions of Microsoft Excel formulas can also call external programs through Dynamic Data Exchange (DDE).
 DDE links are a special case of references, used for receiving data from other applications.
@@ -155,19 +153,18 @@ They take the form of \f{=Program|Topic!Arguments}, e.g. \f{=Database|TableA!Col
 
 \subsection{Case sensitivity}
 
-Formulas are case-insensitive outside string literals.
+Formulas are case-insensitive outside of the trivial case of string literals.
 Identifiers have a canonical capitalization, and while user can type the identifier with any casing only the canonical form will be displayed.
-While the canonical capitalization of built-in identifiers,functions and reserved names, is usually uppercase, the canonical capitalization of an user-defined identifier, an user defined function or a named range, is as the user defined it originally.
+While the canonical capitalization of built-in identifiers,functions and reserved names is usually uppercase, the canonical capitalization of an user-defined identifier, an user defined function or a named range, is as the user defined it originally.
 
 \subsection{Whitespace sensitivity}
 
 The Excel formula language is whitespace sensitive in several places:
 \begin{itemize}
-\item Inside string literals
 \item To separate syntactic units: \f{=AB} has a different meaning than \f{=A B}
 \item Whitespace is not allowed between function names and the argument list: \f{=SUM  (1)} is invalid.
 \item Whitespace is not allowed inside internal or external references: \f{=Sheet1 !A1} is invalid.
-\item The intersection operator is a single space: \f{=A:A 3:3} is the intersection of column \f{A} and row \f{3}, equivalent to \f{=A3}
+\item The intersection operator is a single space: \f{=A:A 3:3} is the intersection of column \f{A} and row \f{3}, equivalent to \f{=A3}. (Excel formula language only)
 \end{itemize}
 
 \section{Array Formulas and Arrays}
