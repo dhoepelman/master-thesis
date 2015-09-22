@@ -17,6 +17,7 @@
 \newcommand{\noparskip}[1]{{\parskip=0pt
 #1
 }}
+\newcommand*{\rom}[1]{\expandafter\@slowromancap\romannumeral #1@}
 
 \nonzeroparskip
 
@@ -58,10 +59,10 @@ This leads to a lack of power to implement all spreadsheet refactorings, such as
 I joined the group to extend the capabilities of BumbleBee so that it could take context into account when performing refactorings, and implement more refactorings in BumbleBee.
 
 \begin{figure}
-\caption{Overview of refactoring process}
-\label{fig:refactoring-process}
 \centerfloat
 \input{intro/refactoring-process}
+\caption{Overview of refactoring process}
+\label{fig:refactoring-process}
 \end{figure}
 
 After the initial literature research I started implementing refactorings, but encountered a fundamental problem in doing so.
@@ -72,7 +73,7 @@ This made me refocus the purpose of my thesis into making a better parser for Ex
 
 \section{About this thesis}
 
-\subsection{Contributions}
+\subsection{Contribution}
 
 The contributions of this thesis are twofold. Firstly there is the stand-alone parser for Excel formulas called XLParser, which is open-source and available online\footnote{\url{https://github.com/spreadsheetlab/XLParser}}. The parser was tested on over a million formulas and failed to parse merely two formulas.
 Details of this parser are published by Aivaloglou, Hoepelman and Hermans \cite{xlparser}.
@@ -82,6 +83,15 @@ The second contribution is an improved version of BumbleBee, which implements th
 BumbleBee is also available online\footnote{TODO: URL Bumblebee.}.
 
 \subsection{Attribution}
+
+This thesis was performed at the TU Delft Spreadsheet Lab, and is partially based on a collaborative effort in that group.
+During this thesis the Excel Formula parser XLParser was developed, and a paper describing it was accepted into the 15th IEEE International Working Conference on Source Code Analysis and Manipulation (SCAM 2015): \emph{A Grammar for Spreadsheet Formulas Evaluated on Two Large Datasets} by Efthimia Aivaloglou, David Hoepelman and Felienne Hermans \cite{xlparser}.
+This paper is attached verbatim as published in appendix \ref{appendix:xlparser}.
+Chapter \ref{chapter:anatomy} is based on section \rom{2} of the paper, and was primarily written by the thesis author.
+Chapter \ref{chapter:parser}  is an updated and extended version of section \rom{3} of the paper, and was primarily written by the thesis author with contributions from Efthimia Aivaloglou, except for section \ref{sec:parserevaluation}, which is a summary of section \rom{4} of the paper which was primarily written by Efthimia Aivaloglou, who also performed the evaluation.
+
+The grammar implementation (XLParser) was primarily done by the thesis author, but the implementation is based on the previous (un-named) parser which was primarily developed by Efthimia Aivalgoglou and Felliene Hermans.
+The tool used to evaluate XLParser, which extracts formulas from spreadsheet files, was developed as part of Infotron B.V.\footnote{\url{http://www.infotron.nl/}}, with many authors. The thesis author did not contributo to this tool.
 
 \subsection{Outline}
 
@@ -195,11 +205,13 @@ This context-menu automatically determines if a refactoring can be performed on 
 \todo{Screenshot van het bumblebee refactoring context-menu}
 
 \section{Refactoring implementations}
+\label{sec:implementingrefactorings}
 
 \noindent
 \begin{figure}[h!]
 \hspace*{0.003\textwidth}
 \input{implementation/refactoring-process-impl}
+\caption{This section details the AST to AST transformations that implement the refactorings.}
 \end{figure}
 
 \FloatBarrier
@@ -215,11 +227,13 @@ The \rf{extract formula} refactoring is analogous to the extract method or extra
 \subsection{\rf{Group References}}
 
 \section{Printing formula AST}
+\label{sec:printing}
 
 \noindent
 \begin{figure}[h!]
 \hspace*{0.003\textwidth}
 \input{implementation/refactoring-process-print}
+\caption{This section details AST pretty-printing, converting an AST to a string formula.}
 \end{figure}
 
 Printing a formula AST is quite simple.
@@ -233,6 +247,9 @@ A slightly simplified and compacted version of the XLParser code responsible can
 \chapter{Conclusion}
 
 \section{Future Work}
+
+\bibliographystyle{unsrt}
+\bibliography{thesis}
 
 \appendix
 
@@ -265,13 +282,22 @@ public static string Print(this ParseTreeNode node) {
 \end{lstlisting}
 
 \chapter{A Grammar for Spreadsheet Formulas Evaluated on Two Large Datasets}
+\label{appendix:xlparser}
 
 The following is a verbatim copy of the papers as it was published in the proceedings of SCAM 2015.
 
-\todo{Paper hier inserten zodra published}
+\clearpage
 
-\bibliographystyle{unsrt}
-\bibliography{thesis}
+\includepdf[pages={1-10}]{appendix/scam-xlparser.pdf}
+
+\clearpage
+
+\vspace*{\fill}
+
+\centering
+\large{End of appendix \ref{appendix:xlparser}}
+
+\vspace*{\fill}
 
 \end{document}
 

@@ -5,6 +5,7 @@
 \begin{figure}[h]
 \centerfloat
 \input{parsing/refactoring-process-parsing}
+\caption{This chapter details parsing, converting a string formula to an AST.}
 \end{figure}
 
 
@@ -52,11 +53,11 @@ To avoid confusion and use usual nomenclature I will from now on refer to this t
 
 \begin{table}
 \tiny
-\caption{Lexical tokens used in the XLParser grammar, as refered to in section \ref{sec:lexanalysis}.}
-\label{table:tokens}
 \centerfloat
 %\advance\leftskip-1cm
 \input{parsing/tokens.tex}
+\caption{Lexical tokens used in the XLParser grammar, as refered to in section \ref{sec:lexanalysis}.}
+\label{table:tokens}
 \end{table}
 
 Table \ref{table:tokens} contains the lexical tokens of the grammar, along with their identification patterns in a simple regular expression language. All tokens are case-insensitive.
@@ -82,11 +83,11 @@ For this reason, the grammar only parses numeric dates and times and these are n
 
 \begin{figure}
 \small
-\caption{Production rules}
-\label{figure:productions}
 \begin{multicols*}{2}
 \input{parsing/productionrules.tex}
 \end{multicols*}
+\caption{Production rules}
+\label{figure:productions}
 \end{figure}
 
 The complete production rules of the grammar are listed in Extended BNF syntax in Figure \ref{figure:productions}.
@@ -117,8 +118,6 @@ The \synt{Reference} rule, as shown in Figure \ref{figure:Reference}, supports i
 
 \begin{table}
 \small
-\caption{Operator precedence in formulas}
-\label{table:operatorprec}
 \begin{tabular}{lll}
 Precedence & Operator(s) & Associativity \\
 1 & = \textless \  \textgreater \  \textless= \  \textgreater= \  \textless\textgreater & Left         \\
@@ -130,6 +129,8 @@ Precedence & Operator(s) & Associativity \\
 7 & + - (unary) & \\
 8 & : , \texttt{\char32} & Left
 \end{tabular}
+\caption{Operator precedence in formulas}
+\label{table:operatorprec}
 \end{table}
 
 \footnotetext{This is contrary to most other languages, where the exponentiation operator is right-associative. \\
