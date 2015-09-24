@@ -21,7 +21,7 @@ Because Excel does not expose the AST or parse tree of formulas, a refactoring t
 
 Bumblebee relied on a parser developed over the years for previous research, however this parser suffered from having new rules added on over time, often in an inconsistent manner and not fully supporting the whole language.
 Furthermore the parser interpreted some language constructs wrong and missed several features, which made implementing refactorings hard.
-For example operator precedence was not taken into account, causing the formula \f{=A1 + A2 * A3} to be parsed as \f{=(A1 + A2) * A3}, which breaks the \rf{Introduce Aggregate} refactoring.
+For example operator precedence was not taken into account, causing the formula \f{=A1 + A2 * A3} to be parsed as \f{=(A1 + A2) * A3}, which subtly and unexpectedly breaks numerous refactorings.
 The existing parser thus was insufficient to implement the Bumblebee refactorings.
 A better parser was needed, thus the goal of this thesis shifted toward procuring a better parser for Excel formulas.
 
@@ -155,9 +155,26 @@ A formula like \texttt{=(A1)} can be interpreted as either a bracketed reference
 In a LALR parser, which Irony produces, this ambiguity manifests in a state where, on a \texttt{')'} token, shifting on rule 1 and reducing on either rule 2 or 3 are possibilities, causing a shift-reduce conflict.
 This was solved by instructing the parser generator to shift on rule 1 in case of this conflict, because this always is a correct interpretation and thus results in correct ASTs.
 
+\section{Printing formula AST}
+\label{sec:printing}
+
+\noindent
+\begin{figure}[h!]
+\hspace*{0.003\textwidth}
+\input{implementation/refactoring-process-print}
+\caption{This section details AST pretty-printing, converting an AST to a string formula.}
+\end{figure}
+
+Printing a formula AST is the reverse operation of parsing, and is quite simple.
+It can be done by describing for each tree node type how it can be translated back into a string, usually this is the exact reverse of the parser production rule.
+Nodes with children usually need to know the printed form of their children, this can be satisfied by starting at the root of the tree and calling the print function recursively for each child.
+A slightly simplified and compacted version of the XLParser code responsible can be found in Appendix \ref{lst:xlparserprint}.
+
+\todo{Ik weet echt niet waar ik deze sectie in moet plaatsen. Hier is stom aangezien het logisch na refactorings moet komen. In hoofdstuk 5 is het stom want dan maakt het van alle refactorings subsecties i.p.v. section. Als eigen hoofdstuk is al helemaal stom want het is 1 paragraaf tekst.}
+
 \section{Trade-offs and quirks}
 
-The grammar presented in this chapter (\todo{section?}) contains some quirks on sub-optimalities, partly due to the Excel language itself, partly due to design decisions.
+The grammar presented in this chapter contains some quirks, partly due to the Excel language itself, partly due to design decisions.
 These are detailed in this section.
 
 \subsection{References}
@@ -180,7 +197,7 @@ A straightforward implementation would use production rules similar to this:
 \begin{grammar}
 <Union> ::= <Reference> `,' <Reference>
 
-<Arguments> ::= <Argument> | <Argument> `,' <Arguments>
+<Arguments> ::= <Argument> \{ `,' <Arguments> \}
 \end{grammar}
 
 However, this will cause a reduce-reduce conflict because the parser will have a state wherein it can reduce to both a \synt{Union} or \synt{Argument} on a \texttt{,} token.
@@ -196,6 +213,6 @@ For example \texttt{=A1,A1} does parse in a spreadsheet program, but produces th
 
 Implementing the straightforward rules above, while desirable, is not possible without using a more powerful grammar class.
 
-\subsection{Evaluation}
+\section{Evaluation}
 
 \todo{Kort iets schrijven over hoe de parser geevalueerd is, samenvatting van evaluatie sectie in paper}

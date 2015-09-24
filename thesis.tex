@@ -137,9 +137,6 @@ September 2015 & Continued work on XLParser: Adding structured references, file 
 \bottomrule
 \end{tabularx}
 
-%\chapter{Spreadsheet anatomy}
-\include{anatomy/chapter}
-
 \chapter{Previous and related work}
 \label{chapter:previouswork}
 
@@ -149,49 +146,59 @@ September 2015 & Continued work on XLParser: Adding structured references, file 
 
 \section{Other spreadsheet refactoring efforts}
 
-
-\chapter{Candidate spreadsheet refactorings}
-\label{chapter:candidaterefactorings}
-
-\section{Comparing spreadsheets to other programming paradigms}
-
-\subsection{Reactive programming}
-As explained in chapter \ref{chapter:anatomy}, the spreadsheet programming model is a variation of the dataflow programming model.
-Thus the most natural first comparison for spreadsheet is the \emph{reactive programming} paradigm, which is another variation of the dataflow programming model.
-Viewed from the RP model, all spreadsheet cells are observable values and every formula is an observer.
-One can attach a formula observer to a cell observable by making a reference, e.g. a formula \f{=A1+1} in cell B1 listens to the value of A1 and produces the value for B1.
-However currently no literature on refactoring reactive programs is known to the author, so no additional refactoring were found by comparing spreadsheets to reactive programs.
-
-\subsection{Functional programming}
-Spreadsheets program do not contain state (mutable variables) or side-effects
-\footnote{As long as one remains within the spreadsheet model. User-defined functions and inter-operation with external programs can cause side-effects.}
-and this immutability aspect is often associated with functional programming languages.
-However spreadsheets lack several other important concepts of functional languages such as first-class and higher-order functions, recursion\footnote{Most spreadsheet implementations allow for a form of recursion in the form of cycles in the dependency graph called circular references. However this is not the normal modus-operandi, triggers a warning and is generally only used to perform iterative calculations which are not otherwise possible in spreadsheets.}, lazy evaluation and type interference.
-
-\subsection{Translation of concepts}
-
-Some literature exist on refactoring functional programs, most prominent is the tool \textbf{Ha}skell \textbf{Re}factoring tool (HaRe) \cite{thompson2005refactoring}.
-Most of the described refactorings are either specific to Haskell, or only applicable because of concepts not available in spreadsheets.
-
-This makes all of the current literature on refactoring functional programs not applicable.
-\todo{Cite functional refactoring literature}
-
-\subsection{Object-oriented programming}
-
-By far 
+%\chapter{Spreadsheet anatomy}
+\include{anatomy/chapter}
 
 
-
-\section{Translating refactorings to the spreadsheet domain}
-
-Tabel met mogelijke refactorings.
-Subsecties voor alle geïmplementeerde refactorings.
+%\chapter{Candidate spreadsheet refactorings}
+%\label{chapter:candidaterefactorings}
+%
+%\section{Comparing spreadsheets to other programming paradigms}
+%
+%\subsection{Reactive programming}
+%As explained in chapter \ref{chapter:anatomy}, the spreadsheet programming model is a variation of the dataflow programming model.
+%Thus the most natural first comparison for spreadsheet is the \emph{reactive programming} paradigm, which is another variation of the dataflow programming model.
+%Viewed from the RP model, all spreadsheet cells are observable values and every formula is an observer.
+%One can attach a formula observer to a cell observable by making a reference, e.g. a formula \f{=A1+1} in cell B1 listens to the value of A1 and produces the value for B1.
+%However currently no literature on refactoring reactive programs is known to the author, so no additional refactoring were found by comparing spreadsheets to reactive programs.
+%
+%\subsection{Functional programming}
+%Spreadsheets program do not contain state (mutable variables) or side-effects
+%\footnote{As long as one remains within the spreadsheet model. User-defined functions and inter-operation with external programs can cause side-effects.}
+%and this immutability aspect is often associated with functional programming languages.
+%However spreadsheets lack several other important concepts of functional languages such as first-class and higher-order functions, recursion\footnote{Most spreadsheet implementations allow for a form of recursion in the form of cycles in the dependency graph called circular references. However this is not the normal modus-operandi, triggers a warning and is generally only used to perform iterative calculations which are not otherwise possible in spreadsheets.}, lazy evaluation and type interference.
+%
+%\subsection{Translation of concepts}
+%
+%Some literature exist on refactoring functional programs, most prominent is the tool \textbf{Ha}skell \textbf{Re}factoring tool (HaRe) \cite{thompson2005refactoring}.
+%Most of the described refactorings are either specific to Haskell, or only applicable because of concepts not available in spreadsheets.
+%
+%This makes all of the current literature on refactoring functional programs not applicable.
+%\todo{Cite functional refactoring literature}
+%
+%\subsection{Object-oriented programming}
+%
+%By far 
+%
+%
+%
+%\section{Translating refactorings to the spreadsheet domain}
+%
+%Tabel met mogelijke refactorings.
+%Subsecties voor alle geïmplementeerde refactorings.
 
 %\chapter{Parsing spreadsheet formulas}
 \include{parsing/chapter}
 
-\chapter{Implementing refactorings}
+\chapter{Refactoring spreadsheets}
 \label{chapter:implementingrefactorings}
+
+\noindent
+\begin{figure}[h!]
+\hspace*{0.003\textwidth}
+\input{implementation/refactoring-process-impl}
+\caption{This chapter details the AST to AST transformations that implement the refactorings.}
+\end{figure}
 
 Refactoring a spreadsheet involves changing the sheets, cells and formulas in a workbook in such a way that the desired change is performed.
 Excel provides an API to change the worksheet and cells, and most other elements of a workbook.
@@ -204,42 +211,125 @@ The refactorings were implemented in the BumbleBee Excel Add-In, and presented t
 This context-menu automatically determines if a refactoring can be performed on the specific selected cell(s) and disables inapplicable refactorings.
 \todo{Screenshot van het bumblebee refactoring context-menu}
 
-\section{Refactoring implementations}
-\label{sec:implementingrefactorings}
+It must be noted that all refactorings have a major deficiency: they cannot be undone.
+The reason for this is a technical limitation imposed by Excel: the Excel undo-redo stack is not available to Excel Add-Ins.
+Instead as soon as a Excel Add-In changes the Excel spreadsheet file, in fact as soon as it interacts with the internal document model even if it does not change anything, the Excel undo-redo stack gets cleared.
+There is a fairly complicated way to work around this\footnote{Visual Basic for Application macros do have access to the undo-redo stack. Thus theoretically one could insert a VBA macro which saves the cells to be altered to the stack. However this has the major disadvantage of changing every spreadsheet file touched to a macro-enabled spreadsheet file and leaving a macro behind.}, this was deemed outside of the scope of this thesis.
+As long as Excel keeps this limitation this will always be a severe limitation to any tool that automatically changes spreadsheet files for the user.
 
-\noindent
-\begin{figure}[h!]
-\hspace*{0.003\textwidth}
-\input{implementation/refactoring-process-impl}
-\caption{This section details the AST to AST transformations that implement the refactorings.}
+\section{\rf{Extract formula}}
+
+The \rf{extract formula} refactoring is analogous to the \rf{extract method} (object oriented programming) or \rf{extract function} (functional programming) refactorings, and also to the \rf{extract local variable} refactoring.
+All have in common that one takes a collections of composable units, removes these from the parent unit and places them into a new parent unit of the same type:
+
+\begin{tabular}{@{}lll@{}}
+	\toprule
+	Refactoring & Composable unit & Parent unit \\
+	\midrule
+	Extract Method & Statements & Method \\
+	Extract Function (Functional) & Expression & Function \\
+	Extract Function (Imperative) & Statements & Function \\
+	Extract local variable & Expression & Variable \\
+	\textbf{Extract formula} & Expression & Formula \\
+	\bottomrule
+\end{tabular}
+
+The goal of the \rf{extract formula} refactoring is to move part of a formula expression, a sub-formula, to another cell, which has the following potential advantages:
+
+\begin{enumerate}
+\item Remove "magic numbers" or other constants and make them easy to adjust.
+\item Make a formula easier to understand by splitting it into more smaller components.
+\item Reduce duplication in a formula by extracting common sub-formulas into another cell.
+\end{enumerate}
+
+\subsection{User interface}
+
+\begin{figure}
+\begin{minipage}[c][8cm][c]{0.5\textwidth}
+\centering
+\vspace*{\fill}
+\includegraphics[height=3cm]{implementation/extractformula/21}
+\subcaption{User selects formulas to be refactored}
+\label{fig:extractformulaexample2a}
+
+\includegraphics[height=3cm]{implementation/extractformula/23}
+\subcaption{User selects formula to be extracted}
+\label{fig:extractformulaexample2c}
+\end{minipage}
+\begin{minipage}[c][8cm][t]{0.5\textwidth}
+\vspace*{\fill}
+\centering
+\includegraphics[height=7cm]{implementation/extractformula/22}
+\subcaption{User selects formula to be extracted}
+\label{fig:extractformulaexample2b}
+\end{minipage}
+\caption{An example application of \rf{Extract Formula}}
+\label{fig:extractformulaexample2}
 \end{figure}
 
-\FloatBarrier
+The refactoring requires the user to select cell(s) to be refactored, type in the subformula to be extracted and select where the extraction should occur to.
+Figure \ref{fig:extractformulaexample2} shows the process as experienced by the user.
+The user first selects the formulas to be extracted (Figure \ref{fig:extractformulaexample2a}) and clicks the Extract Formula entry in the refactoring context menu (not shown).
+A side-panel pops out which allows the user to enter the sub-formula to be extracted and where it should be extracted to (Figure \ref{fig:extractformulaexample2b}) and presses the Extract Formula button.
+In the example the \f{50\%} subformula was extracted to the left, and Figure \ref{fig:extractformulaexample2c} shows the situation after the user has named the new column.
 
-\subsection{\rf{Extract formula}}
+\todo{Nummering}
 
-The \rf{extract formula} refactoring is analogous to the extract method or extract function refactoring.
+\subsection{Implementation}
 
-\subsection{\rf{Inline formula}}
+Call the original formula $F_{or}$, the refactored formula $F_{new}$, the (user-supplied) subformula to be extracted $F_{sub}$.
 
-\subsection{\rf{Introduce (Conditional) Aggregate}}
+If multiple cells are refactored at once, repeat the above process for all formulas.
+Formulas with the same R1C1 $F_{or}$ have the same R1C1 $F_{new}$ so the intermediate steps of the process are cached.
 
-\subsection{\rf{Group References}}
+\subsection{Detection of applicability}
 
-\section{Printing formula AST}
-\label{sec:printing}
+Extract formula is always applicable to a formula cell, as even a very simple formula like \f{=1} still has a component that can be extracted.
+In this case \f{=1} would become \f{=A1} and A1 would become \f{=1}.
+Whether it is a good thing to perform the refactoring is of course the question, but the refactoring relies on the user to make this assessment.
 
-\noindent
-\begin{figure}[h!]
-\hspace*{0.003\textwidth}
-\input{implementation/refactoring-process-print}
-\caption{This section details AST pretty-printing, converting an AST to a string formula.}
-\end{figure}
+\subsection{Improvements over RefBook \rf{Extract row or column} and \rf{Extract Literal}}
+\label{subsubsec:improvementsextractformula}
 
-Printing a formula AST is quite simple.
-It can be done by describing for each node type how it can be translated back into a string, usually this is the exact reverse of the parser production rule.
-Nodes with children usually need to know the printed form of their children, this can be satisfied by starting at the root of the tree and calling the print function recursively for each child.
-A slightly simplified and compacted version of the XLParser code responsible can be found in Appendix \ref{lst:xlparserprint}.
+Two specialized versions of this refactorings where previously described by Bamade and Dig \cite{badame2012refactoring} and implemented in their RefBook tool.
+Their \rf{Extract Row or column} and \rf{Extract Literal} refactorings can both be performed by \rf{Extract formula}.
+
+The author has chosen to not keep the \rf{extract row or column} refactoring name because it does not fully describe the refactoring (a full row or column does not necessarily have to be extracted) and to keep the name in line with refactorings in other domains.
+
+The RefBook \rf{extract literal} refactoring can put a constant value into a cell and replace the occurrences of it with references to that cell, this is also possible with the BumbleBee \rf{extract formula} refactoring.
+The BumbleBee \rf{Extract Formula} refactoring has several advantages over Badame's implementation of \rf{Extract row or column}.
+
+Firstly RefBook does not handle operator precedence.
+This can be very problematic for this refactoring and in the authors opinion should prevent is from being implemented, because one of the prime properties of a refactoring should be that it does not change the program results.
+Note that the RefBook authors were aware of this deficiency, and left this as future work.
+This future work has been performed by the thesis author.
+
+Secondly RefBook can only handle a single row or column, which has to have exactly the same R1C1 formula. It can only extract the subformula to a column right of or row up of the original range.
+BumbleBee can handle arbitrarily shaped ranges, with the only requirement that the subformula to be extracted occurs in all selected formulas.
+Furthermore in addition to extracting to a cell neighboring the original formula cell (up, down, left or right) it can also extract the subformula to a single shared cell location.
+This is very useful to remove duplication and makes the refactoring more universal by merging the \rf{extract literal} refactoring into it.
+
+\section{\rf{Inline formula}}
+
+\section{\rf{Introduce (Conditional) Aggregate}}
+
+\section{\rf{Group References}}
+
+\section{\rf{Fixate References}}
+
+\todo{Unsure of ik deze nog wil implementeren, maar lijkt zeer laaghangend fruit.}
+
+The Fixate References is similar to the \rf{Make Cell Constant} refactoring described by Badame \cite{badame2012refactoring}.
+Maar beter want: user kan zelf selecteren welke cellen wel/niet absolute.
+
+"Fixate references" beschrijft 100x beter wat de refactoring doet dan "Make cell constant". "Make cell constant" zou eerder impliceren dat je het resultaat van de cell berekening neemt en dat opslaat i.p.v. de formula. Wat trouwens ook weer een potentiele refactoring is, maar misschien een beetje een anti-pattern in excel.
+
+\section{\rf{Introduce name}}
+
+\todo{Kandidaat voor implementatie, meer laaghanged fruit.}
+
+Cell (of range?) een naam geven, overal waar die naar gereferenced wordt vervangen door cell naam.
+Of gelijk bij extract formula intregrereren!
 
 \chapter{Evaluation}
 
