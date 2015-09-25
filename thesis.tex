@@ -253,14 +253,16 @@ The goal of the \rf{extract formula} refactoring is to move part of a formula ex
 \label{fig:extractformulaexample2a}
 
 \includegraphics[height=3cm]{implementation/extractformula/23}
-\subcaption{User selects formula to be extracted}
+\addtocounter{subfigure}{1}
+\subcaption{User selects subformula to be extracted}
 \label{fig:extractformulaexample2c}
 \end{minipage}
 \begin{minipage}[c][8cm][t]{0.5\textwidth}
 \vspace*{\fill}
 \centering
 \includegraphics[height=7cm]{implementation/extractformula/22}
-\subcaption{User selects formula to be extracted}
+\addtocounter{subfigure}{-2}
+\subcaption{Refactoring has been performed}
 \label{fig:extractformulaexample2b}
 \end{minipage}
 \caption{An example application of \rf{Extract Formula}}
@@ -273,14 +275,36 @@ The user first selects the formulas to be extracted (Figure \ref{fig:extractform
 A side-panel pops out which allows the user to enter the sub-formula to be extracted and where it should be extracted to (Figure \ref{fig:extractformulaexample2b}) and presses the Extract Formula button.
 In the example the \f{50\%} subformula was extracted to the left, and Figure \ref{fig:extractformulaexample2c} shows the situation after the user has named the new column.
 
-\todo{Nummering}
-
 \subsection{Implementation}
 
-Call the original formula $F_{or}$, the refactored formula $F_{new}$, the (user-supplied) subformula to be extracted $F_{sub}$.
+The implementation consists of 2 parts.
+The first part handles actual placement of the formula in the cells and the moving if neccesary, the second part operates solely on the formula and refactors it to the desired form.
 
-If multiple cells are refactored at once, repeat the above process for all formulas.
-Formulas with the same R1C1 $F_{or}$ have the same R1C1 $F_{new}$ so the intermediate steps of the process are cached.
+\subsubsection{Formula Refactoring}
+Call the original formula $F_{or}$, the refactored formula $F_{new}$, the (user-supplied) subformula to be extracted $F_{sub}$.
+The spreadsheet refactoring code also provides the target $F_{sub}$ will be moved to as $F_{repl}$.
+The refactoring works by first parsing all formulas to AST.
+Then $AST_{or}$ is walked through and every occurrence of $AST_{sub}$ is replaced by $AST_{repl}$, yielding $AST_{new}$.
+$AST_{new}$ is then printed to $F_{new}$, which is returned.
+The C\# code for the AST replacement can be found in Listing \ref{lst:astreplace}.
+
+\todo{Plaatje maken dat dit "AST Vervangen" duidelijk laat zien, a la plaatjes bij hoofdstukken.
+AST_or, AST_search, AST_repl -> AST_search deel in AST_or rood kleuren -> AST_replace heeft AST_search deel vervangen.
+}
+
+\subsubsection{Spreadsheet refactoring}
+
+\todo{Dit moet nog iets duidelijker.}
+
+The spreadsheet refactoring differs slightly depending on if the subformula get to a single cell or if the extraction occurs in a direction.
+If to a single cell, that cell gets assigned the subformula.
+Otherwise new cells are created in the appropriate direction and they get assigned the subformula.
+
+The AST replacement is then performed, and the new formula is assigned to the cell that needs to be refactored.
+If multiple cells are refactored at once, the above process needs to be performed for all of them.
+Formulas with the same R1C1 $F_{or}$ have the same R1C1 $F_{new}$ so the output of the formula refactoring is cached.
+
+The C\# code for the spreadsheet refactoring can be found in Listing \ref{lst:extractformula}.
 
 \subsection{Detection of applicability}
 
@@ -344,6 +368,101 @@ Of gelijk bij extract formula intregrereren!
 \appendix
 
 \chapter{Code listings}
+
+\lstset{style=sharpc}
+\begin{lstlisting}[float,caption={Formula AST replacement (simplified)}, label={lst:astreplace}]
+
+/* Context contains the workbook and worksheet of a node */
+
+public static ParseTreeNode Replace(ParseTreeNode subject, ParseTreeNode search, ParseTreeNode replace, Context csub, Context csearch, Context crepl) {
+	// Check if the subject matches search
+	if(Equals(subject, search, csub, csearch)) {
+		// We can return the replacement.
+		// Moveto handles changing reference prefixes if necesarry 
+		return MoveTo(replace, crepl, csub);
+	}
+	
+	// No match, if we are at a leaf node, simply return the leaf node
+	if (subject.ChildNodes.Count == 0) return subject;
+	
+	// Otherwise continue the replacement on the child nodes
+	return new ParseTreeNode() {
+		Type = subject.Type(),
+		// Select is C#'s map
+		ChildNodes = subject.ChildNodes.Select(child => Replace(child, search, replace, csub, csearch, crepl))
+	};
+}
+
+public static bool Equals(ParseTreeNode p1, ParseTreeNode p2, Context c1, Context c2) {
+	
+	// RemoveNonEqualityAffectingNodes removes things like brackets,
+	// which do not affect the equality of nodes
+	p1 = RemoveNonEqualityAffectingNodes(p1);
+	p2 = RemoveNonEqualityAffectingNodes(p2);
+	
+	// Qualify adds workbook and worksheet prefix to all references, so that
+	// equality isn't affected by whether or not these are supplied in the original formula
+	p1 = c1.Qualify(p1);
+	p2 = c2.Qualify(p2);
+	
+	return p1.Type() == p2.Type()
+		// Compare the token values if these are tokens
+	    && (p1 is Terminal && p1.Token.ValueString == p2.Token.ValueString)
+	    // Compare child count
+	    && p1.ChildNodes.Count == p2.ChildNodes.Count
+	    // Check if all children are equal
+	    && p1.ChildNodes.Zip(p2.ChildNodes).All((ch1, ch2) => Equals(ch1, ch2, c1, c2));
+}
+\end{lstlisting}
+
+\lstset{style=sharpc}
+\begin{lstlisting}[float,caption={Extract formula refactoring (simplified)}, label={lst:extractformula}]
+public void ExtractFormula(Range applyto, Location moveto, ParseTreeNode subformula) {
+	
+	/** Check if all applyto cells contain subformula **/
+	
+	/** Check if target cell is empty **/
+	
+	// Set the target cell to the subformula
+	moveto.Formula = subformula.Print();
+	// and get its parsed address reference
+	var replacementAST = moveto.Address().Parse();
+	
+	// Apply the refactoring once per unique R1C1 formula
+	foreach (var uniqueR1C1 in applyto.Cells.GroupBy()(c => c.FormulaR1C1)) {
+		var prototype = uniqueR1C1.First();
+		var AST_or = prototype.Parse();
+		
+		prototype.Formula = Replace(AST_or, subformula, replacementAST, /*...*/).Print();
+		
+		foreach(var cell in uniqueR1C1) {
+			cell.FormulaR1C1 = prototype.FormulaR1C1;
+		}
+	}
+}
+
+public void ExtractFormula(Range applyto, Direction dir, ParseTreeNode subformula) {
+	
+	/** Check if all applyto cells contain subformula **/
+	
+	/** Insert new cells in the appropriate direction **/
+	
+	/** Set all new cells to contain the subformula formula **/
+	
+	// Apply the refactoring once per unique R1C1 formula
+	foreach (var uniqueR1C1 in applyto.Cells.GroupBy()(c => c.FormulaR1C1)) {
+		var prototype = uniqueR1C1.First();
+		var AST_or = prototype.Parse();
+		var replacementAST = prototype.Offset[dir].Address().Parse();
+		
+		prototype.Formula = Replace(AST_or, subformula, replacementAST, /*...*/).Print();
+
+		foreach(var cell in uniqueR1C1) {
+			cell.FormulaR1C1 = prototype.FormulaR1C1;
+		}
+	}
+}
+\end{lstlisting}
 
 \lstset{style=sharpc}
 \begin{lstlisting}[float,caption={XLParser Print method (simplified)}, label={lst:xlparserprint}]
