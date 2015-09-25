@@ -17,7 +17,7 @@
 \newcommand{\noparskip}[1]{{\parskip=0pt
 #1
 }}
-\newcommand*{\rom}[1]{\expandafter\@slowromancap\romannumeral #1@}
+\newcommand{\rom}[1]{\uppercase\expandafter{\romannumeral #1\relax}}
 
 \nonzeroparskip
 
@@ -88,10 +88,12 @@ This thesis was performed at the TU Delft Spreadsheet Lab, and is partially base
 During this thesis the Excel Formula parser XLParser was developed, and a paper describing it was accepted into the 15th IEEE International Working Conference on Source Code Analysis and Manipulation (SCAM 2015): \emph{A Grammar for Spreadsheet Formulas Evaluated on Two Large Datasets} by Efthimia Aivaloglou, David Hoepelman and Felienne Hermans \cite{xlparser}.
 This paper is attached verbatim as published in appendix \ref{appendix:xlparser}.
 Chapter \ref{chapter:anatomy} is based on section \rom{2} of the paper, and was primarily written by the thesis author.
-Chapter \ref{chapter:parser}  is an updated and extended version of section \rom{3} of the paper, and was primarily written by the thesis author with contributions from Efthimia Aivaloglou, except for section \ref{sec:parserevaluation}, which is a summary of section \rom{4} of the paper which was primarily written by Efthimia Aivaloglou, who also performed the evaluation.
+Chapter \ref{chapter:parsing}  is an updated and extended version of section \rom{3} of the paper, and was primarily written by the thesis author with contributions from Efthimia Aivaloglou, except for section \ref{sec:parserevaluation}, which is a summary of section \rom{4} of the paper which was primarily written by Efthimia Aivaloglou, who also performed the evaluation.
 
 The grammar implementation (XLParser) was primarily done by the thesis author, but the implementation is based on the previous (un-named) parser which was primarily developed by Efthimia Aivalgoglou and Felliene Hermans.
-The tool used to evaluate XLParser, which extracts formulas from spreadsheet files, was developed as part of Infotron B.V.\footnote{\url{http://www.infotron.nl/}}, with many authors. The thesis author did not contributo to this tool.
+The tool used to evaluate XLParser, which extracts formulas from spreadsheet files, was developed as part of Infotron B.V.\footnote{\url{http://www.infotron.nl/}}, with many authors. The thesis author did not contribute to this tool.
+
+The refactorings described in Chapter \ref{chapter:implementingrefactorings} were added to the existing BumbleBee Excel add-in developed by Felienne Hermans, but these refactorings were solely implemented by the author with very little of the existing infrastructure used.
 
 \subsection{Outline}
 
