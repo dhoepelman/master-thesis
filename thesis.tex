@@ -251,12 +251,12 @@ The goal of the \rf{extract formula} refactoring is to move part of a formula ex
 \centering
 \vspace*{\fill}
 \includegraphics[height=3cm]{implementation/extractformula/21}
-\subcaption{User selects formulas to be refactored}
+\subcaption{User selects cells to be refactored}
 \label{fig:extractformulaexample2a}
 
 \includegraphics[height=3cm]{implementation/extractformula/23}
 \addtocounter{subfigure}{1}
-\subcaption{User selects subformula to be extracted}
+\subcaption{Refactoring has been performed}
 \label{fig:extractformulaexample2c}
 \end{minipage}
 \begin{minipage}[c][8cm][t]{0.5\textwidth}
@@ -264,7 +264,7 @@ The goal of the \rf{extract formula} refactoring is to move part of a formula ex
 \centering
 \includegraphics[height=7cm]{implementation/extractformula/22}
 \addtocounter{subfigure}{-2}
-\subcaption{Refactoring has been performed}
+\subcaption{User selects subformula to be extracted}
 \label{fig:extractformulaexample2b}
 \end{minipage}
 \caption{An example application of \rf{Extract Formula}}
@@ -291,7 +291,11 @@ Then $AST_{or}$ is walked through and every occurrence of $AST_{search}$ is repl
 $AST_{new}$ is then printed to $F_{new}$, which is returned.
 The C\# code for the AST replacement can be found in Listing \ref{lst:astreplace}.
 
-\todo{Misschien uitleggen waarom dit niet met Bumblebee transformation rules kan inclusief plaatje? Omgekeerde sutatie. In =XXXX[a]XXXX match Bumblebee XXXX en captured [a], terwijl deze refactoring [a] matched en XXXX captured.}
+You might have noticed that the AST transformation is somewhat similar to the BumbleBee formula transformation rules.
+However, it is complimentary rather than identical.
+We could have tried to written this transformation as a BumbleBee rule "\f{=I2 + [a] * I2}".
+However, BumbleBee would have searched for the "outer" formula, keeping the \f{[a]} $\gets$ \f{50\%} available for the replacement rule.
+In contrast, this transformation searches for the \f{[a]} "inner" formula, and replaces it with something different.
 
 \begin{figure}
 \centering
@@ -307,10 +311,9 @@ The C\# code for the AST replacement can be found in Listing \ref{lst:astreplace
 The spreadsheet refactoring differs slightly depending on if the subformula get to a single cell or if the extraction occurs in a direction.
 If to a single cell, that cell gets assigned the subformula.
 Otherwise new cells are created in the appropriate direction and they get assigned the subformula.
-If
 
-The AST replacement is then performed, and the new formula is assigned to the cell that needs to be refactored.
-If multiple cells are refactored at once, the above process needs to be performed for all of them.
+The AST replacement is then performed on the original formula, and the new formula is assigned to the cell that needs to be refactored.
+If multiple cells are refactored at once, the above process is performed for all of them.
 Formulas with the same R1C1 $F_{or}$ have the same R1C1 $F_{new}$ so the output of the formula refactoring is cached.
 
 The C\# code for the spreadsheet refactoring can be found in Listing \ref{lst:extractformula}.
@@ -318,20 +321,21 @@ The C\# code for the spreadsheet refactoring can be found in Listing \ref{lst:ex
 \subsection{Detection of applicability}
 
 Extract formula is always applicable to a formula cell, as even a very simple formula like \f{=1} still has a component that can be extracted.
-In this case \f{=1} would become \f{=A1} and A1 would become \f{=1}.
-Whether it is a good thing to perform the refactoring is of course the question, but the refactoring relies on the user to make this assessment.
+In this case if \f{=1} would be extracted to \f{A1} the original cell would become \f{=A1}.
+Of course, whether it is a good thing to perform this refactoring is dubious, but BumbleBee relies on the user to make this assessment.
 
 \subsection{Improvements over RefBook \rf{Extract row or column} and \rf{Extract Literal}}
 \label{subsubsec:improvementsextractformula}
 
 Two specialized versions of this refactorings where previously described by Bamade and Dig \cite{badame2012refactoring} and implemented in their RefBook tool.
-Their \rf{Extract Row or column} and \rf{Extract Literal} refactorings can both be performed by \rf{Extract formula}.
+Refbooks \rf{Extract Row or column} and \rf{Extract Literal} refactorings can both be performed by \rf{Extract formula}.
 
-The author has chosen to not keep the \rf{extract row or column} refactoring name because it does not fully describe the refactoring (a full row or column does not necessarily have to be extracted) and to keep the name in line with refactorings in other domains.
+The author has chosen to not keep the \rf{extract row or column} refactoring name because it does not fully describe the refactoring, a full row or column does not necessarily have to be extracted, and to keep the name in line with refactoring names in other domains.
 
-The RefBook \rf{extract literal} refactoring can put a constant value into a cell and replace the occurrences of it with references to that cell, this is also possible with the BumbleBee \rf{extract formula} refactoring.
+The RefBook \rf{extract literal} refactoring can put a constant value into a cell and replace the occurrences of it with references to that cell, this can also be achieved with the BumbleBee \rf{extract formula} refactoring.
+In addition this is possible for any constant expression, an expression without references, instead of only for constants.
+
 The BumbleBee \rf{Extract Formula} refactoring has several advantages over Badame's implementation of \rf{Extract row or column}.
-
 Firstly RefBook does not handle operator precedence.
 This can be very problematic for this refactoring and in the authors opinion should prevent is from being implemented, because one of the prime properties of a refactoring should be that it does not change the program results.
 Note that the RefBook authors were aware of this deficiency, and left this as future work.
