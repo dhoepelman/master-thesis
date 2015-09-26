@@ -283,16 +283,21 @@ The implementation consists of 2 parts.
 The first part handles actual placement of the formula in the cells and the moving if neccesary, the second part operates solely on the formula and refactors it to the desired form.
 
 \subsubsection{Formula Refactoring}
-Call the original formula $F_{or}$, the refactored formula $F_{new}$, the (user-supplied) subformula to be extracted $F_{sub}$.
-The spreadsheet refactoring code also provides the target $F_{sub}$ will be moved to as $F_{repl}$.
+\begin{figure}
+\centering
+\input{implementation/extractformula/extractformulaast.tex}
+\caption{AST transformation to implement extract formula refactoring}
+\label{fig:extractformulaASTtransformations}
+\end{figure}
+
+Call the original formula $F_{or}$, the refactored formula $F_{new}$, the (user-supplied) subformula to be extracted $F_{search}$.
+The spreadsheet refactoring code also provides the target $F_{search}$ will be moved to as $F_{repl}$.
 The refactoring works by first parsing all formulas to AST.
-Then $AST_{or}$ is walked through and every occurrence of $AST_{sub}$ is replaced by $AST_{repl}$, yielding $AST_{new}$.
+Then $AST_{or}$ is walked through and every occurrence of $AST_{search}$ is replaced by $AST_{repl}$, yielding $AST_{new}$, this is illustrated in Figure \ref{fig:extractformulaASTtransformations}.
 $AST_{new}$ is then printed to $F_{new}$, which is returned.
 The C\# code for the AST replacement can be found in Listing \ref{lst:astreplace}.
 
-\todo{Plaatje maken dat dit "AST Vervangen" duidelijk laat zien, a la plaatjes bij hoofdstukken.
-AST_or, AST_search, AST_repl -> AST_search deel in AST_or rood kleuren -> AST_replace heeft AST_search deel vervangen.
-}
+\todo{Misschien uitleggen waarom dit niet met Bumblebee transformation rules kan inclusief plaatje? Omgekeerde sutatie. In =XXXX[a]XXXX match Bumblebee XXXX en captured [a], terwijl deze refactoring [a] matched en XXXX captured.}
 
 \subsubsection{Spreadsheet refactoring}
 
@@ -301,6 +306,7 @@ AST_or, AST_search, AST_repl -> AST_search deel in AST_or rood kleuren -> AST_re
 The spreadsheet refactoring differs slightly depending on if the subformula get to a single cell or if the extraction occurs in a direction.
 If to a single cell, that cell gets assigned the subformula.
 Otherwise new cells are created in the appropriate direction and they get assigned the subformula.
+If
 
 The AST replacement is then performed, and the new formula is assigned to the cell that needs to be refactored.
 If multiple cells are refactored at once, the above process needs to be performed for all of them.
@@ -424,6 +430,8 @@ public void ExtractFormula(Range applyto, Location moveto, ParseTreeNode subform
 	/** Check if all applyto cells contain subformula **/
 	
 	/** Check if target cell is empty **/
+	
+	/** Check if subformula contains any non-absolute references **/
 	
 	// Set the target cell to the subformula
 	moveto.Formula = subformula.Print();
