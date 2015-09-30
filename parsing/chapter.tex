@@ -165,12 +165,10 @@ This was solved by instructing the parser generator to shift on rule 1 in case o
 \caption{This section details AST pretty-printing, converting an AST to a string formula.}
 \end{figure}
 
-Printing a formula AST is the reverse operation of parsing, and is quite simple.
-It can be done by describing for each tree node type how it can be translated back into a string, usually this is the exact reverse of the parser production rule.
-Nodes with children usually need to know the printed form of their children, this can be satisfied by starting at the root of the tree and calling the print function recursively for each child.
-A slightly simplified and compacted version of the XLParser code responsible can be found in Appendix \ref{lst:xlparserprint}.
-
-\todo{Ik weet echt niet waar ik deze sectie in moet plaatsen. Hier is stom aangezien het logisch na refactorings moet komen. In hoofdstuk 5 is het stom want dan maakt het van alle refactorings subsecties i.p.v. section. Als eigen hoofdstuk is al helemaal stom want het is 1 paragraaf tekst.}
+Printing a formula AST is the reverse operation of parsing, and is quite straightforward.
+It can be done by describing for each tree node type how it can be translated back into a string, most of the time this is the exact reverse of the parser production rule.
+Nodes with children need to know the printed form of their children, this can be satisfied by starting at the root of the tree and calling the print function recursively for each child.
+A slightly simplified and compacted version of the XLParser code responsible for printing can be found in Appendix \ref{lst:xlparserprint}.
 
 \section{Trade-offs and quirks}
 
