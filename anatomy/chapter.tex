@@ -5,14 +5,20 @@
 \begin{figure}[h]
 \centerfloat
 \input{anatomy/refactoring-process-anatomy}
-\caption{This chapter details the properties and syntax of spreadsheets and formulas strings.}
+\caption{This chapter details the boxed elements of the refactoring process: the properties and syntax of spreadsheets and formulas strings.}
 \end{figure}
 
-\todo{Introductie van dit chapter: "Er is een goed begrip nodig van spreadsheets, omdat ..."}
+In order to be able to parse or refactor spreadsheets, a solid understanding of their inner workings is necessary, especially of the formula language.
 
-The most widely used spreadsheet system is Microsoft Office Excel, by a large margin.
-Two less-popular but still common implementation are Openoffice.org and Libreoffice Calc (which evolved from the same product and thus have largely identical semantics) and Google Docs Sheets, a web-based collaborative spreadsheet program. \todo{Markaandeel van deze implementaties}.
-When referencing "all" spreadsheet programs, the previous three common implementations are referenced.
+The by a large margin most widely used spreadsheet system is Microsoft Office Excel, which has a self-reported install base of 1.2 billion users \cite{microsoftByTheNumbers}.
+Two less-popular but still common implementation are Apache OpenOffice Calc and LibreOffice Calc, which evolved from the same product and thus have largely identical semantics, of which LibreOffice a self-reported install base of 75 million users.
+Google Sheets is another common implementation, and is special because it was the first large web-based collaborative spreadsheet program.
+Google does not report usage numbers, but in 2010 has said it is used by "tens of millions" of users.
+There are many other spreadsheet implementations, but none come close to Microsoft Excels market share, and most are smaller than LibreOffice and Google Spreadsheets.
+When referencing "all" spreadsheet programs, this is meant as the three implementations previously mentioned.
+These three implementations are the systems studied because of their market share.
+
+\newpage
 
 Although exotic forms of spreadsheets are available and have been researched, all currently widely used implementation use the following model:
 \begin{itemize}
@@ -73,11 +79,13 @@ An example dataflow program and its spreadsheet implementation can be seen in Fi
 
 The spreadsheet model is Turing complete, as proven by an Excel 2010 implementation of a Turing machine \cite{ExcelTuringComplete}.
 
+\clearpage
+
 \section{Formulas}
 
 Currently two major formula languages exist in spreadsheets. The first is the Office Open XML spreadsheet language which is a standarization of the Excel language, which is currently used by Microsoft Excel.
 The second is OASIS OpenDocument OpenFormula, which is part of the OpenDocument format which is based on the OpenOffice.org format.
-Google Sheets claims to implement OpenFormula, but has some differences.
+Google Sheets claims to implement OpenFormula, but has some differences which are noted in their specific sections.
 Both languages are very similar and this section covers both unless otherwise noted.
 
 Formulas consist of an expression which can contain constant values, \key{function calls} and \key{operators} and, most importantly, \key{references} to other cells.
@@ -88,17 +96,19 @@ A cell is identified as a formula cell because all formulas must start with the 
 Function calls are performed similar to other programming languages by starting with the function name, followed by the arguments in parentheses, separated by a comma.
 All spreadsheet implementations provide a range of built-in functions, and in most spreadsheet implementations it is possible to define new functions yourself.
 However in current implementations this is not done directly inside the spreadsheet, and uses an alternate programming language.
-In Microsoft Excel and Libreoffice this is done with a variant of the BASIC programming language, while in Google Sheets this is done with Javascript.
-A way for the user to define functions in the spreadsheet intself has been proposed by Jones \cite{jones2003user}, but as of now has not been implemented in mainstream spreadsheet programs yet.
+In Microsoft Excel and LibreOffice this is done with a variant of the BASIC programming language, while in Google Sheets this is done with Javascript.
+A way for the user to define functions in the spreadsheet itself has been proposed by Peyton Jones et. al \cite{jones2003user}, but as of now has not been implemented in mainstream spreadsheet programs yet.
 
-The operators \f{+ - * / = >= <= < >} and \f{<>} (inequality) can be used according to their usual semantics.
+The binary operators \f{+ - * / = >= <= < >} and \f{<>} (inequality) can be used according to their usual semantics.
 \f{+} and \f{-} are available both unary (\f{=-1}) and binary (\f{=1-1}).
-Additionally the \f{\%} unary operator is defined to transform a number into a percentage (divining it by 100), \f{\^} is the exponentiation operator and \f{\&} is the text concatenation operator.
+Additionally the \f{\%} postfix unary operator is defined to transform a number into a percentage (divining it by 100), \f{\textasciicircum} is the exponentiation operator and \f{\&} is the text concatenation operator.
 
-Spreadsheet program contain three fairly unique binary operators, the semantics of whichare detailed in section \ref{sec:references}.
+Spreadsheet program contain three fairly unique binary operators, the semantics of which are detailed in section \ref{sec:references}.
 Firstly there is the range operator \f{:} then the union operator (\f{,} in Excel and \f{\textasciitilde} in OpenFormula) and lastly the intersection operator (\f{\char32} in Excel and \f{!} in OpenFormula).
 Note that OpenFormula diverges from the Excel syntax, possibly because the comma already is used in other places in the language and a single space as an operator is highly unusual.
 The Excel characters for the operators will be used from now on.
+
+\newpage
 
 \subsection{References}
 \label{sec:references}
@@ -107,7 +117,7 @@ The value of any cell can be used in a formula by concatenating its column and r
 This is called A1-style referencing and is by far the most comment in modern spreadsheet implementations.
 If the value of a cell changes, this new value will be propagated to all formulas that use it.
 
-When copying a cell to another cell by default references will be adjusted by the offset, for example copying \f{=A1} from cell B1 to C2 will cause the copied formula to become \f{=B2}.
+When copying a cell to another cell, by default references will be adjusted by the offset, for example copying \f{=A1} from cell B1 to C2 will cause the copied formula to become \f{=B2}.
 This can be prevented by making the reference absolute by prepending a \f{\$} to the column index, row index or both.
 The formula \f{=\$A\$1} will remain the same on copy while \f{=\$A1} will still have its row number adjusted when copied, as ilustrated in Figure \ref{fig:copy-modifiers}.
 
@@ -130,6 +140,8 @@ Lastly the intersection operator takes only the cells which are in both argument
 A user can also give a name to any collection of cells, thus creating a \emph{named range} which can be referenced in formulas by name.
 For example one can give the name \f{TAX\_RATE} to cell \f{A2} and then use this in a formula: \f{=C3+C3*TAX\_RATE} instead of \f{=C3+C3*\$A\$2}.
 
+\newpage
+
 \subsection{Structured References}
 
 A recent, Excel 2007, addition to the Excel formula language are structured (table) references.
@@ -144,11 +156,11 @@ This feature is meant to make formulas easier to read, by references in a formul
 
 \subsection{R1C1 reference style}
 
-An alternate style called R1C1 as opposed to the above A1 style exists, but it is very rarely seen or used by users.
+An alternate style called R1C1 as opposed to the above A1 style exists, but it is only rarely used by users in modern spreadsheet implementations.
 In R1C1 reference style one specifies either the offset to a cell between square brackets or its concrete location.
 In R1C1 style \f{R[4]C[-2]} means the cell two columns to the left and four rows down, while \f{R2C2} refers to cell B2.
 The biggest advantage of R1C1 is that it causes identical formulas to be the same even when they operate on different cells or data because of their position, illustrated in Figure \ref{fig:r1c1comp}.
-These properties make R1C1 useful as an internal representation in spreadsheet implementations.
+These properties make R1C1 useful as an internal representation in spreadsheet implementations and in a spreadsheet refactoring tool.
 
 \begin{figure}
 \centerfloat
@@ -189,23 +201,24 @@ While the canonical capitalization of built-in identifiers,functions and reserve
 
 The Excel formula language is whitespace sensitive in several places:
 \begin{itemize}
-\item To separate syntactic units: \f{=AB} has a different meaning than \f{=A B}
 \item Whitespace is not allowed between function names and the argument list: \f{=SUM  (1)} is invalid.
 \item Whitespace is not allowed inside internal or external references: \f{=Sheet1 !A1} is invalid.
 \item The intersection operator is a single space: \f{=A:A 3:3} is the intersection of column \f{A} and row \f{3}, equivalent to \f{=A3}. (Excel formula language only)
 \end{itemize}
 
+\newpage
+
 \section{Array Formulas and Arrays}
 \label{sec:arrayformulas}
-In spreadsheet programs it is possible to work with one- or two-dimensional matrices.
+In spreadsheet formulas it is possible to transform one- or two-dimensional matrices.
 
-When constructed from constant values they are called \emph{array constants}, e.g. \f{\{1,2;3,4\}}.
+When constructed from constant values they are called \emph{array constants}, e.g. \f{\{1,2;3,4\}} constructs a two-by-two matrix.
 They are surrounded by curly brackets, columns are separated by commas, and rows by semicolons.
 Several matrix operations are available, for example \f{=SUM(\{1,2,3\}*10)} will evaluate to 60.
 
 \emph{Array Formulas} use the same syntax as normal formulas, except that the user must enter \emph{Ctrl} + \emph{Shift} + \emph{Enter} to signal that it is an Array formula.
 Excel and LibreOffice surround the formula with curly braces.
-Google docs works differently and requires the user to surround an array formula with \f{ARRAYFORMULA($\ldots$)}.
+Google Sheets works differently and requires the user to surround an array formula with \f{ARRAYFORMULA($\ldots$)}.
 
 Marking a formula as an array formula will enable one- or two-dimensional reference ranges to be treated as matrices, and several matrix operators and functions will be available. 
 For example if \f{A1},\f{A3},\f{A3} contain the values \f{1},\f{2},\f{3} the array formula \f{\{=SUM(A1:A3*10)\}} will evaluate to \f{60}.

@@ -6,8 +6,8 @@
 \input{0-preamble/commands.tex}
 \input{0-preamble/font.tex}
 
-\maxsecnumdepth{subsection} % chapters, sections, and subsections are numbered
-\maxtocdepth{subsection} % chapters, sections, and subsections are in the Table of Contents
+\maxsecnumdepth{subsection} % Chapters, sections, and subsections are numbered
+\maxtocdepth{subsection} % Chapters, sections, and subsections are in the Table of Contents
 
 \newcommand{\todo}[1]{\textbf{TODO: #1}}
 \newcommand{\ignore}[1]{}
@@ -39,18 +39,18 @@
 \chapter{Introduction}
 
 Like all people, I sometimes get asked what I do for a living.
-When I tell someone I am writing my master thesis in Computer Science, their eyes start to glaze over as they anticipate some explanation peppered with terms they will not understand about 
+When I tell someone I am writing my master thesis in Computer Science, their eyes start to glaze over as they anticipate some explanation peppered with terms they will not understand about.
 I then tell them my thesis is about spreadsheets and ask if they have ever worked with Excel, and nearly everyone who has ever worked in business or research has.
 Nearly everyone has a horror story about that one unmaintainable spreadsheet that they had to work on, or that day their reporting system broke down because 2009 turned into 2010 and the spreadsheet only looked at the last digit.
 
 This anecdotal evidence is mirrored in research.
 Panko \cite{panko2006facing} estimates that 80\% to 95\% of businesses use spreadsheets in one of their processes.
-Furthermore, almost all spreadsheets contain at least one error and 1 to 5\% of spreadsheet cells contains an error according to Panko \cite{panko1998we}.
+Furthermore, almost all spreadsheets contain at least one error, and 1 to 5\% of spreadsheet cells contains an error according to Panko \cite{panko1998we}.
 Spreadsheets perform roles very similar to software in that they perform business-critical roles, are inherited throughout the organization and maintained by different users and accrue technical dept during and after the initial development period \cite{panko1998we}.
 In short, spreadsheets can be classified as programs, and spreadsheet creators as end-user programmers.
 
 This view, "spreadsheets are code", could be the one-sentence summary of the ideology of the Spreadsheet Lab, which is a part of the TU Delft Software Engineering Research Group (SERG).
-Using this view as a baseline, the group has tried to translate tried and proven software engineering methods to the spreadsheet domain so that they could be used to improve spreadsheets, spreadsheet development practices and help spreadsheet programmers.
+Using this view as a baseline, the group works on translating tried and proven software engineering methods to the spreadsheet domain so that they can be used to improve spreadsheets, spreadsheet development practices and help spreadsheet programmers.
 As part of this effort, a spreadsheet formula refactoring tool called BumbleBee was developed by Hermans and Dig \cite{hermans2014bumblebee}.
 This tool allows a formula to be transformed into another by defining a transformation rule, which works very similar to a pattern or regular expression replacement in a text editor.
 
@@ -70,14 +70,17 @@ The standard way of implementing refactorings, illustrated in Figure \ref{fig:re
 This AST can then be manipulated into the desired form, after which it can be converted back to source code (this is called printing or pretty-printing).
 While BumbleBee contained a home-grown parser, I found a range of formulas that were either not parsable, or parsed into an incorrect AST.
 This made me refocus the purpose of my thesis into making a better parser for Excel formulas, as this would not only be very useful for implementing refactorings but would be beneficial to all future spreadsheet research projects.
+Using this new parser, I implemented several refactorings, which are described in Chapter \ref{chapter:implementingrefactorings}.
 
 \section{About this thesis}
 
 \subsection{Contribution}
 
-The contributions of this thesis are twofold. Firstly there is the stand-alone parser for Excel formulas called XLParser, which is open-source and available online\footnote{\url{https://github.com/spreadsheetlab/XLParser}}. The parser was tested on over a million formulas and failed to parse merely two formulas.
+The contributions of this thesis are twofold.
+Firstly I improved and open-sourced a stand-alone formula parser called XLParser, which is available online\footnote{\url{https://github.com/spreadsheetlab/XLParser}}.
+The parser was tested on over a million formulas and failed to parse merely two formulas.
 Details of this parser are published by Aivaloglou, Hoepelman and Hermans \cite{xlparser}.
-This paper is partially re-used in this thesis report, and the parts re-used are my contribution to the paper.
+This paper is partially re-used in this thesis report.
 
 The second contribution is an improved version of BumbleBee, which implements the refactorings described in Chapter \ref{chapter:implementingrefactorings}: \rf{Extract Formula}, \rf{Inline Formula}, \rf{Group References} and \rf{Introduce Conditional Aggregate}.
 BumbleBee is also available online\footnote{TODO: URL Bumblebee.}.
@@ -87,21 +90,21 @@ BumbleBee is also available online\footnote{TODO: URL Bumblebee.}.
 This thesis was performed at the TU Delft Spreadsheet Lab, and is partially based on a collaborative effort in that group.
 During this thesis the Excel Formula parser XLParser was developed, and a paper describing it was accepted into the 15th IEEE International Working Conference on Source Code Analysis and Manipulation (SCAM 2015): \emph{A Grammar for Spreadsheet Formulas Evaluated on Two Large Datasets} by Efthimia Aivaloglou, David Hoepelman and Felienne Hermans \cite{xlparser}.
 This paper is attached verbatim as published in appendix \ref{appendix:xlparser}.
-Chapter \ref{chapter:anatomy} is based on section \rom{2} of the paper, and was primarily written by the thesis author.
-Chapter \ref{chapter:parsing}  is an updated and extended version of section \rom{3} of the paper, and was primarily written by the thesis author with contributions from Efthimia Aivaloglou, except for section \ref{sec:parserevaluation}, which is a summary of section \rom{4} of the paper which was primarily written by Efthimia Aivaloglou, who also performed the evaluation.
+Chapter \ref{chapter:anatomy} is based on ection \rom{2}, and was primarily written by the thesis author.
+Chapter \ref{chapter:parsing} is an updated and extended version of Section \rom{3}, and was primarily written by the thesis author with contributions from Efthimia Aivaloglou, except for section \ref{sec:parserevaluation}, which is a summary of Section \rom{4} of the paper which was primarily written by Efthimia Aivaloglou, who also performed the evaluation. 
 
-The grammar implementation (XLParser) was primarily done by the thesis author, but the implementation is based on the previous (un-named) parser which was primarily developed by Efthimia Aivalgoglou and Felliene Hermans.
-The tool used to evaluate XLParser, which extracts formulas from spreadsheet files, was developed as part of Infotron B.V.\footnote{\url{http://www.infotron.nl/}}, with many authors. The thesis author did not contribute to this tool.
+The grammar implementation (XLParser) was primarily done by the thesis author, but the implementation is based on the previous (un-named) parser which was primarily developed by Efthimia Aivalgoglou and Felienne Hermans.
+The spreadsheet scantool used to evaluate XLParser, which extracts formulas from spreadsheet files, was developed as part of Infotron B.V.\footnote{\url{http://www.infotron.nl/}}, with many authors. The thesis author did not contribute to this tool.
 
 The refactorings described in Chapter \ref{chapter:implementingrefactorings} were added to the existing BumbleBee Excel add-in developed by Felienne Hermans, but these refactorings were solely implemented by the author with very little of the existing infrastructure used.
 
 \subsection{Outline}
 
-A passing knowledge of Excel and more in-depth knowledge of Excel formulas is needed to read the rest of this thesis, which is bundled in chapter \ref{chapter:anatomy} "\nameref{chapter:anatomy}".
+A passing knowledge of Excel and more in-depth knowledge of Excel formulas is needed to read the rest of this thesis, which is bundled in Chapter \ref{chapter:anatomy} "\nameref{chapter:anatomy}".
 Chapter \ref{chapter:previouswork} details previous and related work on spreadsheet refactoring.
-In chapter \ref{chapter:candidaterefactorings} potential spreadsheet refactorings which were not yet implemented in BumbleBee are identified.
+In Chapter \ref{chapter:candidaterefactorings} potential spreadsheet refactorings which were not yet implemented in BumbleBee are identified.
 
-The Chapters thereafter describe the implementation of the spreadsheet refactorings.
+The chapters thereafter describe the implementation of the spreadsheet refactorings.
 Chapter \ref{chapter:parsing} covers how XLParser parses spreadsheet formulas and why it was designed as it was.
 Chapter \ref{chapter:implementingrefactorings} describes how spreadsheet refactorings are performed and the implementation details of the new refactorings.
 
@@ -121,8 +124,8 @@ January 2015 & Studied practicality of generic spreadsheet refactoring language 
 February 2015 & Implementing \rf{Inline Formula} \\
 & Extended Bumblebee and parser to account for sheet and file names \\
 March 2015 & Implementing \rf{Extract formula} \\
-& Writing of paper "End user programming" \todo{} \\
-April 2015 & Writing of paper "End user programming" \todo{} \\
+& Writing of paper "End user programming" \footnote{First version was rejected from IEEE special issue on Refactoring: Accelerating Software Change. A significantly extended and improved version was submitted to ICSE later, but I did not contribute to these changes.} \\
+April 2015 & Writing of paper "End user programming" \\
 & Various improvements to parser \\
 May 2015 & Decision to rewrite parser to solve several fundamental problems \\
 & Start work on XLParser \\
@@ -158,7 +161,7 @@ September 2015 & Continued work on XLParser: Adding structured references, file 
 %\section{Comparing spreadsheets to other programming paradigms}
 %
 %\subsection{Reactive programming}
-%As explained in chapter \ref{chapter:anatomy}, the spreadsheet programming model is a variation of the dataflow programming model.
+%As explained in Chapter \ref{chapter:anatomy}, the spreadsheet programming model is a variation of the dataflow programming model.
 %Thus the most natural first comparison for spreadsheet is the \emph{reactive programming} paradigm, which is another variation of the dataflow programming model.
 %Viewed from the RP model, all spreadsheet cells are observable values and every formula is an observer.
 %One can attach a formula observer to a cell observable by making a reference, e.g. a formula \f{=A1+1} in cell B1 listens to the value of A1 and produces the value for B1.
@@ -207,7 +210,7 @@ Excel provides an API to change the worksheet and cells, and most other elements
 When it is desired to refactor formulas this means the original formula string must be changed into a new formula string.
 This is usually implemented by parsing the formula, performing the desired transformations on the AST and then printing the AST back to a string form \cite{fowler1999refactoring}.
 The inner workings of the parser are described in \ref{chapter:parsing}.
-This chapter covers how the AST is transformed for each refactoring and how it is printed.
+This Chapter covers how the AST is transformed for each refactoring and how it is printed.
 
 The refactorings were implemented in the BumbleBee Excel Add-In, and presented to the user through a context menu as seen in Figure X.
 This context-menu automatically determines if a refactoring can be performed on the specific selected cell(s) and disables inapplicable refactorings.
