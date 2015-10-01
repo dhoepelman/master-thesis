@@ -1,0 +1,122 @@
+\lstset{style=sharpc}
+\begin{lstlisting}[float,caption={Formula AST replacement (simplified)}, label={lst:astreplace}]
+
+/* Context contains the workbook and worksheet of a node */
+
+public static ParseTreeNode Replace(ParseTreeNode subject, ParseTreeNode search, ParseTreeNode replace, Context csub, Context csearch, Context crepl) {
+	// Check if the subject matches search
+	if(Equals(subject, search, csub, csearch)) {
+		// We can return the replacement.
+		// Moveto handles changing reference prefixes if necesarry 
+		return MoveTo(replace, crepl, csub);
+	}
+	
+	// No match, if we are at a leaf node, simply return the leaf node
+	if (subject.ChildNodes.Count == 0) return subject;
+	
+	// Otherwise continue the replacement on the child nodes
+	return new ParseTreeNode() {
+		Type = subject.Type(),
+		// Select is C#'s map
+		ChildNodes = subject.ChildNodes.Select(child => Replace(child, search, replace, csub, csearch, crepl))
+	};
+}
+
+public static bool Equals(ParseTreeNode p1, ParseTreeNode p2, Context c1, Context c2) {
+	
+	// RemoveNonEqualityAffectingNodes removes things like brackets,
+	// which do not affect the equality of nodes
+	p1 = RemoveNonEqualityAffectingNodes(p1);
+	p2 = RemoveNonEqualityAffectingNodes(p2);
+	
+	// Qualify adds workbook and worksheet prefix to all references, so that
+	// equality isn't affected by whether or not these are supplied in the original formula
+	p1 = c1.Qualify(p1);
+	p2 = c2.Qualify(p2);
+	
+	return p1.Type() == p2.Type()
+		// Compare the token values if these are tokens
+	    && (p1 is Terminal && p1.Token.ValueString == p2.Token.ValueString)
+	    // Compare child count
+	    && p1.ChildNodes.Count == p2.ChildNodes.Count
+	    // Check if all children are equal
+	    && p1.ChildNodes.Zip(p2.ChildNodes).All((ch1, ch2) => Equals(ch1, ch2, c1, c2));
+}
+\end{lstlisting}
+
+\lstset{style=sharpc}
+\begin{lstlisting}[float,caption={Extract formula refactoring (simplified)}, label={lst:extractformula}]
+public void ExtractFormula(Range applyto, Location moveto, ParseTreeNode subformula) {
+	
+	/** Check if all applyto cells contain subformula **/
+	
+	/** Check if target cell is empty **/
+	
+	/** Check if subformula contains any non-absolute references **/
+	
+	// Set the target cell to the subformula
+	moveto.Formula = subformula.Print();
+	// and get its parsed address reference
+	var replacementAST = moveto.Address().Parse();
+	
+	// Apply the refactoring once per unique R1C1 formula
+	foreach (var uniqueR1C1 in applyto.Cells.GroupBy()(c => c.FormulaR1C1)) {
+		var prototype = uniqueR1C1.First();
+		var AST_or = prototype.Parse();
+		
+		prototype.Formula = Replace(AST_or, subformula, replacementAST, /*...*/).Print();
+		
+		foreach(var cell in uniqueR1C1) {
+			cell.FormulaR1C1 = prototype.FormulaR1C1;
+		}
+	}
+}
+
+public void ExtractFormula(Range applyto, Direction dir, ParseTreeNode subformula) {
+	
+	/** Check if all applyto cells contain subformula **/
+	
+	/** Insert new cells in the appropriate direction **/
+	
+	/** Set all new cells to contain the subformula formula **/
+	
+	// Apply the refactoring once per unique R1C1 formula
+	foreach (var uniqueR1C1 in applyto.Cells.GroupBy()(c => c.FormulaR1C1)) {
+		var prototype = uniqueR1C1.First();
+		var AST_or = prototype.Parse();
+		var replacementAST = prototype.Offset[dir].Address().Parse();
+		
+		prototype.Formula = Replace(AST_or, subformula, replacementAST, /*...*/).Print();
+
+		foreach(var cell in uniqueR1C1) {
+			cell.FormulaR1C1 = prototype.FormulaR1C1;
+		}
+	}
+}
+\end{lstlisting}
+
+\lstset{style=sharpc}
+\begin{lstlisting}[float,caption={XLParser Print method (simplified)}, label={lst:xlparserprint}]
+public static string Print(this ParseTreeNode node) {
+  // Print token values
+  if(node is Terminal) return node.Token.Text;
+  
+  // Select is C#'s map function
+  var ch = node.ChildNodes.Select(Print).ToList();
+  
+  switch(node.Type()) {
+     case "ArrayFormula":
+       return "{=" + ch[0] + "}";
+     case "FunctionCall":
+       if(node.IsBinaryOperation()) {
+          return ch[0] + " " + ch[1] + " " + ch[2];
+       }
+       if(node.isNamedFunction()) {
+          return String.Join("", ch) + ")";
+       }
+       // some more conditions
+       break;
+     // More cases for every node type
+  }
+}
+\end{lstlisting}
