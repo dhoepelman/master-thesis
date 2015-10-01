@@ -8,12 +8,12 @@
 \caption{This chapter details the AST to AST transformations that implement the refactorings.}
 \end{figure}
 
-Refactoring a spreadsheet involves changing the sheets, cells and formulas in a workbook in such a way that the desired change is performed.
+Refactoring a spreadsheet involves changing the worksheets, cells and formulas in a workbook in such a way that the desired change is performed.
 Excel provides an API to change the worksheet and cells, and most other elements of a workbook.
 When it is desired to refactor formulas this means the original formula string must be changed into a new formula string.
 This is usually implemented by parsing the formula, performing the desired transformations on the AST and then printing the AST back to a string form \cite{fowler1999refactoring}.
-The inner workings of the parser are described in \ref{chapter:parsing}.
-This Chapter covers how the AST is transformed for each refactoring and how it is printed.
+The inner workings of the parser are described in Chapter \ref{chapter:parsing}.
+This Chapter covers how the AST is transformed for each refactoring.
 
 The refactorings were implemented in the BumbleBee Excel Add-In, and presented to the user through a context menu as seen in Figure X.
 This context-menu automatically determines if a refactoring can be performed on the specific selected cell(s) and disables inapplicable refactorings.

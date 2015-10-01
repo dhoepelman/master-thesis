@@ -15,10 +15,11 @@
 	%         \alt "BOOL"
 	%         \alt "ERROR"
 	
-	<FunctionCall> ::= "EXCEL-FUNCTION" <Arguments> `)'
-	\alt <UnOpPrefix> <Formula>
+	<FunctionCall> ::= 
+	<UnOpPrefix> <Formula>
 	\alt <Formula> `\%'
 	\alt <Formula> <BinOp> <Formula>
+	\alt "EXCEL-FUNCTION" <Arguments> `)'
 	
 	<UnOpPrefix> ::= `+' | `-'
 	
@@ -27,7 +28,7 @@
 	
 	%<Function> ::=  | "UDF"
 	
-	<Arguments> ::= <Argument> \{ `,' <Argument> \} | $\epsilon$
+	<Arguments> ::= $\epsilon$ \alt <Argument> \{ `,' <Argument> \}
 	
 	<Argument> ::= <Formula> | $\epsilon$
 	
@@ -41,46 +42,71 @@
 	
 	%<NamedRange> ::= "NAMED-RANGE"
 	%            \alt "NAMED-RANGE-PREFIXED"
-	<NamedRange> ::= "NR" | "NR-PREFIXED"
 	
-	\columnbreak
-	
-	<RefFunctionCall> ::= <Union>
+	<RefFunctionCall> ::= `(' <Union> `)'
 	\alt <RefFunctionName> <Arguments> `)'
 	\alt <Reference> `:' <Reference>
 	\alt <Reference> `\ ' <Reference>
 	
 	<ReferenceItem> ::= "CELL"
 	\alt <NamedRange>
+	\alt <StructuredReference>
 	\alt "VERTICAL-RANGE"
 	\alt "HORIZONTAL-RANGE"
 	\alt "UDF" <Arguments> `)'
 	\alt "ERROR-REF"
 	
+	\columnbreak
+	
+	<NamedRange> ::= <Name>
+		
+	<Name> ::= "NAME" | "NAME-PREFIXED"
+	
+	<File> ::= FILE
+	\alt FILENAME
+	\alt FILEPATH FILENAME
+	
 	<Prefix> ::= "SHEET"
-	\alt "FILE" "SHEET"
+	\alt `'' "SHEET-QUOTED"
+	\alt <File> "SHEET"
+	\alt `'' <File> "SHEET-QUOTED"
 	\alt "FILE" `!'
-	\alt "QUOTED-FILE-SHEET"
 	\alt "MULTIPLE-SHEETS"
-	\alt "FILE" "MULTIPLE-SHEETS"
+	\alt <File> "MULTIPLE-SHEETS"
 	
 	<RefFunctionName> ::= "REF-FUNCTION"
 	\alt "REF-FUNCTION-COND"
 	
-	
-	
-	<Union> ::= `(' <Reference> \{ `,' <Reference> \} `)'
+	<Union> ::= <Reference> \{ `,' <Reference> \}
 	
 	%<DynamicDataExchange> ::= "FILE" `!' "DDECALL"
 	
-	<ConstantArray> ::= `\{' <ArrayColumns> `\}'
+	<ConstantArray> ::= `\{' <ArrColumns> `\}'
 	
-	<ArrayColumns> ::= <ArrayRows> \{ `;' <ArrayRows> \}
+	<ArrColumns> ::= <ArrRows> \{ `;' <ArrRows> \}
 	
-	<ArrayRows> ::= <ArrayConst> \{ `,' <ArrayConst> \}
+	<ArrRows> ::= <ArrConst> \{ `,' <ArrConst> \}
 	
-	<ArrayConst> ::= <Constant>
+	<ArrConst> ::= <Constant>
 	\alt <UnOpPrefix> "NUMBER"
 	\alt "ERROR-REF"
+	
+	<StructuredReference> ::= <SRCol>
+	\alt `[' <SRExpr> `]'
+	\alt <Name> <SRCol>
+	\alt <Name> `[' <SRExpr> `]'
+	
+	<SRExpr> ::= <SRCol>
+	\alt <SRCol> `:' <SRCol>
+	\alt <SRCol> `,' <SRCol>
+	\alt <SRCol> `,' <SRCol> `:' <SRCol>
+	\alt <SRCol> `,' <SRCol> `,' <SRCol>
+	\alt <SRCol> `,' <SRCol> `,' <SRCol> `:' <SRCol>
+	
+	<SRCol> ::= FILENAME
+	\alt `[' <Name> `]'  
+	\alt `[' SR-COLUMN `]'  
+	
+	
 	
 \end{grammar}
