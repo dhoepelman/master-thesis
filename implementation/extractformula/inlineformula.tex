@@ -4,11 +4,11 @@
 \begin{tikzpicture}[-latex ,auto ,node distance =1.3 cm and 0.5cm ,on grid , semithick,
 ,
 state/.style ={ circle ,top color =white ,
-draw, minimum width =0.75 cm}]
-\node[state] (Percent) {\tiny \%};
-\node[state] (Constant50) [below =of Percent] {\tiny 50};
+	draw, minimum width =0.75 cm}]
+\node[state] (RefJ2) {\tiny Ref};
+\node[state] (ConstJ2) [below =of RefJ2] {\tiny \f{J2}};
 
-\path (Percent) edge node {} (Constant50);
+\path (RefJ2) edge node {} (ConstJ2);
 \end{tikzpicture}
 \caption*{{\tiny AST to replace}}
 \end{subfigure}
@@ -19,10 +19,13 @@ draw, minimum width =0.75 cm}]
 \begin{tikzpicture}[-latex ,auto ,node distance =1.3 cm and 0.8cm ,on grid , semithick,
 ,
 state/.style ={ circle ,top color =white ,
-draw, minimum width =0.75 cm}
+	draw, minimum width =0.75 cm}
 ,
 redstate/.style ={ circle , fill=red,
-draw, minimum width =0.75 cm}]
+	draw, minimum width =0.75 cm}
+,
+greenstate/.style ={ circle , fill=green,
+	draw, minimum width =0.75 cm}]
 \node[state] (OpPlus) {$+$};
 \node[state] (OpMult) [below right =of OpPlus] {$\ast$};
 
@@ -36,15 +39,15 @@ draw, minimum width =0.75 cm}]
 
 \path (RefI22) edge node {} (ConstI22);
 
-\node[redstate] (Percent) [below left = 1.3cm and 0.42cm of OpMult] {\tiny \%};
-\node[redstate] (Constant50) [below =of Percent] {\tiny 50};
+\node[redstate] (RefJ2) [below left = 1.3cm and 0.42cm of OpMult] {\tiny Ref};
+\node[redstate] (ConstJ2) [below =of RefJ2] {\tiny \f{J2}};
 
-\path (Percent) edge node {} (Constant50);
+\path (RefJ2) edge node {} (ConstJ2);
 
 \path (OpPlus) edge node {} (OpMult);
 \path (OpPlus) edge node {} (RefI2);
 \path (OpMult) edge node {} (RefI22);
-\path (OpMult) edge node {} (Percent);
+\path (OpMult) edge node {} (RefJ2);
 \end{tikzpicture}
 \caption*{{\tiny Original AST}}
 \end{subfigure}
@@ -55,11 +58,11 @@ draw, minimum width =0.75 cm}]
 \begin{tikzpicture}[-latex ,auto ,node distance =1.3 cm and 0.5cm ,on grid , semithick,
 ,
 state/.style ={ circle ,top color =white ,
-draw, minimum width =0.75 cm}]
-\node[state] (RefJ2) {\tiny Ref};
-\node[state] (ConstJ2) [below =of RefJ2] {\tiny \f{J2}};
+	draw, minimum width =0.75 cm}]
+\node[state] (Percent) {\tiny \%};
+\node[state] (Constant50) [below =of Percent] {\tiny 50};
 
-\path (RefJ2) edge node {} (ConstJ2);
+\path (Percent) edge node {} (Constant50);
 \end{tikzpicture}
 \caption*{{\tiny Replacement AST}}
 \end{subfigure}
@@ -78,10 +81,13 @@ $\xrightarrow[Returns]{}$
 \begin{tikzpicture}[-latex ,auto ,node distance =1.3 cm and 0.8cm ,on grid , semithick,
 ,
 state/.style ={ circle ,top color =white ,
-draw, minimum width =0.75 cm}
+	draw, minimum width =0.75 cm}
+,
+redstate/.style ={ circle , fill=red,
+	draw, minimum width =0.75 cm}
 ,
 greenstate/.style ={ circle , fill=green,
-draw, minimum width =0.75 cm}]
+	draw, minimum width =0.75 cm}]
 \node[state] (OpPlus) {$+$};
 \node[state] (OpMult) [below right =of OpPlus] {$\ast$};
 
@@ -95,10 +101,10 @@ draw, minimum width =0.75 cm}]
 
 \path (RefI22) edge node {} (ConstI22);
 
-\node[greenstate] (RefJ2) [below left = 1.3cm and 0.42cm of OpMult] {\tiny Ref};
-\node[greenstate] (ConstJ2) [below =of RefJ2] {\tiny \f{J2}};
+\node[greenstate] (Percent) [below left = 1.3cm and 0.42cm of OpMult] {\tiny \%};
+\node[greenstate] (Constant50) [below =of Percent] {\tiny 50};
 
-\path (RefJ2) edge node {} (ConstJ2);
+\path (Percent) edge node {} (Constant50);
 
 \path (OpPlus) edge node {} (OpMult);
 \path (OpPlus) edge node {} (RefI2);

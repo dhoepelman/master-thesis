@@ -1,4 +1,30 @@
 \lstset{style=sharpc}
+\begin{lstlisting}[float,caption={XLParser Print method (simplified)}, label={lst:xlparserprint}]
+public static string Print(this ParseTreeNode node) {
+	// Print token values
+	if(node is Terminal) return node.Token.Text;
+	
+	// Select is C#'s map function
+	var ch = node.ChildNodes.Select(Print).ToList();
+	
+	switch(node.Type()) {
+		case "ArrayFormula":
+			return "{=" + ch[0] + "}";
+		case "FunctionCall":
+			if(node.IsBinaryOperation()) {
+				return ch[0] + " " + ch[1] + " " + ch[2];
+			}
+			if(node.isNamedFunction()) {
+				return String.Join("", ch) + ")";
+			}
+			// some more conditions
+			break;
+		// More cases for every node type
+	}
+}
+\end{lstlisting}
+
+\lstset{style=sharpc}
 \begin{lstlisting}[float,caption={Formula AST replacement (simplified)}, label={lst:astreplace}]
 
 /* Context contains the workbook and worksheet of a node */
@@ -96,27 +122,73 @@ public void ExtractFormula(Range applyto, Direction dir, ParseTreeNode subformul
 \end{lstlisting}
 
 \lstset{style=sharpc}
-\begin{lstlisting}[float,caption={XLParser Print method (simplified)}, label={lst:xlparserprint}]
-public static string Print(this ParseTreeNode node) {
-  // Print token values
-  if(node is Terminal) return node.Token.Text;
-  
-  // Select is C#'s map function
-  var ch = node.ChildNodes.Select(Print).ToList();
-  
-  switch(node.Type()) {
-     case "ArrayFormula":
-       return "{=" + ch[0] + "}";
-     case "FunctionCall":
-       if(node.IsBinaryOperation()) {
-          return ch[0] + " " + ch[1] + " " + ch[2];
-       }
-       if(node.isNamedFunction()) {
-          return String.Join("", ch) + ")";
-       }
-       // some more conditions
-       break;
-     // More cases for every node type
-  }
+\begin{lstlisting}[float,caption={Inline Formula Refactoring (simplified)}, label={lst:inlineformula}]
+public void InlineFormula(Cell toInline) {
+	// Dependendants are gotten from Excel
+	var dependents = toInline.dependents;
+	if(dependents.Count == 0) {
+		// Abort, no dependants
+	}
+	
+	var AstToRepl = Parse(toInline.Address);
+	var AstReplacement = Parse(toInline.Formula);
+	
+	// Check if this cell is part of any named ranges with more than one cell
+	if(toInline.Names.Any(name => name.Cells.Count > 1)) {
+		// Abort
+	}
+	
+	// AST representation of the names
+	var names = toInline.Names.Select(Parse);
+	
+	foreach(var dependent in dependents) {
+		var AstOriginal = Parse(dependent.Formula);
+		
+		// Abort if to be inlined cell is references as part of a range
+		if(CellContainedInRanges(toInlineAddress, AstOriginal)) {
+			// Abort
+		}
+		
+		// Replace references to the cell with the value
+		var AstNew = Replace(AstOriginal, AstToRepl, AstReplacement, /*...*/);
+		foreach(var name in names) {
+			AstNew = Replace(AstNew, name, AstReplacement, /*...*/);
+		}
+		
+		dependent.Formula = AstNew.Print();
+	}
+	
+	toInline.Delete();
+	
 }
+\end{lstlisting}
+
+\lstset{style=sharpc}
+\begin{lstlisting}[float,caption={Group References Refactoring (simplified)}, label={lst:groupreferences}]
+public ParseTreeNode GroupReferences(ParseTreeNode formula) {
+	// Get all nodes representing varargs functions
+	var targets = formula.AllNodes().Where(IsVarargsFunction);
+	
+	foreach(var function in targets) {
+		// split arguments that can be grouped from those than can't
+		var toGroupArguments = function.arguments
+			.Where(node => node.IsCellOrRange());
+		var ignoredArguments = function.arguments
+			.Where(node => !node.isCellOrRange());
+		
+		var grouped = new List<ParseTreeNode>();
+		
+		// Several characteristics define whether references can be grouped
+		foreach(var sheetGroup in SplitByWorksheet(toGroupArguments)) {
+			foreach(var toGroup in SplitByAbsoluteMarkers(sheetGroup)) {
+				grouped.Add(GroupUsingExcel(toGroup));
+			}
+		}
+		
+		function.arguments = ignoredArguments.Concat(grouped);
+	}
+	
+	return formula;
+}
+
 \end{lstlisting}

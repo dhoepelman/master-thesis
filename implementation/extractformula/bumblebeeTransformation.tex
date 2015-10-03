@@ -1,0 +1,89 @@
+{
+\begin{subfigure}[t]{0.12\textwidth}
+\centering
+\tiny\f{I2 + [a] * I2}
+\caption*{{\tiny Origin rule}}
+\end{subfigure}
+}
+{
+\begin{subfigure}[t]{0.24\textwidth}
+\centering
+\begin{tikzpicture}[-latex ,auto ,node distance =1.3 cm and 0.8cm ,on grid , semithick,
+,
+state/.style ={ circle ,top color =white ,
+draw, minimum width =0.75 cm}
+,
+redstate/.style ={ circle , fill=red,
+draw, minimum width =0.75 cm}]
+\node[redstate] (OpPlus) {$+$};
+\node[redstate] (OpMult) [below right =of OpPlus] {$\ast$};
+
+\node[redstate] (RefI2) [below left =of OpPlus] {\tiny Ref};
+\node[redstate] (ConstI2) [below =of RefI2] {\tiny \f{I2}};
+
+\path (RefI2) edge node {} (ConstI2);
+
+\node[redstate] (RefI22) [below right = 1.3cm and 0.52cm of OpMult] {\tiny Ref};
+\node[redstate] (ConstI22) [below =of RefI22] {\tiny \f{I2}};
+
+\path (RefI22) edge node {} (ConstI22);
+
+\node[state] (Percent) [below left = 1.3cm and 0.42cm of OpMult] {\tiny \%};
+\node[state] (Constant50) [below =of Percent] {\tiny 50};
+
+\path (Percent) edge node {} (Constant50);
+
+\path (OpPlus) edge node {} (OpMult);
+\path (OpPlus) edge node {} (RefI2);
+\path (OpMult) edge node {} (RefI22);
+\path (OpMult) edge node {} (Percent);
+\end{tikzpicture}
+\caption*{{\tiny Matching AST}}
+\end{subfigure}
+}
+{
+\begin{subfigure}[t]{0.14\textwidth}
+\centering
+\tiny\f{\ldots\ [a] \ldots}
+\caption*{{\tiny Target rule}}
+\end{subfigure}
+}
+{
+\begin{subfigure}[b]{0.1\textwidth}
+\centering
+\vspace*{4em}
+$\xrightarrow[Returns]{}$
+\vspace*{2em}
+\end{subfigure}
+}
+{
+\begin{subfigure}[t]{0.24\textwidth}
+	\centering
+	\begin{tikzpicture}[-latex ,auto ,node distance =1.3 cm and 1.0cm ,on grid , semithick,
+	,
+	state/.style ={ circle ,top color =white ,
+		draw, minimum width =0.75 cm}
+	,
+	redstate/.style ={ circle , fill=red,
+		draw, minimum width =0.75 cm}
+	,
+	greenstate/.style ={ circle , fill=green,
+		draw, minimum width =0.75 cm}]
+	\node[greenstate] (OpPlus) {\tiny\ldots};
+	\node[greenstate] (OpMult) [below right =of OpPlus] {\tiny\ldots};
+	
+	\node[greenstate] (RefI2) [below left =of OpPlus] {\tiny\ldots};
+	
+	%\node[state] (Percent) [below left = 1.3cm and 0.42cm of OpMult] {\tiny \%};
+	\node[state] (Percent) [below = of OpPlus] {\tiny \%};
+	\node[state] (Constant50) [below =of Percent] {\tiny 50};
+	
+	\path (Percent) edge node {} (Constant50);
+	
+	\path (OpPlus) edge node {} (OpMult);
+	\path (OpPlus) edge node {} (RefI2);
+	\path (OpPlus) edge node {} (Percent);
+	\end{tikzpicture}
+	\caption*{{\tiny New AST}}
+\end{subfigure}
+}

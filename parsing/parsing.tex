@@ -156,16 +156,22 @@ The \synt{Reference} rule covers a subset of expressions known as references exp
 
 \begin{table}
 \small
-\begin{tabular}{lll}
-Precedence & Operator(s) & Associativity \\
-1 & = \textless \  \textgreater \  \textless= \  \textgreater= \  \textless\textgreater & Left         \\
-2 & \& & Left \\
-3 & + - (binary) & Left \\
-4 & $\ast$ / & Left \\
-5 & \textasciicircum & Left\footnotemark \\
-6 & \% & \\
-7 & + - (unary) & \\
-8 & : , \texttt{\char32} & Left
+\begin{tabular}{ll}
+	\toprule
+	Precedence & Operator(s) \\
+	(higher is greater) & \\
+	\midrule
+	1 & = \textless \  \textgreater \  \textless= \  \textgreater= \  \textless\textgreater          \\
+	2 & \&  \\
+	3 & + - (binary) \\
+	4 & $\ast$ / \\
+	5 & \textasciicircum \\
+	6 & \% \\
+	7 & + - (unary) \\
+	8 & , \\
+	9 & \texttt{\char32} \\
+	10 & : \\
+	\bottomrule
 \end{tabular}
 \caption{Operator precedence in formulas}
 \label{table:operatorprec}
