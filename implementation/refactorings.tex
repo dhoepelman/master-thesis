@@ -208,11 +208,14 @@ The \rf{Group References} was defined but not implemented by Hermans et. al \cit
 
 \subsection{User Interface}
 
+\todo{Hmm, deze stuktjes worden erg repetaties/oninformatief. Misschien bij introductie zeggen dat dit de standaard manier is en alleen waar nodig een subsectie over maken.}
+
 The refactoring is a one-click refactoring that is activated from the cell context menu, no additional user input is needed.
 
 \subsection{Grouping algorithm}
 
 In order to find the best grouping we have to solve the following problem: given a sheet with a certain set of cells selected, what are the ranges that select exactly those cells and do so with a minimum amount of ranges?
+
 It turns out that this is a NP-hard problem, because it has a straightforward translation to a NP-hard version of the Polygon Covering problem, specifically covering a rectilinear polygon (the selected cells) with axis-parallel rectangles (ranges), allowing for holes.
 This allows us to use an approximation algorithm or heuristic.
 A $O(\sqrt{\log{n}})$ approximation algorithm for this specific problem has been found by Kumar and Ramesh \cite{kumar2003covering}, but implementing this would take a non-trivial amount of effort.
@@ -231,22 +234,39 @@ If multiple cells are selected, the refactoring is repeated for every one.
 
 The C\# code for this refactoring can be found in Listing \ref{lst:groupreferences}
 
-\section{\rf{Introduce (Conditional) Aggregate}}
+\subsection{Detection of applicability}
 
-In Excel, some binary operators have an equivalent aggregate function which accepts any number of arguments:
+This refactoring will be available to the user if the formula contains 2 or more references.
 
-\begin{tabular}{@{}ll@{}}
-	\toprule
-	Operator & Aggregate function \\
-	\midrule
-	\f{+} & \f{SUM} \\
-	\f{*} & \f{PRODUCT} \\
-	\f{\&} & \f{CONCATENATE} \\
-	\bottomrule
-\end{tabular}
+\section{\rf{Replace Awkward Formula}}
 
-Thus a formula like \f{=A1+A2+A3+A4} can be rewritten to \f{=SUM(A1,A2,A3,A4)}.
-This is especially useful when combined with the group references refactoring, which rewrites it to \f{=SUM(A1:A4)}.
+In the spreadsheet formula language, some binary operators have an equivalent aggregate function which accepts any number of arguments: \f{+} correspons to \f{SUM}, \f{*} to \f{PRODUCT} and \f{\&} to \f{CONCATENATE}.
+
+Thus a formula like \f{=A1+A2+A3+A4} can be rewritten to \f{=SUM(A1,A2,A3,A4)}, which is what the \rf{Replace Awkward Formula} refactoring, defined by Badame and Dig \cite{badame2012refactoring}, does.
+The refactoring is especially useful when combined with the \rf{group references} refactoring, which rewrites it to \f{=SUM(A1:A4)}.
+
+
+\subsection{User Interface}
+
+In the user interface, this refactoring is combined with the \rf{Introduce Conditional Aggregate} as a \emph{Introduce (Conditional) Aggregate} function.
+This refactoring is a one-click refactoring that is activated from the cell context menu, no additional user input is needed.
+In the user interface it will always transparently be followed by the \rf{Group References} refactoring.
+
+\subsection{Implementation}
+
+\subsection{Detecting applicability}
+
+This refactoring will only be offered to the user on a formula cell consisting of one of the applicable operators (\f{+},\f{*} or \f{\&})
+
+\section{\rf{Introduce Conditional Aggregate}}
+
+The formula language also contains the built-in conditional aggregate functions \f{SUMIF}, \f{AVERAGEIF} and \f{COUNTIF}.
+These functions take two mandatory arguments: a range and a condition.
+The function then performs its operation on every item that meets the condition.
+In \f{SUMIF} and \f{AVERAGIF} this is often combined with the optional third argument, another range.
+If this argument is supplied the first range is tested 
+
+\subsection{User Interface}
 
 \section{\rf{Fixate References}}
 
