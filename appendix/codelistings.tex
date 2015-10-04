@@ -1,6 +1,6 @@
 \lstset{style=sharpc}
 \begin{lstlisting}[float,caption={XLParser Print method (simplified)}, label={lst:xlparserprint}]
-public static string Print(this ParseTreeNode node) {
+public static string Print(this Node node) {
 	// Print token values
 	if(node is Terminal) return node.Token.Text;
 	
@@ -29,7 +29,7 @@ public static string Print(this ParseTreeNode node) {
 
 /* Context contains the workbook and worksheet of a node */
 
-public static ParseTreeNode Replace(ParseTreeNode subject, ParseTreeNode search, ParseTreeNode replace, Context csub, Context csearch, Context crepl) {
+public static Node Replace(Node subject, Node search, Node replace, Context csub, Context csearch, Context crepl) {
 	// Check if the subject matches search
 	if(Equals(subject, search, csub, csearch)) {
 		// We can return the replacement.
@@ -41,14 +41,14 @@ public static ParseTreeNode Replace(ParseTreeNode subject, ParseTreeNode search,
 	if (subject.ChildNodes.Count == 0) return subject;
 	
 	// Otherwise continue the replacement on the child nodes
-	return new ParseTreeNode() {
+	return new Node() {
 		Type = subject.Type(),
 		// Select is C#'s map
 		ChildNodes = subject.ChildNodes.Select(child => Replace(child, search, replace, csub, csearch, crepl))
 	};
 }
 
-public static bool Equals(ParseTreeNode p1, ParseTreeNode p2, Context c1, Context c2) {
+public static bool Equals(Node p1, Node p2, Context c1, Context c2) {
 	
 	// RemoveNonEqualityAffectingNodes removes things like brackets,
 	// which do not affect the equality of nodes
@@ -72,7 +72,7 @@ public static bool Equals(ParseTreeNode p1, ParseTreeNode p2, Context c1, Contex
 
 \lstset{style=sharpc}
 \begin{lstlisting}[float,caption={Extract formula refactoring (simplified)}, label={lst:extractformula}]
-public void ExtractFormula(Range applyto, Location moveto, ParseTreeNode subformula) {
+public void ExtractFormula(Range applyto, Location moveto, Node subformula) {
 	
 	/** Check if all applyto cells contain subformula **/
 	
@@ -98,7 +98,7 @@ public void ExtractFormula(Range applyto, Location moveto, ParseTreeNode subform
 	}
 }
 
-public void ExtractFormula(Range applyto, Direction dir, ParseTreeNode subformula) {
+public void ExtractFormula(Range applyto, Direction dir, Node subformula) {
 	
 	/** Check if all applyto cells contain subformula **/
 	
@@ -108,9 +108,9 @@ public void ExtractFormula(Range applyto, Direction dir, ParseTreeNode subformul
 	
 	// Apply the refactoring once per unique R1C1 formula
 	foreach (var uniqueR1C1 in applyto.Cells.GroupBy()(c => c.FormulaR1C1)) {
-		var prototype = uniqueR1C1.First();
-		var AST_or = prototype.Parse();
-		var replacementAST = prototype.Offset[dir].Address().Parse();
+		Cell prototype = uniqueR1C1.First();
+		Node AST_or = prototype.Parse();
+		Node replacementAST = prototype.Offset[dir].Address().Parse();
 		
 		prototype.Formula = Replace(AST_or, subformula, replacementAST, /*...*/).Print();
 
@@ -130,8 +130,8 @@ public void InlineFormula(Cell toInline) {
 		// Abort, no dependants
 	}
 	
-	var AstToRepl = Parse(toInline.Address);
-	var AstReplacement = Parse(toInline.Formula);
+	Node AstToRepl = Parse(toInline.Address);
+	Node AstReplacement = Parse(toInline.Formula);
 	
 	// Check if this cell is part of any named ranges with more than one cell
 	if(toInline.Names.Any(name => name.Cells.Count > 1)) {
@@ -142,7 +142,7 @@ public void InlineFormula(Cell toInline) {
 	var names = toInline.Names.Select(Parse);
 	
 	foreach(var dependent in dependents) {
-		var AstOriginal = Parse(dependent.Formula);
+		Node AstOriginal = Parse(dependent.Formula);
 		
 		// Abort if to be inlined cell is references as part of a range
 		if(CellContainedInRanges(toInlineAddress, AstOriginal)) {
@@ -164,19 +164,48 @@ public void InlineFormula(Cell toInline) {
 \end{lstlisting}
 
 \lstset{style=sharpc}
+\begin{lstlisting}[float,caption={Introduce Cell Name (simplified)}, label={lst:introducecellname}]
+public void IntroduceName(Range toName, string name) {
+		// Check if name already exists
+		if(toName.Workbook.Names.Contains(name)) {
+			// Abort
+		}
+		
+		toName.Name = name;
+		
+		var dependents = toInline.dependents;
+		if(dependents.Count == 0) {
+			// Abort, no dependants
+		}
+		
+		var AstToRepl = Parse(toName.Address);
+		var AstReplacement = Parse(name);
+		
+		foreach(var dependent in dependents) {
+			var AstOriginal = Parse(dependent.Formula);
+			
+			var AstNew = Replace(AstOriginal, AstToRepl, AstReplacement, /*...*/);
+			
+			dependent.Formula = AstNew.Print();
+		}
+		
+}
+\end{lstlisting}
+
+\lstset{style=sharpc}
 \begin{lstlisting}[float,caption={Group References Refactoring (simplified)}, label={lst:groupreferences}]
-public ParseTreeNode GroupReferences(ParseTreeNode formula) {
+public Node GroupReferences(Node formula) {
 	// Get all nodes representing varargs functions
 	var targets = formula.AllNodes().Where(IsVarargsFunction);
 	
-	foreach(var function in targets) {
+	foreach(Node function in targets) {
 		// split arguments that can be grouped from those than can't
 		var toGroupArguments = function.arguments
 			.Where(node => node.IsCellOrRange());
 		var ignoredArguments = function.arguments
 			.Where(node => !node.isCellOrRange());
 		
-		var grouped = new List<ParseTreeNode>();
+		var grouped = new List<Node>();
 		
 		// Several characteristics define whether references can be grouped
 		foreach(var sheetGroup in SplitByWorksheet(toGroupArguments)) {
@@ -192,3 +221,149 @@ public ParseTreeNode GroupReferences(ParseTreeNode formula) {
 }
 
 \end{lstlisting}
+
+\lstset{style=sharpc}
+\begin{lstlisting}[float,caption={Introduce Aggregate (simplified)}, label={lst:introduceaggregate}]
+public Node IntroduceAggregate(Node formula) {
+
+	// Precondition: formula is a function
+	if(!formula.IsFunction()) {
+		// Abort
+	}
+	
+	// Precondition: formula is an operator that has an aggregate equivalent
+	var op = formula.GetFunctionName();
+	if(!AggregateEquivalents.ContainsKey(op)) {
+		// Abort
+	}
+	
+	var arguments = new List<Node>();
+	var current = formula;
+	
+	// Continue gathering arguments while the right subtree the same operator
+	while(current.GetFunctionName() == op){
+		arguments.Add(current.LeftArgument);
+		current = current.RightArgument;
+	}
+	arguments.Add(current.RightArgument);
+	
+	return new Function(AggregateEquivalents[op], arguments);
+}
+
+private static Dictionary<string,string> AggregateEquivalents =
+	new Dictionary<string,string>() {
+		{ "+", "SUM" },
+		{ "*", "PRODUCT" },
+		{ "&", "CONCATENATE" }
+	};
+
+\end{lstlisting}
+
+\lstset{style=sharpc}
+\begin{lstlisting}[float,caption={Introduce Conditional Aggregate (simplified)}, label={lst:introduceconditionalaggregate}]
+public void IntroduceConditionalAggregate(Cell subject) {
+
+	Node function = Parse(subject.Formula);
+	
+	// Check if we can perform the refactoring
+	if(!IsTargetFunction(function)) {
+		if(function.IsFunction() && function.FunctionName == "+") {
+			// Rewrite + to SUM
+			function = IntroduceAggregate(Ast);
+		} else {
+			// Abort
+		}
+	}
+	
+	// Check if all arguments are references to a single cell
+	var arguments = function.arguments;
+	if(argument.Any(arg => !IsSingleCellReference(arg))) {
+		// Abort
+	}
+	
+	// Logic for all argument in a single row is ommited for brevity,
+	// it is identical but transposed.
+	
+	// Check if all arguments are in a single column
+	var summedColumn = arguments.First().Select(cell => cell.Column);
+	if(arguments.Select(arg => arg.Column).Any(col => col != summedColumn)) {
+		// Abort
+	}
+	
+	var summedRows = argument.Select(cell => cell.Row).ToList();
+	
+	// Get all non-empty columns in the worksheet
+	var columns = GetNonEmptyColumns(subject.Worksheet);
+	
+	// Find a functional determiner
+	// See the listing on the next page for the code of FindDeterminerColumn
+	var determiner = FindDeterminerColumn(columns, summedRows);
+
+	if(determiner == null) {
+		// Abort, there are no candidate columns
+	}
+	
+	// Create the SUMIF(Column, Value, SummedColumn)
+	var AstNew = new Function(function.FunctionName + "IF", new List<Node>() {
+			new ColumnRange(determiner.Item1),
+			new AstString(determiner.Item2),
+			new ColumnRange(summedColumn)
+		}
+	);
+	
+	subject.Formula = AstNew.Print();
+}
+\end{lstlisting}
+
+\begin{lstlisting}[float,caption={FindDeterminerColumn method}, label={lst:finddeterminercolumn}]
+private static Tuple<string,string> FindDeterminerColumn(IEnumerable<Column> columns, IEnumerable<Row> summedRows) {
+	// Return the first column that is a determiner of the summed column
+	return columns.Select(column => {
+		// Check if there is a value that is the same in all
+		// the corresponding rows of the column
+		string candidateValue = column[summedRows.First()].Value;
+		
+		if(summedRows.Any(row => column[row.ID].Value != candidateValue)) {
+			return null;
+		}
+		
+		// Value is the same in all corresponding rows
+		// Now check if it is different in all other rows
+		if(column.rows.Except(summedRows)
+			.Any(cell => cell.Value == candidateValue)) {
+			return null;
+		}
+		
+		// We found a candidate column
+		return Tuple.Create(column.ID, candidateValue);
+	})
+	.Where(found => found != null)
+	.FirstOrDefault();
+}
+
+
+\end{lstlisting}
+
+
+%// Find a functional determiner column if there is one
+%foreach(var column in columns) {
+%	string candidateValue = null;
+%	// Check if there is a value that is the same in all rows
+%	foreach(var row in summedRows) {
+%		if(candidateValue == null) {
+%			candidateValue = column[row]; 
+%		} elseif (column[row] != candidateValue) {
+%		candidateValue = null;
+%		break;
+%	}
+%}
+%if(candidateValue != null) {
+%	// Check if that value does not occur in another row
+%	if(!column.rows.Except(summedRows).Any(val => val == candidateValue)) {
+%		// We found a column that can be used
+%		FDcolumn = column.ID;
+%		FDvalue = candidateValue;
+%		break;
+%	}
+%}
+%}

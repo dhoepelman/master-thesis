@@ -1,3 +1,5 @@
+% !TeX root = ../thesis.tex
+
 \chapter{Refactoring spreadsheets}
 \label{chapter:implementingrefactorings}
 
@@ -131,7 +133,7 @@ In this case if \f{=A1} would be extracted to \f{B1} the original cell would bec
 This could be repeated endlessly, similarly to how one could always extract a method that only consists of a call to another method.
 Whether it is a good thing to perform this refactoring is dubious, but BumbleBee relies on the user to make this assessment.
 
-\subsection{Improvements over RefBook \rf{Extract row or column} and \rf{Extract Literal}}
+\subsection{Improvements over RefBook's \rf{Extract row or column} and \rf{Extract Literal}}
 \label{subsubsec:improvementsextractformula}
 
 Two specialized versions of this refactorings where previously described by Bamade and Dig \cite{badame2012refactoring} and implemented in their RefBook tool.
@@ -180,6 +182,7 @@ If one of the selected cells is referenced as part of a range, the user gets the
 \end{figure}
 
 \subsection{Implementation}
+\label{subsec:inlineformulaimplementation}
 
 If a formula cell $D$ contains a reference to cell $P$, $D$ is called a dependent of $P$, and $P$ is called a precedent of $D$.
 This refactoring works by first collecting all dependents of the to be inlined cell.
@@ -200,6 +203,39 @@ As described in the introduction of this section, \rf{Inline Formula} is applica
 For speed purposed however, the BumbleBee refactoring context menu only check whether the cell has any dependents.
 Doing the full check would introduce significant delay every time the user would right click.
 
+\section{\rf{Introduce Cell Name}}
+
+As noted in Chapter \ref{chapter:anatomy}, a cell or range can have a user defined name attached to it.
+In formulas the user can then reference that cell or range by name instead of its location.
+
+This is the motivation for the \rf{Introduce Cell Name} refactoring which was defined by Badame and Dig \cite{badame2012refactoring}.
+With this refactoring, a user can define a name for a cell, and all references to that cell will be replaced the name.
+
+BumbleBee re-implements this refactoring, with as an additional functionality to name a range of cells and replace all references to that range with the name.
+
+\subsection{User Interface}
+
+Excel has a \emph{Defined Name} option in cell the context-menu, but it lacks the functionality to also perform this refactoring.
+The refactoring context-menu for this option closely mirrors the Excel user interface, and is called \emph{Define and Use Name}.
+After the user clicks it, he enters a new name in a dialog box and the refactoring is performed.
+
+\subsection{Implementation}
+
+This implementation also uses the notion of dependents and precedence, which is explained in Section \ref{subsec:inlineformulaimplementation}.
+
+First the cell or range is given the name supplied by the user.
+Then in every dependent a reference to the now named cell is replaced by its name, using the same AST transformation used by \rf{Extract Formula} as described in Section \ref{subsec:astreplacementtransformation}.
+
+The C\# code for this spreadsheet refactoring can be found in Listing \ref{lst:introducecellname}.
+
+\subsection{Detection of applicability}
+
+This refactoring shares the detection of applicability with \rf{Inline Formula}: if the cell or range is referenced anywhere in the spreadsheet 
+
+\subsection{Improvements over RefBook's \rf{Introduce Cell Name}}
+
+BumbleBee's version incorporates two small improvements over RefBook's refactoring: it not only works on cells, but also on ranges.
+
 \section{\rf{Group References}}
 
 In the spreadsheet formula language, some built-in functions have the ability to accept a variable number of arguments, most prominently \f{SUM}, the most commonly used function \cite{hermans2014enron}.
@@ -208,11 +244,11 @@ The \rf{Group References} was defined but not implemented by Hermans et. al \cit
 
 \subsection{User Interface}
 
-\todo{Hmm, deze stuktjes worden erg repetaties/oninformatief. Misschien bij introductie zeggen dat dit de standaard manier is en alleen waar nodig een subsectie over maken.}
-
 The refactoring is a one-click refactoring that is activated from the cell context menu, no additional user input is needed.
 
-\subsection{Grouping algorithm}
+\subsection{Implementation}
+
+\subsubsection{Grouping algorithm}
 
 In order to find the best grouping we have to solve the following problem: given a sheet with a certain set of cells selected, what are the ranges that select exactly those cells and do so with a minimum amount of ranges?
 
@@ -224,7 +260,7 @@ This makes using a simple heuristic attractive since it will probably be good en
 However, rather than implementing a heuristic ourselves, this is currently delegated to Excel which contains this functionality.
 The algorithm Excel uses for this is unknown.
 
-\subsection{Implementation}
+\subsubsection{Spreadsheet Refactoring}
 
 The implementation traverses the formula AST, and for every function with a variable number of arguments it encounters groups it references by excluding all non-references (e.g. constants) and sending these to Excel to be grouped.
 The function arguments then are replaced by grouped references and the AST is printed back to the formula cell.
@@ -238,48 +274,128 @@ The C\# code for this refactoring can be found in Listing \ref{lst:groupreferenc
 
 This refactoring will be available to the user if the formula contains 2 or more references.
 
-\section{\rf{Replace Awkward Formula}}
+\section{\rf{Introduce Aggregate}}
 
 In the spreadsheet formula language, some binary operators have an equivalent aggregate function which accepts any number of arguments: \f{+} correspons to \f{SUM}, \f{*} to \f{PRODUCT} and \f{\&} to \f{CONCATENATE}.
 
 Thus a formula like \f{=A1+A2+A3+A4} can be rewritten to \f{=SUM(A1,A2,A3,A4)}, which is what the \rf{Replace Awkward Formula} refactoring, defined by Badame and Dig \cite{badame2012refactoring}, does.
 The refactoring is especially useful when combined with the \rf{group references} refactoring, which rewrites it to \f{=SUM(A1:A4)}.
 
+The author proposes an alternate name for this refactoring: \rf{Introduce Aggregate} for two reasons.
+Firstly \rf{Replace Awkward Formula} does not describe very well what the refactoring does, as more types of ``Awkward Formulas'' could be thought of which cannot be handled.
+For example a formula with multiple nested \f{IF}s like \f{=IF(IF(IF(\ldots),FALSE,TRUE),A1,B1)} could be described as ``awkward'', but this refactoring does not replace it.
+Secondly this keeps the name consistent with the \rf{Introduce Conditional Aggregate} refactoring.
 
 \subsection{User Interface}
 
-In the user interface, this refactoring is combined with the \rf{Introduce Conditional Aggregate} as a \emph{Introduce (Conditional) Aggregate} function.
 This refactoring is a one-click refactoring that is activated from the cell context menu, no additional user input is needed.
 In the user interface it will always transparently be followed by the \rf{Group References} refactoring.
 
 \subsection{Implementation}
 
+The implementation traverses the formula AST until it encounters the first operator it can refactor.
+The left subtree then gets added to a list of arguments for the aggregate function, and the right subtree gets checked to see if it corresponds to the same operator.
+If it is, the process gets repeated until a non-operator right subtree is encountered, at which point that subtree is the final addition to the argument list.
+
+The C\# code for this refactoring can be found in listing \ref{lst:introduceaggregate}.
+
 \subsection{Detecting applicability}
 
-This refactoring will only be offered to the user on a formula cell consisting of one of the applicable operators (\f{+},\f{*} or \f{\&})
+This refactoring will only be offered to the user if the top layer on a formula cell consisting of one of the applicable operators (\f{+},\f{*} or \f{\&})
+
+\subsection{Improvements over RefBook's \rf{Replace Awkward Formula}}
+
+The concept of the \rf{Introduce Aggregate}/\rf{Replace Awkward Formula} refactoring is not complicated, and therefore not many improvements can be made.
+However, BumbleBee does improve over RefBook in several ways related to this refactoring.
+
+A first improvement in BumbleBee's implementation comes through the underlying parser: the RefBooks parser does not take operator precedence into account, and therefore a formula like \f{=1 + 2 * 3 + 4} would not be fully refactored by RefBook.
+
+A second improvement comes by tying this refactoring into two other refactorings through the user interface.
+Combining this refactoring with \rf{Group References} allows a formula like \f{=A1+A2+A3+A4} to be rewritten into \f{=SUM(A1:A4)} instead of just \f{=SUM(A1,A2,A3,A4)}.
+Combining this refactoring with \rf{Introduce Conditional Aggregate} when the spreadsheet data allows for this enables a formula like \f{=B12+B24+B36} to be rewritten into \f{=SUMIF("2015", B:B)} instead of just \f{=SUM(B12,B24,B36)}.
 
 \section{\rf{Introduce Conditional Aggregate}}
 
-The formula language also contains the built-in conditional aggregate functions \f{SUMIF}, \f{AVERAGEIF} and \f{COUNTIF}.
-These functions take two mandatory arguments: a range and a condition.
-The function then performs its operation on every item that meets the condition.
-In \f{SUMIF} and \f{AVERAGIF} this is often combined with the optional third argument, another range.
-If this argument is supplied the first range is tested 
+\begin{figure}
+\centering
+\includegraphics{implementation/aggregate/sumifexample}
+\caption{An example spreadsheet which uses \f{SUMIF}.}
+\label{fig:sumifexample}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[height=8cm]{implementation/aggregate/condaggrexample}
+	\caption{An example where \f{SUMIF} could be used, but is not.}
+	\label{fig:sumifexample}
+\end{figure}
+
+Three aggregate functions also have conditional counterparts: \f{SUMIF}, \f{AVERAGEIF} and \f{COUNTIF}.
+These functions take two mandatory arguments: \textbf{check_range}, \textbf{condition} and the optional \textbf{operating_range}.
+If \textbf{operating_range} is absent it equals \textbf{check_range}, with \f{COUNTIF} not supporting \textbf{operating_range} at all.
+These functions evaluate the \textbf{condition} on every cell of \textbf{operating_range}, and if it is met the function's operation is performed on the corresponding cell from \textbf{operating_range}.
+
+Examples make this clearer: \f{=SUMIF(A:A, "> 10")} sums all cells in column \f{A} that contain a value larger than \f{10}, and \f{=SUMIF(A:A, E2, C:C)} sums the cell from column \f{C} of every row where the cell value from column \f{A} equals \f{E2} , as illustrated in Figure \ref{fig:sumifexample}.
+
+The conditional aggregate functions are powerful tools, but they are not always used. 
+Instead what the is often encountered is the ``Manual'' selection of the correct cells and summing these, as illustrated in Figure \ref{fig:condaggregateexample}.
+When combining this refactoring with the \rf{Introduce Aggregate} refactoring we can rewrite \f{=B3+B7+B11} to \f{=SUM(B3,B7,B11)}, and that to \f{=SUMIF(A:A, "2015", B:B)}.
+Because this was the most common pattern we will focus on \f{SUM} and \f{SUMIF}, but the refactoring works identical for \f{COUNT} to \f{COUNTIF} and \f{AVERAGE} to \f{AVERAGEIF}.
 
 \subsection{User Interface}
 
-\section{\rf{Fixate References}}
+This refactoring shares a context menu entry with \rf{Introduce Aggregate} as \emph{Introduce (Conditional) Aggregate}.
 
-\todo{Unsure of ik deze nog wil implementeren, maar lijkt zeer laaghangend fruit.}
+\begin{figure}
+	\centering
+\begin{subfigure}[t]{0.25\textwidth}
+	\includegraphics[width=\textwidth]{implementation/aggregate/scenario1}
+	\caption{Supported: \newline Column \f{A} uniquely determines which values are summed.}
+	\label{fig:introcondaggrScenario1}
+\end{subfigure}
+\hspace{0.05\textwidth}
+\begin{subfigure}[t]{0.25\textwidth}
+	\includegraphics[width=\textwidth]{implementation/aggregate/scenario2}
+	\caption{Unsupported: \newline No column determines which values are summed.}
+	\label{fig:introcondaggrScenario2}
+\end{subfigure}
+\hspace{0.05\textwidth}
+\begin{subfigure}[t]{0.25\textwidth}
+	\includegraphics[width=\textwidth]{implementation/aggregate/scenario3}
+	\caption{Unsupported: \newline Column \f{A} does not determine which values are summed, because \f{B5} is not summed.}
+	\label{fig:introcondaggrScenario3}
+\end{subfigure}
+\caption{Example scenarios of \rf{Introduce Conditional Aggregate}}
+\label{fig:introcondaggrScenario}
+\end{figure}
 
-The Fixate References is similar to the \rf{Make Cell Constant} refactoring described by Badame \cite{badame2012refactoring}.
-Maar beter want: user kan zelf selecteren welke cellen wel/niet absolute.
+\subsection{Implementation}
 
-"Fixate references" beschrijft 100x beter wat de refactoring doet dan "Make cell constant". "Make cell constant" zou eerder impliceren dat je het resultaat van de cell berekening neemt en dat opslaat i.p.v. de formula. Wat trouwens ook weer een potentiele refactoring is, maar misschien een beetje een anti-pattern in excel.
+In order to see if a \f{SUM} can be rewritten to a \f{SUMIF}, we must determine if there is another range of cells with a value that uniquely identifies the summed cells.
+In relational database theory, this is a concept known as a \emph{functional dependency}.
 
-\section{\rf{Introduce name}}
+In a relational database, it is usually left to the developer to indicate that a column is functional dependent on another through defining which column(s) are keys, and no efficient algorithm for automatically determining functional dependencies is known to the author.
+Furthermore, while in a relational database data is associated with a schema that describes it layout, in Excel the layout of the data is free-form which complicates the issue.
 
-\todo{Kandidaat voor implementatie, meer laaghanged fruit.}
+Because of these reasons, the author has decided to only support a very simple but useful and likely scenario: the summed values are in a single row- or column, and it needs to be determined if there is a single row or column that has a unique identical value in it which can serve as the condition for \f{SUMIF}.
+Figure \ref{fig:introcondaggrScenario1} shows such a scenario: column \f{A} uniquely determines the summed values and the formula can thus be rewritten to \f{=SUMIF(A:A, "A", B:B)}.
+Figure \ref{fig:introcondaggrScenario2} shows a case where this is not possible: \f{A4} differs from \f{A1} and \f{A2} so there is no column that determines the summed values.
+Figure \ref{fig:introcondaggrScenario2} shows another impossible case: here column \f{A} determines the summed values, but there is an additional row with an identical value in cell \f{A5} and thus column \f{A} does not \emph{uniquely} determine the summed values.
+Additionally, the refactoring is not supported if the summed cells are not in a single row or column.
 
-Cell (of range?) een naam geven, overal waar die naar gereferenced wordt vervangen door cell naam.
-Of gelijk bij extract formula intregrereren!
+The C\# code that performs the refactoring if the above conditions are met can be found in Listing \ref{lst:introduceconditionalaggregate}.
+
+\subsection{Detection of applicability}
+
+This refactoring is activated only as part of the \rf{Introduce Aggregate} refactoring, and therefor shares its detection of applicability.
+Any further detection is performed within the code that implements the refactoring itself.
+
+%\section{\rf{Fixate References}}
+%
+%\todo{Unsure of ik deze nog wil implementeren, maar lijkt zeer laaghangend fruit.}
+%
+%The Fixate References is similar to the \rf{Make Cell Constant} refactoring described by Badame \cite{badame2012refactoring}.
+%Maar beter want: user kan zelf selecteren welke cellen wel/niet absolute.
+%
+%"Fixate references" beschrijft 100x beter wat de refactoring doet dan "Make cell constant". "Make cell constant" zou eerder impliceren dat je het resultaat van de cell berekening neemt en dat opslaat i.p.v. de formula. Wat trouwens ook weer een potentiele refactoring is, maar misschien een beetje een anti-pattern in excel.
+%
