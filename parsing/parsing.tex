@@ -43,13 +43,13 @@ The end result of this effort is an independent, open-source parser for Excel fo
 
 \section{Improvements over existing parser}
 
-\todo{Naar iets later in het hoofdstuk? Naar evaluatie?}
-
 The improvements XLParser made over the existing parser generally fall into one of the following categories:
 
 \subsection{More frequent rejecting of invalid formulas}
 
-XLParser is often less forgiving than the previous parser,  
+XLParser is often less forgiving than the previous parser, and rejects more types of invalid formulas.
+This is most prominently noticable in reference expressions, becaues the old parser does not differentiate between reference and non-reference expressions.
+Therefore formulas like \f{=1 1} and \f{=LARGE((1,2,3),4)} are considered valid, while they are not and would be rejected by Excel.
 
 \subsection{Broader parsing of valid formulas}
 
