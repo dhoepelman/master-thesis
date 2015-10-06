@@ -1,0 +1,28 @@
+% !TeX root = ../thesis.tex
+
+\chapter{Previous and related work}
+\label{chapter:previouswork}
+
+\section{Refactoring}
+
+Refactoring is ``the process of changing a software system in such a way that it does not alter the external behaviour of the code, yet improves its internal structure'' \ref{opdyke1992refactoring}.
+The process is probably as old as programming itself, and was known since at least 1986 as ``Restructuring'' \ref{arnold1986introduction}.
+The term ``Refactoring'' was coined by Opdyke in 1992 \ref{opdyke1992refactoring} and originally specifically meant the restructuring of Object Oriented Programs. 
+Over time the specific the popularity of both the practice and the term ``Refactoring'' increased, greatly helped by Fowler's 1999 ``Refactoring: improving the design of existing code'' \cite{fowler1999refactoring} and the rise of more flexible ``Agile'' software development.
+Currently, all major programming Integrated Development Environments like Visual Studio, Eclipse, Netbeans and IntelliJ include support for automated software refactorings.
+
+\section{Refactorings provided by excel}
+
+Several useful refactorings one could think of are already provided by Excel, although Excel does not call them refactorings.
+
+Firstly the cut, copy and paste functionality of Excel is very interesting.
+If a user cuts a selection of cells and pastes it elsewhere, all references to those cells made in unselected will be moved as well.
+For example if a user cut-pastes cell \f{A1} to location \f{C3}, the formula \f{=A1} will be changed to \f{=C3} in other cells, even though they were not selected by the user.
+This is very similar to the \rf{Move Method} \cite{fowler1999refactoring} refactoring, because not only are the cells (method contents) themselves moved, references to them (call sites) are a adjusted for the new location as well.
+Another option Excel provides when copy-pasting is ``Paste Values'', with which a formula is replaced by its evaluated value and remains constant from that point on.
+
+Excel having built-in support for these refactorings shows that there is a need among spreadsheet users to refactor their spreadsheets, and that advanced spreadsheet users are likely already comfortable with the concept of refactoring, albeit it not by name.
+
+\section{Spreadsheet refactoring}
+
+\section{The BumbleBee spreadsheet refactoring suite}

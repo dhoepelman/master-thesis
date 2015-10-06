@@ -45,8 +45,10 @@ The parser was tested on over a million formulas and failed to parse merely two 
 Details of this parser are published by Aivaloglou, Hoepelman and Hermans \cite{xlparser}.
 This paper is partially re-used in this thesis report.
 
-The second contribution is an improved version of BumbleBee, which implements the refactorings described in Chapter \ref{chapter:implementingrefactorings}: \rf{Extract Formula}, \rf{Inline Formula}, \rf{Group References} and \rf{Introduce Conditional Aggregate}.
-BumbleBee is also available online\footnote{TODO: URL Bumblebee.}.
+The second contribution is an improved version of BumbleBee\footnote{\todo{URL Bumblebee when released.}}, which implements the refactorings described in Chapter \ref{chapter:implementingrefactorings}: \nameref{refac:extractformula}, \nameref{refac:inlineformula}, \nameref{refac:introducecellname}, \nameref{refac:groupreferences}, \nameref{refac:introduceaggregate} and \nameref{refac:introduceconditionalaggregate}.
+
+
+Of these refactorings, \rf{Inline Formula}, \rf{Group References} and \rf{Introduce Conditional Aggregate} where not implemented in any previous work known to the author, and \rf{Extract Formula} and \rf{Introduce Aggregate} offer significant improvements over previous implementations.
 
 \subsection{Attribution}
 
@@ -54,7 +56,7 @@ This thesis was performed at the TU Delft Spreadsheet Lab, and is partially base
 During this thesis the Excel Formula parser XLParser was developed, and a paper describing it was accepted into the 15th IEEE International Working Conference on Source Code Analysis and Manipulation (SCAM 2015): \emph{A Grammar for Spreadsheet Formulas Evaluated on Two Large Datasets} by Efthimia Aivaloglou, David Hoepelman and Felienne Hermans \cite{xlparser}.
 This paper is attached verbatim as published in appendix \ref{appendix:xlparser}.
 Chapter \ref{chapter:anatomy} is based on ection \rom{2}, and was primarily written by the thesis author.
-Chapter \ref{chapter:parsing} is an updated and extended version of Section \rom{3}, and was primarily written by the thesis author with contributions from Efthimia Aivaloglou, except for section \ref{sec:parserevaluation}, which is a summary of Section \rom{4} of the paper which was primarily written by Efthimia Aivaloglou, who also performed the evaluation. 
+Chapter \ref{chapter:parsing} is an updated and extended version of Section \rom{3}, and was primarily written by the thesis author with contributions from Efthimia Aivaloglou, except for Chapter \ref{chapter:evaluation}, which incorporates parts of Section \rom{4} of the paper which was primarily written by Efthimia Aivaloglou, who also performed the evaluation. 
 
 The grammar implementation (XLParser) was primarily done by the thesis author, but the implementation is based on the previous (un-named) parser which was primarily developed by Efthimia Aivalgoglou and Felienne Hermans.
 The spreadsheet scantool used to evaluate XLParser, which extracts formulas from spreadsheet files, was developed as part of Infotron B.V.\footnote{\url{http://www.infotron.nl/}}, with many authors. The thesis author did not contribute to this tool.

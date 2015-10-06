@@ -28,11 +28,8 @@ While there are several non-trivial workarounds for this involving a manually cr
 In an industrial-strength application this functionality would be essential.
 As long as Excel keeps this limitation this will always be a severe limitation to any tool that automatically changes spreadsheet files for the user, thus Microsoft could modify Excel to facilitate these and similar Add-Ins. \fw
 
-\section{Refactorings provided by excel}
-
-Several useful refactorings one could think of are already provided by Excel, although Excel does not call them refactorings.
-
 \section{\rf{Extract formula}}
+\label{refac:extractformula}
 
 The goal of the \rf{extract formula} refactoring is to move part of a formula expression, a sub-formula, to another cell, which has the following potential use cases:
 
@@ -156,6 +153,7 @@ Furthermore in addition to extracting to a cell neighboring the original formula
 This is very useful to remove duplication and makes the refactoring more universal by merging the \rf{extract literal} refactoring into it.
 
 \section{\rf{Inline Formula}}
+\label{refac:inlineformula}
 
 The goal of the \rf{Inline Formula} refactoring is to replace all references to a cell with its contents and delete the original cell, and is therefore the inverse of the \rf{Extract Formula} refactoring.
 The main potential use case for this formula is when the contents of a cell are clearer or just as clear as a cell reference.
@@ -204,6 +202,7 @@ For speed purposed however, the BumbleBee refactoring context menu only check wh
 Doing the full check would introduce significant delay every time the user would right click.
 
 \section{\rf{Introduce Cell Name}}
+\label{refac:introducecellname}
 
 As noted in Chapter \ref{chapter:anatomy}, a cell or range can have a user defined name attached to it.
 In formulas the user can then reference that cell or range by name instead of its location.
@@ -234,9 +233,10 @@ This refactoring shares the detection of applicability with \rf{Inline Formula}:
 
 \subsection{Improvements over RefBook's \rf{Introduce Cell Name}}
 
-BumbleBee's version incorporates two small improvements over RefBook's refactoring: it not only works on cells, but also on ranges.
+BumbleBee's version incorporates a small improvements over RefBook's refactoring: it not only works on cells, but also on ranges.
 
 \section{\rf{Group References}}
+\label{refac:groupreferences}
 
 In the spreadsheet formula language, some built-in functions have the ability to accept a variable number of arguments, most prominently \f{SUM}, the most commonly used function \cite{hermans2014enron}.
 These functions also accept ranges, and thus the formulas \f{=SUM(A1,A2,A3,A4)} and \f{=SUM(A1:A4)} are equivalent.
@@ -275,6 +275,7 @@ The C\# code for this refactoring can be found in Listing \ref{lst:groupreferenc
 This refactoring will be available to the user if the formula contains 2 or more references.
 
 \section{\rf{Introduce Aggregate}}
+\label{refac:introduceaggregate}
 
 In the spreadsheet formula language, some binary operators have an equivalent aggregate function which accepts any number of arguments: \f{+} correspons to \f{SUM}, \f{*} to \f{PRODUCT} and \f{\&} to \f{CONCATENATE}.
 
@@ -315,6 +316,7 @@ Combining this refactoring with \rf{Group References} allows a formula like \f{=
 Combining this refactoring with \rf{Introduce Conditional Aggregate} when the spreadsheet data allows for this enables a formula like \f{=B12+B24+B36} to be rewritten into \f{=SUMIF("2015", B:B)} instead of just \f{=SUM(B12,B24,B36)}.
 
 \section{\rf{Introduce Conditional Aggregate}}
+\label{refac:introduceconditionalaggregate}
 
 \begin{figure}
 \centering
