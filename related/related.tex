@@ -8,7 +8,7 @@
 Refactoring is ``the process of changing a software system in such a way that it does not alter the external behaviour of the code, yet improves its internal structure'' \ref{opdyke1992refactoring}.
 The process is probably as old as programming itself, and was known since at least 1986 as ``Restructuring'' \ref{arnold1986introduction}.
 The term ``Refactoring'' was coined by Opdyke in 1992 \ref{opdyke1992refactoring} and originally specifically meant the restructuring of Object Oriented Programs. 
-Over time the specific the popularity of both the practice and the term ``Refactoring'' increased, greatly helped by Fowler's 1999 ``Refactoring: improving the design of existing code'' \cite{fowler1999refactoring} and the rise of more flexible ``Agile'' software development.
+Over time the popularity of both the practice and the term ``Refactoring'' increased, greatly helped by Fowler's 1999 ``Refactoring: improving the design of existing code'' \cite{fowler1999refactoring} and the rise of more flexible ``Agile'' software development.
 Currently, all major programming Integrated Development Environments like Visual Studio, Eclipse, Netbeans and IntelliJ include support for automated software refactorings.
 
 \section{Refactorings provided by excel}
@@ -25,4 +25,46 @@ Excel having built-in support for these refactorings shows that there is a need 
 
 \section{Spreadsheet refactoring}
 
-\section{The BumbleBee spreadsheet refactoring suite}
+In addition to Excel, two commercial Add-Ins are known to the author that implement refactorings.
+The Power Utility Pak \cite{PuPv7} contains a \rf{Unapply Names} refactoring, which changes a named range to its location, e.g. \f{=TAX_RATE*100} to \f{=\$A\$1*100}.
+This is the exact inverse of the \nameref{refac:introducecellname} refactoring defined in Section \ref{refac:introducecellname}.
+It also contains a ``Error Condition Wizard'', which is very similar in purpose to the \rf{Guard Call} refactoring defined by Badame and Dig \cite{badame2012refactoring}.
+The ASAP Utilities for Excel \cite{ASAP5} contains a ``Change formula reference style'' function, which overlaps with the \rf{Make Cell Constant Refactoring} defined by Badame and Dig \cite{badame2012refactoring}, and also contains its own version of \rf{Unapply Names}.
+The algorithms used and popularity of these Add-Ins is not know, but their existence is additional indication that advanced spreadsheets users recognize the usefulness of refactoring spreadsheets.
+
+The first Excel Add-In specifically developed for refactoring was presented by Badame and Dig and is called RefBook \cite{badame2012refactoring}.
+In this tool, seven refactorings are presented, four of which have been re-implemented and improved in this thesis in Chapter \ref{chapter:implementingrefactorings}.
+
+Hermans et. al \cite{hermans2014detecting} present four refactorings designed to each solve a specific spreadsheet smell, which is an indicator that something might be wrong with the spreadsheet.
+\rf{Extract (Common) Subformula} is very similar to Refbook's \rf{Extract Row or Column}, and is implemented in this thesis \nameref{refac:extractformula}.
+The proposed \nameref{refac:groupreferences} refactoring is implemented in this thesis, as is the proposed \rf{Merge Formulas} refactoring under the name \nameref{refac:inlineformula}.
+
+Hermans and Dig \cite{hermans2014bumblebee} developed a refactoring tool called ``BumbleBee'' for Excel which operates on a different principle.
+Instead of implementing a fixed set of refactorings, it works on the basis of so-called ``transformation rules'' which consist of a two formulas with extended syntax introducing placeholders for certain constructs such as formulas, cells or ranges.
+For example the transformation rule \f{=IF($F_1$>$F_2$, $F_1$, $F_2$)} $\leftrightarrow$ \f{MIN($F_1$,$F_2$)} indicates that these two formulas are equivalent to each other and can be transformed into each other.
+While this approach can implement a number of refactorings as long as they are contained within one cell, it can only work with the information from within one formula and can thus only be used to implement intra-formula refactorings, refactorings contained within one formula.
+This thesis was started as an attempt to introduce BumbleBee with inter-formula refactorings, refactorings which interact with more than one formula.
+
+\section{Parsing Spreadsheet Formulas}
+
+All of the above mentioned tools above process Excel Formulas in one way or another.
+However, all of them suffer from one or more of the following problems, which was the motivation to improve the previously proprietary parser used by BumbleBee and release this as open-source, see Chapter \ref{chapter:parsing}.
+
+\subsubsection{Parser is proprietary}
+
+The most obvious case from the Microsoft Excel formula parser itself, which is not available for usages by external programs or Add-Ins.
+However, several research projects also do not make available their parser or grammar used, which is the case with Baryowy's et. al CheckCell \cite{barowy2014checkcell} and all of the work by Cunha et. al \cite{cunha2010automatically, cunha2012towards, cunha2012mdsheet}.
+
+\subsubsection{Parser is not advanced enough for refactoring purposes}
+
+While several grammars are available online \cite{ewbi,fishbrain}, and a grammar is published as part of RefBook \cite{badame2012refactoring}, all where found to contain some errors, especially in the areas of operator precedence, reference expressions or references to sheets or files.
+These errors were deemed crucial to solve by the thesis Author, as making errors in parsing has a high chance in producing errors, and thus violating the user expectation that a refactoring will not introduce errors.
+
+\subsubsection{Parser produces unsuitable output}
+
+Several open-source programs can process Excel formulas in one way or another, however, they do not produce an Abstract Syntax Tree as output, but rather a stack of tokens in Reverse Polish notation (RPN token stack).
+A RPN token stack is an excellent intermediate format if one only wishes to evaluate the formula, but it is less suitable for manipulation.
+It is no coincidence that all open-source software known to the author uses this format, in addition to easy evaluation, this is how formulas are stored in the format of Excel 2003 and lower, which is still widely used.
+Additionally, none of the software known to the author is written in a .NET language, which is needed to build an Excel add-in.
+
+While it would be possible to port an existing implementation to a .NET language and make it produce an AST instead of a RPN token stack, this likely would have been more difficult than improving the existing BumbleBee parser, which was done in this thesis.
