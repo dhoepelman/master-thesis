@@ -60,11 +60,9 @@ However, several research projects also do not make available their parser or gr
 While several grammars are available online \cite{ewbi,fishbrain}, and a grammar is published as part of RefBook \cite{badame2012refactoring}, all where found to contain some errors, especially in the areas of operator precedence, reference expressions or references to sheets or files.
 These errors were deemed crucial to solve by the thesis Author, as making errors in parsing has a high chance in producing errors, and thus violating the user expectation that a refactoring will not introduce errors.
 
-\subsubsection{Parser produces unsuitable output}
+\subsubsection{Parser does integrate well within target environment}
 
-Several open-source programs can process Excel formulas in one way or another, however, they do not produce an Abstract Syntax Tree as output, but rather a stack of tokens in Reverse Polish notation (RPN token stack).
-A RPN token stack is an excellent intermediate format if one only wishes to evaluate the formula, but it is less suitable for manipulation.
-It is no coincidence that all open-source software known to the author uses this format, in addition to easy evaluation, this is how formulas are stored in the format of Excel 2003 and lower, which is still widely used.
-Additionally, none of the software known to the author is written in a .NET language, which is needed to build an Excel add-in.
+Several open-source programs \cite{libreoffice,calligra} can process Excel formulas in one way or another, however, none of these were written in a .NET language, a requirement to use the parser in an Excel add-in.
+Furthermore, these parsers are often deeply tied into the product, and produce a stack of tokens in Reverse Polish notation (RPN token stack) as output instead of an Abstract Syntax Tree because this was required for older version of the Excel file format.
 
-While it would be possible to port an existing implementation to a .NET language and make it produce an AST instead of a RPN token stack, this likely would have been more difficult than improving the existing BumbleBee parser, which was done in this thesis.
+While it would be possible to decouple the parser from an existing product, port it to a .NET language and make it produce an AST instead of a RPN token stack, this likely would have been more difficult than improving the existing parser, which was done for this thesis.
