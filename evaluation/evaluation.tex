@@ -27,3 +27,27 @@ These are examples of unions without brackets which the parser cannot parse due 
 
 \subsection{Analysis}
 
+\begin{table}
+	\centering
+	%\resizebox{0.5\textwidth}{!}{
+	%\input{evaluation/table-occurences}
+	%}
+	\todo{Tabel hier plaatsen zonder dat het de hele pagina opeet}
+	\caption{Occurrence frequency of tokens and production rules in all parsed formulas.}
+	\label{table:occurences}
+\end{table}
+
+For all the formulas extracted from the Enron and EUSES datasets a count was performed of which tokens (terminals, leaf nodes of the parse tree) and which production rules (non-terminal, internal nodes of the parse tree) were used when parsing the formula.
+
+At least one reference was used in 99.2\% of the formulas, which shows that references are an integral part of spreadsheets.
+Arithmetic operators are also very common (59.77\%), as is the use of built-in excel functions (35.82\%).
+
+Perhaps more interesting are the less commonly used grammatical constructs: Empty arguments, Dynamic Data Exchange calls, Intersections and Unions, Multiple Sheets, Reserved Names and constant arrays.
+All of these constructs are used in less than 0.05\% of all formulas.
+
+The rarity of empty argument, DDE calls, reserved names and multiple sheets can be expected because of their very niche uses.
+Intersections, unions and constant arrays are powerful constructs, but apparently users either do not know about these, prefer to use other constructs instead or their usage is too niche.
+
+Interestingly, some of these constructs are quite hard to parse.
+Especially unions and intersection complicate the grammar because of their curious syntax.
+Because these constructs are so rare this means they are prime candidates leave out of the grammar if simplification is desired.
