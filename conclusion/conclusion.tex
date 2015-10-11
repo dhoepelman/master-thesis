@@ -1,0 +1,20 @@
+% !TeX root = ../thesis.tex
+% !TeX spellcheck = en_US
+
+\chapter{Conclusion}
+
+While extending an existing spreadsheet refactoring tool it was found that the existing spreadsheet formula parser was insufficient to support refactoring without the risk of introducing errors.
+To solve this problem, the existing parser was improved, named XLParser and publicly released as open-source\footnote{\url{https://github.com/spreadsheetlab/XLParser}}.
+The parser is geared towards spreadsheet research and therefore is highly compatible with the official language and produces parse trees which are suitable for further analysis and manipulation.
+A corresponding EBNF grammar is presented in this thesis.
+This parser was used to implement six refactorings, three of which were not implemented before and two of which improve upon previous implementations.
+
+\subsubsection{Future Work}
+
+There is still a lot of space for progress in the spreadsheet refactoring field.
+Of particular interest is are the similarities between relational databases and spreadsheets, both containing data in a tabular format which can be linked through joins and lookup function respectively.
+This implies certain database design principles such as normalization might be applicable to spreadsheets.
+
+Another area of interest is the user interface for spreadsheet refactoring software.
+The refactorings in this thesis are already disabled and enabled based on what the user selects to refactor, but it would be even better if refactorings were pro-actively suggested. 
+Unfortunately the most prominent spreadsheet program currently used, Microsoft Excel, provides a large barrier for this as it severely restricts what Add-Ins can do.
