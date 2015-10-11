@@ -240,7 +240,7 @@ public Node IntroduceAggregate(Node formula) {
 	var arguments = new List<Node>();
 	var current = formula;
 	
-	// Continue gathering arguments while the right subtree the same operator
+	// Gather arguments while the right subtree remains the same operator
 	while(current.GetFunctionName() == op){
 		arguments.Add(current.LeftArgument);
 		current = current.RightArgument;

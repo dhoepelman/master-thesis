@@ -1,4 +1,53 @@
+% !TeX root = ../thesis.tex
+
 \chapter{Evaluation}
 \label{chapter:evaluation}
 
-This thesis consists of 
+Two parts of this thesis can be evaluated, the stand-alone parser and the new refactorings implemented in BumbleBee.
+
+\section{Refactorings}
+
+The refactorings implemented in BumbleBee were not formally evaluated as part of this thesis.
+Some of the refactorings implemented in this thesis are based on RefBook \cite{badame2012refactoring}, which did perform an evaluation, in which it was found that the more people preferred formulas after the \nameref{refac:extractformula} and \nameref{refac:introduceaggregate} refactorings were applied, while more people preferred the unrefactored formulas on which \nameref{refac:introducecellname} was applied.
+
+\section{Parser}
+
+In order to evaluate XLParser, it was used to parse all formulas extracted from the two publicly available spreadsheet research datasets, the EUSES corpus \cite{fisher2005euses} and Enron email corpus \cite{klimt2004enron, hermans2015enron}.
+
+A ``scantool'' not developed by the thesis author was used to extract formulas from these two datasets, which succeeded for 19.601 of the 20.688 spreadsheets.
+Not all spreadsheets could be read because they were either password-protected or could not be processed by the scantool.
+A combined 22.310.406 formulas were found in these spreadsheets.
+Duplicate formulas were filtered on a sheet-level by using the formula's R1C1 notation.
+This resulted in 1.035.586 unique formulas.
+26 formulas were discarded, because they were corrupted by the scan tool, bringing the total to 1.035.558 formulas.
+The extracted list of formulas is available as part of XLParser in its repository for both the Enron \footnote{\url{https://github.com/spreadsheetlab/XLParser/blob/master/src/XLParser.Tests/data/enron/formulas.txt}} and the EUSES \footnote{\url{https://github.com/spreadsheetlab/XLParser/blob/master/src/XLParser.Tests/data/euses/formulas.txt}} datasets.
+
+Of these formulas, exactly two could not be parsed: \f{=-NOX, Regi} and \f{-_SO2, regi}, which indicates a parse success rate of 
+These are examples of unions without brackets which the parser cannot parse due to reasons outlined in Section \ref{subsec:desing:unions}.
+
+\subsection{Analysis}
+
+\begin{table}
+	\centering
+	%\resizebox{0.5\textwidth}{!}{
+	%\input{evaluation/table-occurences}
+	%}
+	\todo{Tabel hier plaatsen zonder dat het de hele pagina opeet}
+	\caption{Occurrence frequency of tokens and production rules in all parsed formulas.}
+	\label{table:occurences}
+\end{table}
+
+For all the formulas extracted from the Enron and EUSES datasets a count was performed of which tokens (terminals, leaf nodes of the parse tree) and which production rules (non-terminal, internal nodes of the parse tree) were used when parsing the formula.
+
+At least one reference was used in 99.2\% of the formulas, which shows that references are an integral part of spreadsheets.
+Arithmetic operators are also very common (59.77\%), as is the use of built-in excel functions (35.82\%).
+
+Perhaps more interesting are the less commonly used grammatical constructs: Empty arguments, Dynamic Data Exchange calls, Intersections and Unions, Multiple Sheets, Reserved Names and constant arrays.
+All of these constructs are used in less than 0.05\% of all formulas.
+
+The rarity of empty argument, DDE calls, reserved names and multiple sheets can be expected because of their very niche uses.
+Intersections, unions and constant arrays are powerful constructs, but apparently users either do not know about these, prefer to use other constructs instead or their usage is too niche.
+
+Interestingly, some of these constructs are quite hard to parse.
+Especially unions and intersection complicate the grammar because of their curious syntax.
+Because these constructs are so rare this means they are prime candidates leave out of the grammar if simplification is desired.

@@ -31,6 +31,12 @@
 
 \cleardoublepage
 
+\begin{abstract}
+
+\end{abstract}
+
+\clearpage
+
 %%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%
 \tableofcontents*
 
@@ -47,44 +53,6 @@
 
 %\chapter{Spreadsheet anatomy}
 \include{anatomy/anatomy}
-
-
-%\chapter{Candidate spreadsheet refactorings}
-%\label{chapter:candidaterefactorings}
-%
-%\section{Comparing spreadsheets to other programming paradigms}
-%
-%\subsection{Reactive programming}
-%As explained in Chapter \ref{chapter:anatomy}, the spreadsheet programming model is a variation of the dataflow programming model.
-%Thus the most natural first comparison for spreadsheet is the \emph{reactive programming} paradigm, which is another variation of the dataflow programming model.
-%Viewed from the RP model, all spreadsheet cells are observable values and every formula is an observer.
-%One can attach a formula observer to a cell observable by making a reference, e.g. a formula \f{=A1+1} in cell B1 listens to the value of A1 and produces the value for B1.
-%However currently no literature on refactoring reactive programs is known to the author, so no additional refactoring were found by comparing spreadsheets to reactive programs.
-%
-%\subsection{Functional programming}
-%Spreadsheets program do not contain state (mutable variables) or side-effects
-%\footnote{As long as one remains within the spreadsheet model. User-defined functions and inter-operation with external programs can cause side-effects.}
-%and this immutability aspect is often associated with functional programming languages.
-%However spreadsheets lack several other important concepts of functional languages such as first-class and higher-order functions, recursion\footnote{Most spreadsheet implementations allow for a form of recursion in the form of cycles in the dependency graph called circular references. However this is not the normal modus-operandi, triggers a warning and is generally only used to perform iterative calculations which are not otherwise possible in spreadsheets.}, lazy evaluation and type interference.
-%
-%\subsection{Translation of concepts}
-%
-%Some literature exist on refactoring functional programs, most prominent is the tool \textbf{Ha}skell \textbf{Re}factoring tool (HaRe) \cite{thompson2005refactoring}.
-%Most of the described refactorings are either specific to Haskell, or only applicable because of concepts not available in spreadsheets.
-%
-%This makes all of the current literature on refactoring functional programs not applicable.
-%\todo{Cite functional refactoring literature}
-%
-%\subsection{Object-oriented programming}
-%
-%By far 
-%
-%
-%
-%\section{Translating refactorings to the spreadsheet domain}
-%
-%Tabel met mogelijke refactorings.
-%Subsecties voor alle geïmplementeerde refactorings.
 
 %\chapter{Parsing spreadsheet formulas}
 \include{parsing/parsing}

@@ -309,7 +309,7 @@ This refactoring will only be offered to the user if the top layer on a formula 
 The concept of the \rf{Introduce Aggregate}/\rf{Replace Awkward Formula} refactoring is not complicated, and therefore not many improvements can be made.
 However, BumbleBee does improve over RefBook in several ways related to this refactoring.
 
-A first improvement in BumbleBee's implementation comes through the underlying parser: the RefBooks parser does not take operator precedence into account, and therefore a formula like \f{=1 + 2 * 3 + 4} would not be fully refactored by RefBook.
+A first improvement in BumbleBee's implementation comes through the underlying parser: the RefBooks parser does not take operator precedence into account, and therefore a formula like \f{=1 + 2 * 3 + 4} would be refactored into \f{=SUM(1,2 * 3 + 4)} by RefBook, while BumbleBee refactors it into \f{=SUM(1,2 * 3,4)}.
 
 A second improvement comes by tying this refactoring into two other refactorings through the user interface.
 Combining this refactoring with \rf{Group References} allows a formula like \f{=A1+A2+A3+A4} to be rewritten into \f{=SUM(A1:A4)} instead of just \f{=SUM(A1,A2,A3,A4)}.
