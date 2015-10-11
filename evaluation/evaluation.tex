@@ -1,4 +1,5 @@
 % !TeX root = ../thesis.tex
+% !TeX spellcheck = en_US
 
 \chapter{Evaluation}
 \label{chapter:evaluation}
@@ -24,6 +25,16 @@ The extracted list of formulas is available as part of XLParser in its repositor
 
 Of these formulas, exactly two could not be parsed: \f{=-NOX, Regi} and \f{-_SO2, regi}, which indicates a parse success rate of 
 These are examples of unions without brackets which the parser cannot parse due to reasons outlined in Section \ref{subsec:desing:unions}.
+ 
+It must be noted that both datasets used only contain spreadsheets created before 2005.
+This means that they do not contain structured table references, as these were introduced in Excel 2007.
+It thus remains unevaluated how well the parser handles formulas using this functionality.
+
+Furthermore, the scantool extracts formulas as they are stored inside the spreadsheet file.
+When a formula references an external file, the filename is stored in a separate lookup table and the file is replaced by a numeric index.
+Thus a formula like \f{='C:\textbackslash path\textbackslash [file.xlsx]Sheet!A1'} would be stored as \f{=[1]Sheet!A1}, while Excel Add-Ins like BumbleBee receive the file name and path in the formula when requested from Excel.
+It is thus possible that the parser cannot handle formulas in their non-numeric file reference form.
+However, an user of the parser who processed the same two datasets reports no additional parse errors, except in the case of a file path containing a space, which is a problem that most likely can be solved.
 
 \subsection{Analysis}
 
