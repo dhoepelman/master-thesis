@@ -1,3 +1,6 @@
+% !TeX root = ../thesis.tex
+% !TeX spellcheck = en_US
+
 \chapter{Anatomy of spreadsheets and spreadsheet formulas}
 \label{chapter:anatomy}
 
@@ -10,17 +13,18 @@
 
 In order to be able to parse or refactor spreadsheets, a solid understanding of their inner workings is necessary, especially of the formula language.
 
-The by a large margin most widely used spreadsheet system is Microsoft Office Excel, which has a self-reported install base of 1.2 billion users \cite{microsoftByTheNumbers}.
-Two less-popular but still common implementation are Apache OpenOffice Calc and LibreOffice Calc, which evolved from the same product and thus have largely identical semantics, of which LibreOffice a self-reported install base of 75 million users.
+By a large margin, the most widely used spreadsheet system is Microsoft Office Excel, which has a self-reported install base of 1.2 billion users \cite{microsoftByTheNumbers}.
+Two less-popular but still common implementations are Apache OpenOffice Calc and LibreOffice Calc, which evolved from the same product and thus have largely identical semantics.
+LibreOffice has a self-reported install base of 75 million users.
 Google Sheets is another common implementation, and is special because it was the first large web-based collaborative spreadsheet program.
 Google does not report usage numbers, but in 2010 has said it is used by "tens of millions" of users.
-There are many other spreadsheet implementations, but none come close to Microsoft Excels market share, and most are smaller than LibreOffice and Google Spreadsheets.
-When referencing "all" spreadsheet programs, this is meant as the three implementations previously mentioned.
+There are many other spreadsheet implementations, but none of them come close to Microsoft Excel's market share, and most are smaller than LibreOffice and Google Spreadsheets.
+When referencing "all" spreadsheet programs, this is meant as the three implementations previously mentioned: Microsoft Excel, LibreOffice and Google Sheets.
 These three implementations are the systems studied because of their market share.
 
 \newpage
 
-Although exotic forms of spreadsheets are available and have been researched, all currently widely used implementation use the following model:
+Although exotic forms of spreadsheets are available and have been researched, all mainstream implementations use the following model:
 \begin{itemize}
 \item A single spreadsheet \key{file} corresponds to a single (\key{work})\key{book}.
 \item A workbook can contain any number of (\key{work})\key{sheets}.
@@ -79,8 +83,6 @@ An example dataflow program and its spreadsheet implementation can be seen in Fi
 
 The spreadsheet model is Turing complete, as proven by an Excel 2010 implementation of a Turing machine \cite{ExcelTuringComplete}.
 
-\clearpage
-
 \section{Formulas}
 
 Currently two major formula languages exist in spreadsheets. The first is the Office Open XML spreadsheet language which is a standarization of the Excel language, which is currently used by Microsoft Excel.
@@ -107,8 +109,6 @@ Spreadsheet program contain three fairly unique binary operators, the semantics 
 Firstly there is the range operator \f{:} then the union operator (\f{,} in Excel and \f{\textasciitilde} in OpenFormula) and lastly the intersection operator (\f{\char32} in Excel and \f{!} in OpenFormula).
 Note that OpenFormula diverges from the Excel syntax, possibly because the comma already is used in other places in the language and a single space as an operator is highly unusual.
 The Excel characters for the operators will be used from now on.
-
-\newpage
 
 \subsection{References}
 \label{sec:references}
@@ -139,8 +139,6 @@ Lastly the intersection operator takes only the cells which are in both argument
 
 A user can also give a name to any collection of cells, thus creating a \emph{named range} which can be referenced in formulas by name.
 For example one can give the name \f{TAX\_RATE} to cell \f{A2} and then use this in a formula: \f{=C3+C3*TAX\_RATE} instead of \f{=C3+C3*\$A\$2}.
-
-\newpage
 
 \subsection{Structured References}
 

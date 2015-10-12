@@ -1,4 +1,5 @@
 % !TeX root = ../thesis.tex
+% !TeX spellcheck = en_US
 
 \chapter{Refactoring spreadsheets}
 \label{chapter:implementingrefactorings}
@@ -17,16 +18,15 @@ This is usually implemented by parsing the formula, performing the desired trans
 The inner workings of the parser are described in Chapter \ref{chapter:parsing}.
 This Chapter covers how the AST is transformed for each refactoring.
 
-The refactorings were implemented in the BumbleBee Excel Add-In, and presented to the user through a context menu as seen in Figure X.
+The refactorings were implemented in the BumbleBee Excel Add-In, and presented to the user through a context menu as seen in Figure \ref{fig:contextmenu}.
 This context-menu automatically determines if a refactoring can be performed on the specific selected cell(s) and disables inapplicable refactorings.
-\todo{Screenshot van het bumblebee refactoring context-menu}
 
-It must be noted that all refactorings have a major deficiency: they cannot be undone. \fw
+It must be noted that all refactorings have a major deficiency: they cannot be undone.
 The reason for this is a technical limitation imposed by Excel: the Excel undo-redo stack is not available to Excel Add-Ins.
 Instead as soon as a Excel Add-In changes the Excel spreadsheet file, in fact as soon as it interacts with the internal document model even if it does not change anything, the Excel undo-redo stack gets cleared.
 While there are several non-trivial workarounds for this involving a manually creating an undo stack, the author deemed them outside of the scope of this thesis.
 In an industrial-strength application this functionality would be essential.
-As long as Excel keeps this limitation this will always be a severe limitation to any tool that automatically changes spreadsheet files for the user, thus Microsoft could modify Excel to facilitate these and similar Add-Ins. \fw
+As long as Excel keeps this limitation this will always be a severe limitation to any tool that automatically changes spreadsheet files for the user.
 
 \section{\rf{Extract formula}}
 \label{refac:extractformula}
@@ -41,6 +41,13 @@ The goal of the \rf{extract formula} refactoring is to move part of a formula ex
 \end{enumerate}
 
 \subsection{User interface}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=7cm]{implementation/contextmenu}
+	\caption{BumbleBee context menu. \todo{replace dummy}}
+	\label{fig:contextmenu}
+\end{figure}
 
 \begin{figure}
 %\begin{minipage}[c][8cm][c]{0.5\textwidth}
@@ -69,7 +76,7 @@ The goal of the \rf{extract formula} refactoring is to move part of a formula ex
 \label{fig:extractformulaexample2}
 \end{figure}
 
-The refactoring requires the user to select cell(s) to be refactored, type in the subformula to be extracted and select where the extraction should occur to.
+This refactoring requires the user to select cell(s) to be refactored, type in the subformula to be extracted and select where the extraction should occur to.
 Figure \ref{fig:extractformulaexample2} shows the process as experienced by the user.
 The user first selects the formulas to be extracted (Figure \ref{fig:extractformulaexample2}a) and clicks the Extract Formula entry in the refactoring context menu (not shown).
 A side-panel pops out which allows the user to enter the sub-formula to be extracted and where it should be extracted to (Figure \ref{fig:extractformulaexample2}b) and presses the Extract Formula button.
@@ -81,27 +88,27 @@ The author leaves this a future work.
 
 \subsection{Implementation}
 
-This section describes the details of the refactoring implementation, which consists of 2 parts: an AST tranformation fo the formula, and a 
+This section describes the details of the refactoring implementation, which consists of 2 parts: an AST tranformation of the formula, and a modification of the worksheet.
 The first part operates solely on the formula and refactors it to the desired form, the second part handles actual placement of the formula in the cells and the moving if necessary.
 
 \subsubsection{AST Transformation}
 \label{subsec:astreplacementtransformation}
 
-The AST transformation takes the original AST, the AST to replace and the replacement AST.
+The AST transformation takes the original AST, the AST to replace and the replacement AST as inputs.
 Then the original AST is traversed and every occurrence of the AST to replace is replaced by the replacement AST, yielding the new AST, this is illustrated in Figure \ref{fig:extractformulaASTtransformations}.
 The C\# code for the AST replacement can be found in Listing \ref{lst:astreplace}.
 
-This transformation is somewhat similar to the BumbleBee 1 formula transformation rules.
+This transformation is somewhat similar to the BumbleBee formula transformation rules.
 However, it is complimentary rather than identical as can be seen by comparing Figure \ref{fig:extractformulaASTtransformations} and Figure \ref{fig:bbv1transformationrule}.
 We could have tried to written this transformation as a rule "\f{=I2 + [a] * I2}".
-However, BumbleBee 1 would have searched for the "outer" formula, keeping the \f{[a]} $\gets$ \f{50\%} available for the replacement rule.
+However, using transormation rules BumbleBee would have searched for the "outer" formula, keeping the \f{[a]} $\gets$ \f{50\%} available for the replacement rule.
 In contrast, this transformation searches for the \f{[a]} "inner" formula, and replaces it with something different.
 
 \subsubsection{Spreadsheet refactoring}
 
-The AST replacement is performed on the original formula, and the new formula is assigned to the cell that needs to be refactored.
+The AST replacement is performed on the original formula yielding a new formula, which is assigned to the cell that needs to be refactored.
 If multiple cells are refactored at once, the AST replacement is performed on all of them.
-Formulas with the same original R1C1 formula will have the same new R1C1 formula, so the AST replacement is only performed once per unique R1C1 formula.
+Formulas with the same original R1C1 formula will have the same new R1C1 formula, so the AST replacement is only performed once per unique R1C1 formula and the resulting formula is re-used.
 
 If the target of the extraction is a single cell, that cell gets assigned the subformula that will be extracted, otherwise if the user wants to extract in a direction, new cells are created in the appropriate direction and all will get assigned the subformula that will be extracted.
 
@@ -134,11 +141,11 @@ Whether it is a good thing to perform this refactoring is dubious, but BumbleBee
 \label{subsubsec:improvementsextractformula}
 
 Two specialized versions of this refactorings where previously described by Bamade and Dig \cite{badame2012refactoring} and implemented in their RefBook tool.
-Refbooks \rf{Extract Row or column} and \rf{Extract Literal} refactorings can both be performed by \rf{Extract formula}.
+RefBook's \rf{Extract Row or column} and \rf{Extract Literal} refactorings can both be performed by \rf{Extract formula}.
 
-The author has chosen to not keep the \rf{extract row or column} refactoring name because it does not fully describe the refactoring, a full row or column does not necessarily have to be extracted, and to keep the name in line with refactoring names in other domains.
+The author has chosen to not keep the \rf{extract row or column} refactoring name because it does not fully describe the refactoring (a full row or column does not necessarily have to be extracted) and to keep the name in line with refactoring names in other domains.
 
-The RefBook \rf{extract literal} refactoring can put a constant value into a cell and replace the occurrences of it with references to that cell, this can also be achieved with the BumbleBee \rf{extract formula} refactoring.
+The RefBook \rf{extract literal} refactoring can put a constant value into a cell and replace the occurrences of it with references to that cell, which can also be achieved with the BumbleBee \rf{extract formula} refactoring.
 In addition this is possible for any constant expression, an expression without references, instead of only for constants.
 
 The BumbleBee \rf{Extract Formula} refactoring has several advantages over Badame's implementation of \rf{Extract row or column}.
@@ -147,7 +154,7 @@ This can be very problematic for this refactoring and in the authors opinion sho
 Note that the RefBook authors were aware of this deficiency, and left this as future work.
 This future work has been performed by the thesis author.
 
-Secondly RefBook can only handle a single row or column, which has to have exactly the same R1C1 formula. It can only extract the subformula to a column right of or row up of the original range.
+Secondly RefBook can only handle a single row or column, which has to have exactly the same R1C1 formula. It can only extract the subformula to a column to the right of or row up of the original range.
 BumbleBee can handle arbitrarily shaped ranges, with the only requirement that the subformula to be extracted occurs in all selected formulas.
 Furthermore in addition to extracting to a cell neighboring the original formula cell (up, down, left or right) it can also extract the subformula to a single shared cell location.
 This is very useful to remove duplication and makes the refactoring more universal by merging the \rf{extract literal} refactoring into it.
@@ -156,6 +163,7 @@ This is very useful to remove duplication and makes the refactoring more univers
 \label{refac:inlineformula}
 
 The goal of the \rf{Inline Formula} refactoring is to replace all references to a cell with its contents and delete the original cell, and is therefore the inverse of the \rf{Extract Formula} refactoring.
+For example if \f{A1} would contain \f{=1+1} and \f{B1} contains \f{=A1*2}, after applying this refactoring to \f{A1} \f{B2} would contain \f{=(1+1)*2}. 
 The main potential use case for this formula is when the contents of a cell are clearer or just as clear as a cell reference.
 
 While single cell references (e.g. \f{=SUM(A1,A2,A3)}) can always be inlined, if a cell is referenced as part of a range (e.g. \f{=SUM(A1:A3)}) it can not always be inlined.
@@ -252,7 +260,7 @@ The refactoring is a one-click refactoring that is activated from the cell conte
 
 In order to find the best grouping we have to solve the following problem: given a sheet with a certain set of cells selected, what are the ranges that select exactly those cells and do so with a minimum amount of ranges?
 
-It turns out that this is a NP-hard problem, because it has a straightforward translation to a NP-hard version of the Polygon Covering problem, specifically covering a rectilinear polygon (the selected cells) with axis-parallel rectangles (ranges), allowing for holes.
+It turns out that this is a NP-hard problem, because it has a straightforward translation to a NP-hard version of the Polygon Covering problem \cite{masek1979some}, specifically covering a rectilinear polygon (the selected cells) with axis-parallel rectangles (ranges), allowing for holes.
 This allows us to use an approximation algorithm or heuristic.
 A $O(\sqrt{\log{n}})$ approximation algorithm for this specific problem has been found by Kumar and Ramesh \cite{kumar2003covering}, but implementing this would take a non-trivial amount of effort.
 This makes using a simple heuristic attractive since it will probably be good enough for this purpose since the majority of refactorings will consist of simple cases.
@@ -262,7 +270,7 @@ The algorithm Excel uses for this is unknown.
 
 \subsubsection{Spreadsheet Refactoring}
 
-The implementation traverses the formula AST, and for every function with a variable number of arguments it encounters groups it references by excluding all non-references (e.g. constants) and sending these to Excel to be grouped.
+The implementation traverses the formula AST, and, for every function with a variable number of arguments it encounters, groups its references by excluding all non-references (e.g. constants) and sending these to Excel to be grouped.
 The function arguments then are replaced by grouped references and the AST is printed back to the formula cell.
 References are processed separately depending on their absolute markers, e.g. \f{A1},\f{\$A1}, \f{A\$1} and \f{\$A\$1}, because grouping references with different markers cannot be done without changing the meaning of the formula.
 
@@ -277,13 +285,13 @@ This refactoring will be available to the user if the formula contains 2 or more
 \section{\rf{Introduce Aggregate}}
 \label{refac:introduceaggregate}
 
-In the spreadsheet formula language, some binary operators have an equivalent aggregate function which accepts any number of arguments: \f{+} correspons to \f{SUM}, \f{*} to \f{PRODUCT} and \f{\&} to \f{CONCATENATE}.
+In the spreadsheet formula language, some binary operators have an equivalent aggregate function that accepts any number of arguments: \f{+} corresponds to \f{SUM}, \f{*} to \f{PRODUCT} and \f{\&} to \f{CONCATENATE}.
 
 Thus a formula like \f{=A1+A2+A3+A4} can be rewritten to \f{=SUM(A1,A2,A3,A4)}, which is what the \rf{Replace Awkward Formula} refactoring, defined by Badame and Dig \cite{badame2012refactoring}, does.
 The refactoring is especially useful when combined with the \rf{group references} refactoring, which rewrites it to \f{=SUM(A1:A4)}.
 
-The author proposes an alternate name for this refactoring: \rf{Introduce Aggregate} for two reasons.
-Firstly \rf{Replace Awkward Formula} does not describe very well what the refactoring does, as more types of ``Awkward Formulas'' could be thought of which cannot be handled.
+The author proposes an alternate name for this refactoring, \rf{Introduce Aggregate}, for two reasons.
+Firstly \rf{Replace Awkward Formula} does not describe very good what the refactoring does, as more types of ``Awkward Formulas'' could be thought of which cannot be handled.
 For example a formula with multiple nested \f{IF}s like \f{=IF(IF(IF(\ldots),FALSE,TRUE),A1,B1)} could be described as ``awkward'', but this refactoring does not replace it.
 Secondly this keeps the name consistent with the \rf{Introduce Conditional Aggregate} refactoring.
 
@@ -297,12 +305,14 @@ In the user interface it will always transparently be followed by the \rf{Group 
 The implementation traverses the formula AST until it encounters the first operator it can refactor.
 The left subtree then gets added to a list of arguments for the aggregate function, and the right subtree gets checked to see if it corresponds to the same operator.
 If it is, the process gets repeated until a non-operator right subtree is encountered, at which point that subtree is the final addition to the argument list.
+Note that this works because all operators are left-associative in Excel.
+If operator has other associativities the algorithm would have to be slightly altered.
 
 The C\# code for this refactoring can be found in listing \ref{lst:introduceaggregate}.
 
 \subsection{Detecting applicability}
 
-This refactoring will only be offered to the user if the top layer on a formula cell consisting of one of the applicable operators (\f{+},\f{*} or \f{\&})
+This refactoring will only be offered to the user if the top layer of a formula cell consisting of one of the applicable operators (\f{+},\f{*} or \f{\&})
 
 \subsection{Improvements over RefBook's \rf{Replace Awkward Formula}}
 
@@ -340,7 +350,7 @@ These functions evaluate the \textbf{condition} on every cell of \textbf{operati
 Examples make this clearer: \f{=SUMIF(A:A, "> 10")} sums all cells in column \f{A} that contain a value larger than \f{10}, and \f{=SUMIF(A:A, E2, C:C)} sums the cell from column \f{C} of every row where the cell value from column \f{A} equals \f{E2} , as illustrated in Figure \ref{fig:sumifexample}.
 
 The conditional aggregate functions are powerful tools, but they are not always used. 
-Instead what the is often encountered is the ``Manual'' selection of the correct cells and summing these, as illustrated in Figure \ref{fig:condaggregateexample}.
+Instead what we often encountered is the ``Manual'' selection of the correct cells and summing these, as illustrated in Figure \ref{fig:introcondaggrScenario}.
 When combining this refactoring with the \rf{Introduce Aggregate} refactoring we can rewrite \f{=B3+B7+B11} to \f{=SUM(B3,B7,B11)}, and that to \f{=SUMIF(A:A, "2015", B:B)}.
 Because this was the most common pattern we will focus on \f{SUM} and \f{SUMIF}, but the refactoring works identical for \f{COUNT} to \f{COUNTIF} and \f{AVERAGE} to \f{AVERAGEIF}.
 
@@ -348,35 +358,12 @@ Because this was the most common pattern we will focus on \f{SUM} and \f{SUMIF},
 
 This refactoring shares a context menu entry with \rf{Introduce Aggregate} as \emph{Introduce (Conditional) Aggregate}.
 
-\begin{figure}
-	\centering
-\begin{subfigure}[t]{0.25\textwidth}
-	\includegraphics[width=\textwidth]{implementation/aggregate/scenario1}
-	\caption{Supported: \newline Column \f{A} uniquely determines which values are summed.}
-	\label{fig:introcondaggrScenario1}
-\end{subfigure}
-\hspace{0.05\textwidth}
-\begin{subfigure}[t]{0.25\textwidth}
-	\includegraphics[width=\textwidth]{implementation/aggregate/scenario2}
-	\caption{Unsupported: \newline No column determines which values are summed.}
-	\label{fig:introcondaggrScenario2}
-\end{subfigure}
-\hspace{0.05\textwidth}
-\begin{subfigure}[t]{0.25\textwidth}
-	\includegraphics[width=\textwidth]{implementation/aggregate/scenario3}
-	\caption{Unsupported: \newline Column \f{A} does not determine which values are summed, because \f{B5} is not summed.}
-	\label{fig:introcondaggrScenario3}
-\end{subfigure}
-\caption{Example scenarios of \rf{Introduce Conditional Aggregate}}
-\label{fig:introcondaggrScenario}
-\end{figure}
-
 \subsection{Implementation}
 
 In order to see if a \f{SUM} can be rewritten to a \f{SUMIF}, we must determine if there is another range of cells with a value that uniquely identifies the summed cells.
 In relational database theory, this is a concept known as a \emph{functional dependency}.
 
-In a relational database, it is usually left to the developer to indicate that a column is functional dependent on another through defining which column(s) are keys, and no efficient algorithm for automatically determining functional dependencies is known to the author.
+In a relational database, it is usually left to the developer to indicate that a column is functional dependent through defining which column(s) are keys.
 Furthermore, while in a relational database data is associated with a schema that describes it layout, in Excel the layout of the data is free-form which complicates the issue.
 
 Because of these reasons, the author has decided to only support a very simple but useful and likely scenario: the summed values are in a single row- or column, and it needs to be determined if there is a single row or column that has a unique identical value in it which can serve as the condition for \f{SUMIF}.
@@ -386,6 +373,29 @@ Figure \ref{fig:introcondaggrScenario2} shows another impossible case: here colu
 Additionally, the refactoring is not supported if the summed cells are not in a single row or column.
 
 The C\# code that performs the refactoring if the above conditions are met can be found in Listing \ref{lst:introduceconditionalaggregate}.
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[t]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{implementation/aggregate/scenario1}
+		\caption{Supported: \newline Column \f{A} uniquely determines which values are summed.}
+		\label{fig:introcondaggrScenario1}
+	\end{subfigure}
+	\hspace{0.05\textwidth}
+	\begin{subfigure}[t]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{implementation/aggregate/scenario2}
+		\caption{Unsupported: \newline No column determines which values are summed.}
+		\label{fig:introcondaggrScenario2}
+	\end{subfigure}
+	\hspace{0.05\textwidth}
+	\begin{subfigure}[t]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{implementation/aggregate/scenario3}
+		\caption{Unsupported: \newline Column \f{A} does not determine which values are summed, because \f{B5} is not summed.}
+		\label{fig:introcondaggrScenario3}
+	\end{subfigure}
+	\caption{Example scenarios of \rf{Introduce Conditional Aggregate}}
+	\label{fig:introcondaggrScenario}
+\end{figure}
 
 \subsection{Detection of applicability}
 

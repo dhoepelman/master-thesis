@@ -1,3 +1,6 @@
+% !TeX root = ../thesis.tex
+% !TeX spellcheck = en_US
+
 \chapter{Parsing spreadsheet formulas}
 \label{chapter:parsing}
 
@@ -13,10 +16,11 @@
 This chapter assumes the reader is familiar with basic parser theory, a good overview of which can be found in \cite{dragonbook}.
 
 \section{Motivation}
+\label{sec:motivation}
 
 In order to implement refactorings of spreadsheets a refactoring tool must be able to manipulate spreadsheets.
 Excel exposes an API to retrieve and set the contents of a spreadsheet file, but this API only works on a formula string level.
-The usual way to implement refactorings is by manipulating the AST so that it represents the desired program, and then print that back to a string.
+The usual way to implement refactorings is by manipulating the original program's AST until it represents the desired program, and then print that back to a string.
 Because Excel does not expose the AST or parse tree of formulas, a refactoring tool needs to contain a parser for Excel formulas.
 
 Bumblebee relied on a parser developed over the years for previous research, however this parser suffered from having new rules added on over time, often in an inconsistent manner and not fully supporting the whole language.
@@ -71,7 +75,7 @@ XLParser supports al three formats, while the previous parser only supported the
 While the AST correctness is unverified for both XLParser and the previous parser, several improvements have been made.
 Operator precedence has been mentioned before, this was not taken into consideration in the previous parser version, providing very problematic in BumbleBee's use-case.
 Several smaller corrections have also been made.
-For example in the previous version \f{=F(1,,1)} and \f{=F(1,1)} produced an identical AST, while they have a (potentially) different meaning, especially in the case of user defined functions.
+For example in the previous version \f{=F(1,,1)} and \f{=F(1,1)} produced an identical AST, while they have a different meaning, especially in the case of user defined functions.
 
 \subsubsection{Homogenization}
 The previous parser was constructed with a relatively clean base grammar, but over time rules were added in a fairly ad-hoc manner.
@@ -117,6 +121,8 @@ When extracting formulas from spreadsheets, only the floating point value is ava
 The parser will thus never see the formatted notation of the date.
 For this reason, the grammar only parses numeric dates and times and these are not distinguishable from other numbers.
 
+\newpage
+
 \subsection{Syntactical Analysis}
 
 \begin{figure}
@@ -133,7 +139,6 @@ Patterns inside \{ and \} can be repeated zero or more times.
 The start symbol is $Start$. An example parse tree produced using this grammar is drawn in Figure \ref{figure:parsetrees}(b).
 
 The \synt{Formula} rule covers all types of spreadsheet formula expressions: they can be constants (\texttt{=5}), references (\texttt{=A3}), function calls and operators (\texttt{=SUM(A1,A2)}), array constants (\texttt{=\{1,2;3,4\}} or reserved names (\texttt{=_xlnm.Print_Area}).
-
 The \synt{Reference} rule covers a subset of expressions known as references expressions: internal or external cell and range references, functions and operators which can return references, named ranges, structured ranges and dynamic data exchanges.
 
 %\begin{figure}
@@ -197,15 +202,17 @@ A formula like \texttt{=(A1)} can be interpreted as either a bracketed reference
 In a LALR parser, which Irony produces, this ambiguity manifests in a state where, on a \texttt{')'} token, shifting on rule 1 and reducing on either rule 2 or 3 are possibilities, causing a shift-reduce conflict.
 This was solved by instructing the parser generator to shift on rule 1 in case of this conflict, because this always is a correct interpretation and thus results in correct ASTs.
 
-\section{Printing formula AST}
-\label{sec:printing}
+\newpage
 
 \noindent
 \begin{figure}[h!]
-\hspace*{0.003\textwidth}
-\input{implementation/refactoring-process-print}
-\caption{This section details AST pretty-printing, converting an AST to a string formula.}
+	\hspace*{0.003\textwidth}
+	\input{implementation/refactoring-process-print}
+	\caption{Section \ref{sec:printing} details AST pretty-printing, converting an AST to a string formula.}
 \end{figure}
+
+\section{Printing formula AST}
+\label{sec:printing}
 
 Printing a formula AST is the reverse operation of parsing, and is quite straightforward.
 It can be done by describing for each tree node type how it can be translated back into a string, most of the time this is the exact reverse of the parser production rule.
@@ -220,11 +227,9 @@ These are detailed in this section.
 \subsection{References}
 \label{tradeoff:references}
 
-\todo{@Felienne, heeft het stukje nu genoeg TLC gehad?}
-
-References play an important role in the spreadsheet paradigm and therefore in the language.
+References play an important role in the spreadsheet paradigm and therefore in the formula language.
 In particular reference expressions, expressions which evaluate to a reference, are a subset of expressions and several operators and functions only accept reference expressions.
-For example the formula \f{=SUM(IF(\ldots):A1)} is valid, while \f{=SUM((1+1):A1)} is not, because \f{IF} can return a reference while \f{+} cannot and the operator \f{:} only operates on references.
+For example the formula \f{=SUM(IF(\ldots):A1)} is valid, while \f{=SUM((1+1):A1)} is not, because \f{IF} can return a reference while \f{+} cannot and the \f{:} operator only operates on references.
 
 This is not unique to reference expressions, for example the operator \f{+} only operates on numeric values, making the expression \f{="a"+1} invalid.
 What does make reference expressions special is how Excel treats them.
@@ -256,7 +261,7 @@ With the above production rules a LALR(1) parser could not correctly parse the l
 
 The presented grammar only parsers unions in between parentheses, e.g. \texttt{=SMALL((A1,A2),1)}.
 This is a trade-off between a lower compatibility (design goal 1) and an easier implementation (design goal 3).
-Because unions are extremely rare and were only encountered in 0.002\% of formulas \cite{xlparser} this lower compatibility is deemed acceptable.
+Because unions are only extremely rarely used, as can be seen in Chapter \ref{chapter:evaluation} they were only encountered in 0.002\% of formulas, this lower compatibility is deemed acceptable.
 
 Additionally formulas that this grammar does not parse often result in an error value after evaluation in Excel.
 For example \texttt{=A1,A1} does parse in Excel, but produces the error \texttt{\#VALUE!} on evaluation.

@@ -9,7 +9,7 @@ Two parts of this thesis can be evaluated, the stand-alone parser and the new re
 \section{Refactorings}
 
 The refactorings implemented in BumbleBee were not formally evaluated as part of this thesis.
-Some of the refactorings implemented in this thesis are based on RefBook \cite{badame2012refactoring}, which did perform an evaluation, in which it was found that the more people preferred formulas after the \nameref{refac:extractformula} and \nameref{refac:introduceaggregate} refactorings were applied, while more people preferred the unrefactored formulas on which \nameref{refac:introducecellname} was applied.
+Some of the refactorings implemented in this thesis are based on RefBook \cite{badame2012refactoring}, which did perform an evaluation, in which it was found that the more people preferred formulas after the \nameref{refac:extractformula} and \nameref{refac:introduceaggregate} refactorings were applied, while more people preferred the unrefactored formulas after the \nameref{refac:introducecellname} was applied.
 
 \section{Parser}
 
@@ -23,18 +23,19 @@ This resulted in 1.035.586 unique formulas.
 26 formulas were discarded, because they were corrupted by the scan tool, bringing the total to 1.035.558 formulas.
 The extracted list of formulas is available as part of XLParser in its repository for both the Enron \footnote{\url{https://github.com/spreadsheetlab/XLParser/blob/master/src/XLParser.Tests/data/enron/formulas.txt}} and the EUSES \footnote{\url{https://github.com/spreadsheetlab/XLParser/blob/master/src/XLParser.Tests/data/euses/formulas.txt}} datasets.
 
-Of these formulas, exactly two could not be parsed: \f{=-NOX, Regi} and \f{-_SO2, regi}, which indicates a parse success rate of 
-These are examples of unions without brackets which the parser cannot parse due to reasons outlined in Section \ref{subsec:desing:unions}.
+Of these formulas, exactly two could not be parsed: \f{=-NOX, Regi} and \f{-_SO2, regi}, a successful parse rate of 99.999\%.
+The unparsable formulas are examples of unions without brackets which the parser cannot parse due to reasons outlined in Section \ref{subsec:desing:unions}.
  
 It must be noted that both datasets used only contain spreadsheets created before 2005.
 This means that they do not contain structured table references, as these were introduced in Excel 2007.
-It thus remains unevaluated how well the parser handles formulas using this functionality.
+It thus remains unevaluated how well the parser handles formulas containing these constructs.
 
-Furthermore, the scantool extracts formulas as they are stored inside the spreadsheet file.
-When a formula references an external file, the filename is stored in a separate lookup table and the file is replaced by a numeric index.
-Thus a formula like \f{='C:\textbackslash path\textbackslash [file.xlsx]Sheet!A1'} would be stored as \f{=[1]Sheet!A1}, while Excel Add-Ins like BumbleBee receive the file name and path in the formula when requested from Excel.
-It is thus possible that the parser cannot handle formulas in their non-numeric file reference form.
-However, an user of the parser who processed the same two datasets reports no additional parse errors, except in the case of a file path containing a space, which is a problem that most likely can be solved.
+Another deficiency is that the scantool extracts formulas as they are stored inside the spreadsheet file.
+When a formula references an external file, in the spreadsheet file the filename is stored in a separate lookup array and the file is replaced by a numeric index in the stored formula.
+Thus a formula like \f{='C:\textbackslash path\textbackslash [file.xlsx]Sheet!A1'} would be stored as \f{=[1]Sheet!A1}.
+However, Excel Add-Ins like BumbleBee receive the file name and path in the formula when requested from Excel.
+It is thus possible that the parser cannot handle all formulas formulas containing external references in their non-numeric file reference form.
+However, a member of the spreadsheet lab who used the parser to process the same two datasets reports using their non-numeric file reference form reports no additional parse errors, except in the case of a file path containing a space, which is a problem that most likely can be solved.
 
 \subsection{Analysis}
 
@@ -60,5 +61,5 @@ The rarity of empty argument, DDE calls, reserved names and multiple sheets can 
 Intersections, unions and constant arrays are powerful constructs, but apparently users either do not know about these, prefer to use other constructs instead or their usage is too niche.
 
 Interestingly, some of these constructs are quite hard to parse.
-Especially unions and intersection complicate the grammar because of their curious syntax.
-Because these constructs are so rare this means they are prime candidates leave out of the grammar if simplification is desired.
+Especially unions and intersections complicate the grammar because of their curious syntax.
+Because these constructs are so rare this means they are prime candidates to leave out of the grammar if simplification is desired.

@@ -1,27 +1,30 @@
 % !TeX root = ../thesis.tex
+% !TeX spellcheck = en_US
 
 \chapter{Previous and related work}
 \label{chapter:previouswork}
 
 \section{Refactoring}
 
+\todo{BibTex doet vervelend}
+
 Refactoring is ``the process of changing a software system in such a way that it does not alter the external behaviour of the code, yet improves its internal structure'' \ref{opdyke1992refactoring}.
 The process is probably as old as programming itself, and was known since at least 1986 as ``Restructuring'' \ref{arnold1986introduction}.
-The term ``Refactoring'' was coined by Opdyke in 1992 \ref{opdyke1992refactoring} and originally specifically meant the restructuring of Object Oriented Programs. 
-Over time the popularity of both the practice and the term ``Refactoring'' increased, greatly helped by Fowler's 1999 ``Refactoring: improving the design of existing code'' \cite{fowler1999refactoring} and the rise of more flexible ``Agile'' software development.
+The term ``Refactoring'' was coined by Opdyke in 1992 \ref{opdyke1992refactoring} and originally specifically meant the restructuring of Object Oriented Programs, but nowadays the term is also used in order paradigms.
+Over time the popularity of both the practice and the term ``Refactoring'' increased, greatly helped by Fowler's 1999 ``Refactoring: improving the design of existing code'' \cite{fowler1999refactoring}.
 Currently, all major programming Integrated Development Environments like Visual Studio, Eclipse, Netbeans and IntelliJ include support for automated software refactorings.
 
 \section{Refactorings provided by excel}
 
-Several useful refactorings one could think of are already provided by Excel, although Excel does not call them refactorings.
+Several useful refactorings are already provided by Excel, although Excel does not call them refactorings.
 
-Firstly the cut, copy and paste functionality of Excel is very interesting.
-If a user cuts a selection of cells and pastes it elsewhere, all references to those cells made in unselected will be moved as well.
+The best example of this is the cut, copy and paste functionality of Excel.
+If a user cuts a selection of cells and pastes it elsewhere, all references to those cells made in other cells will be moved as well.
 For example if a user cut-pastes cell \f{A1} to location \f{C3}, the formula \f{=A1} will be changed to \f{=C3} in other cells, even though they were not selected by the user.
 This is very similar to the \rf{Move Method} \cite{fowler1999refactoring} refactoring, because not only are the cells (method contents) themselves moved, references to them (call sites) are a adjusted for the new location as well.
 Another option Excel provides when copy-pasting is ``Paste Values'', with which a formula is replaced by its evaluated value and remains constant from that point on.
 
-Excel having built-in support for these refactorings shows that there is a need among spreadsheet users to refactor their spreadsheets, and that advanced spreadsheet users are likely already comfortable with the concept of refactoring, albeit it not by name.
+Excel having built-in support for these refactorings shows that there is a need among spreadsheet users to change their spreadsheets without altering functionality, to refactor them, and that advanced spreadsheet users are likely already comfortable with the concept of refactoring, albeit it not by name.
 
 \section{Spreadsheet refactoring}
 
@@ -36,10 +39,10 @@ The first Excel Add-In specifically developed for refactoring was presented by B
 In this tool, seven refactorings are presented, four of which have been re-implemented and improved in this thesis in Chapter \ref{chapter:implementingrefactorings}.
 
 Hermans et. al \cite{hermans2014detecting} present four refactorings designed to each solve a specific spreadsheet smell, which is an indicator that something might be wrong with the spreadsheet.
-\rf{Extract (Common) Subformula} is very similar to Refbook's \rf{Extract Row or Column}, and is implemented in this thesis \nameref{refac:extractformula}.
+\rf{Extract (Common) Subformula} is very similar to Refbook's \rf{Extract Row or Column}, and is implemented in this thesis as \nameref{refac:extractformula}.
 The proposed \nameref{refac:groupreferences} refactoring is implemented in this thesis, as is the proposed \rf{Merge Formulas} refactoring under the name \nameref{refac:inlineformula}.
 
-Hermans and Dig \cite{hermans2014bumblebee} developed a refactoring tool called ``BumbleBee'' for Excel which operates on a different principle.
+Hermans and Dig \cite{hermans2014bumblebee} developed a refactoring tool called ``BumbleBee'' for Excel which operates using a different principle.
 Instead of implementing a fixed set of refactorings, it works on the basis of so-called ``transformation rules'' which consist of a two formulas with extended syntax introducing placeholders for certain constructs such as formulas, cells or ranges.
 For example the transformation rule \f{=IF($F_1$>$F_2$, $F_1$, $F_2$)} $\leftrightarrow$ \f{MIN($F_1$,$F_2$)} indicates that these two formulas are equivalent to each other and can be transformed into each other.
 While this approach can implement a number of refactorings as long as they are contained within one cell, it can only work with the information from within one formula and can thus only be used to implement intra-formula refactorings, refactorings contained within one formula.
@@ -58,11 +61,13 @@ However, several research projects also do not make available their parser or gr
 \subsubsection{Parser is not advanced enough for refactoring purposes}
 
 While several grammars are available online \cite{ewbi,fishbrain}, and a grammar is published as part of RefBook \cite{badame2012refactoring}, all where found to contain some errors, especially in the areas of operator precedence, reference expressions or references to sheets or files.
-These errors were deemed crucial to solve by the thesis Author, as making errors in parsing has a high chance in producing errors, and thus violating the user expectation that a refactoring will not introduce errors.
+These errors were deemed crucial to solve by the thesis Author, as making errors in parsing has a high chance of resulting in errors, and thus violating the user expectation that a refactoring will not introduce errors.
 
 \subsubsection{Parser does integrate well within target environment}
 
 Several open-source programs \cite{libreoffice,calligra} can process Excel formulas in one way or another, however, none of these were written in a .NET language, a requirement to use the parser in an Excel add-in.
-Furthermore, these parsers are often deeply tied into the product, and produce a stack of tokens in Reverse Polish notation (RPN token stack) as output instead of an Abstract Syntax Tree because this was required for older version of the Excel file format.
+These parsers are often deeply tied into the product, which makes using them standalone difficult.
+Furthermore these programs do not make their grammar available separately, which would require the grammar to be manually extracted.
+While this has not been attempted, this would likely result in grammar suffering from the same deficiencies as the official grammar provided by Microsoft, which is unsuitable for reasons described in Section \label{sec:motivation}.
 
-While it would be possible to decouple the parser from an existing product, port it to a .NET language and make it produce an AST instead of a RPN token stack, this likely would have been more difficult than improving the existing parser, which was done for this thesis.
+While it would be possible to decouple the parser from an existing product and port it to a .NET language this likely would have been more difficult than improving the existing parser, which was done for this thesis.

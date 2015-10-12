@@ -12,9 +12,10 @@ This parser was used to implement six refactorings, three of which were not impl
 \subsubsection{Future Work}
 
 There is still a lot of space for progress in the spreadsheet refactoring field.
-Of particular interest is are the similarities between relational databases and spreadsheets, both containing data in a tabular format which can be linked through joins and lookup function respectively.
+Of particular interest are the similarities between relational databases and spreadsheets, both contain data in a tabular format which can be linked through joins and lookup function respectively.
 This implies certain database design principles such as normalization might be applicable to spreadsheets.
 
 Another area of interest is the user interface for spreadsheet refactoring software.
 The refactorings in this thesis are already disabled and enabled based on what the user selects to refactor, but it would be even better if refactorings were pro-actively suggested. 
 Unfortunately the most prominent spreadsheet program currently used, Microsoft Excel, provides a large barrier for this as it severely restricts what Add-Ins can do.
+Microsoft could greatly reduce the barrier for spreadsheet tools by altering the Excel API, for example by allowing Add-Ins access to the undo and redo stacks or formula AST.

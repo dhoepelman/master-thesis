@@ -25,11 +25,13 @@
 
 \nonzeroparskip
 
+\widowpenalties 1 100
+
 \begin{document}
 
 \include{0-title/title}
 
-\cleardoublepage
+\clearpage
 
 %%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%
 \tableofcontents*
@@ -57,14 +59,15 @@
 
 \include{conclusion/conclusion}
 
-\todo{Bibliography uniform}
-
 \bibliographystyle{unsrt}
 \bibliography{thesis}
 
+\clearpage
+
+%\listoftodos
+
 \appendix
 
-\chapter{Code listings}
 \include{appendix/codelistings}
 
 \chapter{A Grammar for Spreadsheet Formulas Evaluated on Two Large Datasets}
