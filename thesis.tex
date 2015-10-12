@@ -22,6 +22,11 @@
 #1
 }}
 \newcommand{\rom}[1]{\uppercase\expandafter{\romannumeral #1\relax}}
+\newcommand{\emptypage}{%
+\mbox{}%
+\thispagestyle{empty}%
+\newpage%
+}
 
 \nonzeroparskip
 
@@ -29,18 +34,26 @@
 
 \begin{document}
 
-\include{0-title/title}
+%\include{0-title/title1}
+%\cleardoublepage
+\include{0-title/title2}
 
 \clearpage
 
+\emptypage
+
+\include{preface/preface}
+
 %%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%
-\tableofcontents*
+\clearpage
+{\small\tableofcontents*}
 
 \clearpage
 %\twocolumn
 
 %%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%
 %%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%---%%%
+
 
 
 \include{intro/intro}

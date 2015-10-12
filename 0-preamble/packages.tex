@@ -7,8 +7,8 @@
 
 \usepackage[
 breaklinks=true,colorlinks=true,
-linkcolor=blue,urlcolor=blue,citecolor=blue,% PDF VIEW
-%linkcolor=black,urlcolor=black,citecolor=black,% PRINT
+%linkcolor=blue,urlcolor=blue,citecolor=blue,% PDF VIEW
+linkcolor=black,urlcolor=black,citecolor=black,% PRINT
 bookmarks=true,bookmarksopenlevel=2]{hyperref}
 
 \usepackage{geometry}
@@ -80,3 +80,9 @@ bindingoffset=10mm, top=25mm,bottom=25mm}
 	morekeywords={var},
 	tabsize=2
 	}
+	
+\usepackage{adjustbox}
+\usepackage{datetime2}
+\DTMsetdatestyle{ddmmyyyy}
+
+\usepackage{etoolbox}

@@ -44,8 +44,8 @@ The goal of the \rf{extract formula} refactoring is to move part of a formula ex
 
 \begin{figure}
 	\centering
-	\includegraphics[width=7cm]{implementation/contextmenu}
-	\caption{BumbleBee context menu. \todo{replace dummy}}
+	\includegraphics{implementation/contextmenu}
+	\caption{BumbleBee context menu.}
 	\label{fig:contextmenu}
 \end{figure}
 
@@ -300,6 +300,10 @@ Secondly this keeps the name consistent with the \rf{Introduce Conditional Aggre
 This refactoring is a one-click refactoring that is activated from the cell context menu, no additional user input is needed.
 In the user interface it will always transparently be followed by the \rf{Group References} refactoring.
 
+The refactoring shares a menu item with \nameref{refac:introduceconditionalaggregate}, as the operator will be changed to a SUMIF if applicable.
+The menu item is called ``Change to SUM or SUMIF'' to make it easier to understand for users, because \rf{Introduce (Conditional) Aggregate} is abstract and contains jargon.
+While ``Change to SUM or SUMIF'' does not fully describe the refactoring, this will be the most common use case and easy to understand for spreadsheet users.
+
 \subsection{Implementation}
 
 The implementation traverses the formula AST until it encounters the first operator it can refactor.
@@ -356,7 +360,7 @@ Because this was the most common pattern we will focus on \f{SUM} and \f{SUMIF},
 
 \subsection{User Interface}
 
-This refactoring shares a context menu entry with \rf{Introduce Aggregate} as \emph{Introduce (Conditional) Aggregate}.
+This refactoring shares a context menu entry with \rf{Introduce Aggregate}.
 
 \subsection{Implementation}
 

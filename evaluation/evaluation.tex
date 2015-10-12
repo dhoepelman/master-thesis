@@ -39,16 +39,6 @@ However, a member of the spreadsheet lab who used the parser to process the same
 
 \subsection{Analysis}
 
-\begin{table}
-	\centering
-	%\resizebox{0.5\textwidth}{!}{
-	%\input{evaluation/table-occurences}
-	%}
-	\todo{Tabel hier plaatsen zonder dat het de hele pagina opeet}
-	\caption{Occurrence frequency of tokens and production rules in all parsed formulas.}
-	\label{table:occurences}
-\end{table}
-
 For all the formulas extracted from the Enron and EUSES datasets a count was performed of which tokens (terminals, leaf nodes of the parse tree) and which production rules (non-terminal, internal nodes of the parse tree) were used when parsing the formula.
 
 At least one reference was used in 99.2\% of the formulas, which shows that references are an integral part of spreadsheets.
@@ -63,3 +53,12 @@ Intersections, unions and constant arrays are powerful constructs, but apparentl
 Interestingly, some of these constructs are quite hard to parse.
 Especially unions and intersections complicate the grammar because of their curious syntax.
 Because these constructs are so rare this means they are prime candidates to leave out of the grammar if simplification is desired.
+
+\begin{table}
+	\centering
+	\resizebox{\columnwidth}{!}{%
+	\input{evaluation/table-occurences}%
+	}
+	\caption{Occurrence frequency of tokens and production rules in all parsed formulas.}
+	\label{table:occurences}
+\end{table}

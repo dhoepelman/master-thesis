@@ -261,7 +261,8 @@ With the above production rules a LALR(1) parser could not correctly parse the l
 
 The presented grammar only parsers unions in between parentheses, e.g. \texttt{=SMALL((A1,A2),1)}.
 This is a trade-off between a lower compatibility (design goal 1) and an easier implementation (design goal 3).
-Because unions are only extremely rarely used, as can be seen in Chapter \ref{chapter:evaluation} they were only encountered in 0.002\% of formulas, this lower compatibility is deemed acceptable.
+This lower compatibility is deemed acceptable, because unions are only extremely rarely used.
+In the evaluation as described in Chapter \ref{chapter:evaluation} unions were only encountered in 0.002\% of formulas.
 
 Additionally formulas that this grammar does not parse often result in an error value after evaluation in Excel.
 For example \texttt{=A1,A1} does parse in Excel, but produces the error \texttt{\#VALUE!} on evaluation.
