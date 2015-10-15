@@ -11,7 +11,7 @@
 \caption{This chapter details the boxed elements of the refactoring process: the properties and syntax of spreadsheets and formulas strings.}
 \end{figure}
 
-In order to be able to parse or refactor spreadsheets, a solid understanding of their inner workings is necessary, especially of the formula language.
+In order to be able to create a parser or refactor-tool for spreadsheets, a solid understanding of their inner workings is necessary, especially of the formula language.
 
 By a large margin, the most widely used spreadsheet system is Microsoft Office Excel, which has a self-reported install base of 1.2 billion users \cite{microsoftByTheNumbers}.
 Two less-popular but still common implementations are Apache OpenOffice Calc and LibreOffice Calc, which evolved from the same product and thus have largely identical semantics.
@@ -19,7 +19,7 @@ LibreOffice has a self-reported install base of 75 million users.
 Google Sheets is another common implementation, and is special because it was the first large web-based collaborative spreadsheet program.
 Google does not report usage numbers, but in 2010 has said it is used by "tens of millions" of users.
 There are many other spreadsheet implementations, but none of them come close to Microsoft Excel's market share, and most are smaller than LibreOffice and Google Spreadsheets.
-When referencing "all" spreadsheet programs, this is meant as the three implementations previously mentioned: Microsoft Excel, LibreOffice and Google Sheets.
+When referencing "all" spreadsheet programs, this indicates the three implementations previously mentioned: Microsoft Excel, LibreOffice and Google Sheets.
 These three implementations are the systems studied because of their market share.
 
 \newpage
@@ -85,19 +85,20 @@ The spreadsheet model is Turing complete, as proven by an Excel 2010 implementat
 
 \section{Formulas}
 
+All spreadsheet programs currently use a 
 Currently two major formula languages exist in spreadsheets. The first is the Office Open XML spreadsheet language which is a standarization of the Excel language, which is currently used by Microsoft Excel.
 The second is OASIS OpenDocument OpenFormula, which is part of the OpenDocument format which is based on the OpenOffice.org format.
 Google Sheets claims to implement OpenFormula, but has some differences which are noted in their specific sections.
 Both languages are very similar and this section covers both unless otherwise noted.
 
-Formulas consist of an expression which can contain constant values, \key{function calls} and \key{operators} and, most importantly, \key{references} to other cells.
+Formulas consist of an expression which can contain constant values, function calls and operators and, most importantly, references to other cells.
 A cell is identified as a formula cell because all formulas must start with the equals sign \f{=}.
 
 \subsection{Function calls and operators}
 
-Function calls are performed similar to other programming languages by starting with the function name, followed by the arguments in parentheses, separated by a comma.
+Function calls are performed, similar to other programming languages, by starting with the function name, followed by the arguments in parentheses, separated by a comma.
 All spreadsheet implementations provide a range of built-in functions, and in most spreadsheet implementations it is possible to define new functions yourself.
-However in current implementations this is not done directly inside the spreadsheet, and uses an alternate programming language.
+However in current implementations this is not done directly inside the spreadsheet, instead using an alternate programming language.
 In Microsoft Excel and LibreOffice this is done with a variant of the BASIC programming language, while in Google Sheets this is done with Javascript.
 A way for the user to define functions in the spreadsheet itself has been proposed by Peyton Jones et. al \cite{jones2003user}, but as of now has not been implemented in mainstream spreadsheet programs yet.
 
@@ -105,10 +106,10 @@ The binary operators \f{+ - * / = >= <= < >} and \f{<>} (inequality) can be used
 \f{+} and \f{-} are available both unary (\f{=-1}) and binary (\f{=1-1}).
 Additionally the \f{\%} postfix unary operator is defined to transform a number into a percentage (divining it by 100), \f{\textasciicircum} is the exponentiation operator and \f{\&} is the text concatenation operator.
 
-Spreadsheet program contain three fairly unique binary operators, the semantics of which are detailed in section \ref{sec:references}.
+Spreadsheet program contain three fairly unique binary operators, the semantics of which are detailed in Section \ref{sec:references}.
 Firstly there is the range operator \f{:} then the union operator (\f{,} in Excel and \f{\textasciitilde} in OpenFormula) and lastly the intersection operator (\f{\char32} in Excel and \f{!} in OpenFormula).
 Note that OpenFormula diverges from the Excel syntax, possibly because the comma already is used in other places in the language and a single space as an operator is highly unusual.
-The Excel characters for the operators will be used from now on.
+The Excel characters for the operators will be used in the remainder of this thesis.
 
 \subsection{References}
 \label{sec:references}
@@ -143,7 +144,7 @@ For example one can give the name \f{TAX\_RATE} to cell \f{A2} and then use this
 \subsection{Structured References}
 
 A recent, Excel 2007, addition to the Excel formula language are structured (table) references.
-To use this feature, a table can be given a name and must have headers.
+To use this feature, a table must be given a name and column headers.
 One can then reference a column in the table by entering \f{TableName[ColumnName]}.
 Inside the square brackets reference operators can be used to construct more complex references, \f{TableName[Column1,Column4]} references two columns.
 
@@ -214,7 +215,7 @@ When constructed from constant values they are called \emph{array constants}, e.
 They are surrounded by curly brackets, columns are separated by commas, and rows by semicolons.
 Several matrix operations are available, for example \f{=SUM(\{1,2,3\}*10)} will evaluate to 60.
 
-\emph{Array Formulas} use the same syntax as normal formulas, except that the user must enter \emph{Ctrl} + \emph{Shift} + \emph{Enter} to signal that it is an Array formula.
+\emph{Array formulas} use the same syntax as normal formulas, except that the user must enter \emph{Ctrl} + \emph{Shift} + \emph{Enter} to signal that it is an Array formula.
 Excel and LibreOffice surround the formula with curly braces.
 Google Sheets works differently and requires the user to surround an array formula with \f{ARRAYFORMULA($\ldots$)}.
 
@@ -245,7 +246,7 @@ Errors behave similar to exceptions in that they will propagate throughout a cal
 
 \item[Ranges and arrays] are one- or two-dimensional matrices of any non-array values. Arrays are rarely used outside of array formulas, but ranges are very common in formulas.
 However, these types usually only serve as inputs for functions and are thus fairly transparent to the user outside of array formulas.
-Both types usually cannot generally be, doing so will result in the \f{\#VALUE!} error.
+Both types usually cannot generally be coerced, doing so will result in the \f{\#VALUE!} error.
 \end{itemize}
 
 Some other "display types" exists, these can change the way the data is presented to or validated from the user and can have implications when inter-operating with other programs.

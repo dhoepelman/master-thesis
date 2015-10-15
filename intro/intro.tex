@@ -17,7 +17,7 @@ Using this view as a baseline, the group works on translating tried and proven s
 As part of this effort, a spreadsheet formula refactoring tool called BumbleBee was developed by Hermans and Dig \cite{hermans2014bumblebee}.
 This tool allows a formula to be transformed into another by defining a transformation rule, which works very similar to a pattern or regular expression replacement in a text editor.
 
-However this approach has the downside that it can only considers one formula, and not the spreadsheet as a whole.
+However this approach has the downside that it can only consider one formula, and not the spreadsheet as a whole.
 This leads to a lack of power to implement all spreadsheet refactorings, such as those implemented by Badame and Dig \cite{badame2012refactoring} in earlier work.
 I joined the group to extend the capabilities of BumbleBee so that it could take context into account when performing refactorings, and implement more refactorings in BumbleBee.
 
@@ -28,7 +28,7 @@ I joined the group to extend the capabilities of BumbleBee so that it could take
 \label{fig:refactoring-process}
 \end{figure}
 
-After the initial literature research I started implementing refactorings, but encountered a fundamental problem in doing so.
+After the initial literature research, I started implementing refactorings, but encountered a fundamental problem in doing so.
 The standard way of implementing refactorings, illustrated in Figure \ref{fig:refactoring-process}, is by parsing the source code to an Abstract Syntax Tree (AST), which represents the structure of the program.
 This AST can then be manipulated into the desired form, after which it can be converted back to source code (this is called printing or pretty-printing).
 While BumbleBee contained a home-grown parser, I found a range of formulas that were either not parsable, or parsed into an incorrect AST.
@@ -48,7 +48,7 @@ This paper is partially re-used in this thesis report.
 The second contribution is an improved version of BumbleBee\footnote{\todo{URL Bumblebee when released.}}, which implements the refactorings described in Chapter \ref{chapter:implementingrefactorings}: \nameref{refac:extractformula}, \nameref{refac:inlineformula}, \nameref{refac:introducecellname}, \nameref{refac:groupreferences}, \nameref{refac:introduceaggregate} and \nameref{refac:introduceconditionalaggregate}.
 
 
-Of these refactorings, \rf{Inline Formula}, \rf{Group References} and \rf{Introduce Conditional Aggregate} where not implemented in any previous work known to the author, and \rf{Extract Formula} and \rf{Introduce Aggregate} offer significant improvements over previous implementations.
+Of these refactorings, \rf{Inline Formula}, \rf{Group References} and \rf{Introduce Conditional Aggregate} where not implemented in any previous work known to us, and \rf{Extract Formula} and \rf{Introduce Aggregate} offer significant improvements over previous implementations.
 
 \newpage
 
@@ -60,7 +60,7 @@ This paper is attached verbatim as published in appendix \ref{appendix:xlparser}
 Chapter \ref{chapter:anatomy} is based on Section \rom{2}, and was primarily written by the thesis author.
 Chapter \ref{chapter:parsing} is an updated and extended version of Section \rom{3}, and was primarily written by the thesis author with contributions from Efthimia Aivaloglou, except for Chapter \ref{chapter:evaluation}, which incorporates parts of Section \rom{4} of the paper which was primarily written by Efthimia Aivaloglou, who also performed the evaluation. 
 
-The grammar implementation (XLParser) was primarily done by the thesis author, but the implementation is based on the previous (un-named) parser which was primarily developed by Efthimia Aivalgoglou and Felienne Hermans.
+The grammar implementation (XLParser) was primarily done by the thesis author, but the implementation is based on the previous (un-named) parser which was primarily developed by Efthimia Aivaloglou and Felienne Hermans.
 The spreadsheet scantool used to evaluate XLParser, which extracts formulas from spreadsheet files, was developed as part of Infotron B.V.\footnote{\url{http://www.infotron.nl/}}, with many authors. The thesis author did not contribute to this tool.
 
 The refactorings described in Chapter \ref{chapter:implementingrefactorings} were added to the existing BumbleBee Excel add-in developed by Felienne Hermans, but these refactorings were solely implemented by the author with very little of the existing infrastructure used.
@@ -68,7 +68,7 @@ The refactorings described in Chapter \ref{chapter:implementingrefactorings} wer
 \subsection{Outline}
 
 Chapter \ref{chapter:previouswork} details previous and related work on spreadsheet refactoring.
-A passing knowledge of Excel and more in-depth knowledge of Excel formulas is needed to read the rest of this thesis, which is bundled in Chapter \ref{chapter:anatomy} "\nameref{chapter:anatomy}".
+A passing knowledge of Excel and more in-depth knowledge of Excel formulas is needed to read the rest of this thesis, which is bundled in Chapter \ref{chapter:anatomy}.
 
 Chapter \ref{chapter:parsing} covers how XLParser parses spreadsheet formulas and why it was designed as it was.
 Chapter \ref{chapter:implementingrefactorings} describes which spreadsheet refactorings were implemented and how this was done.

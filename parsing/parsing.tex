@@ -8,7 +8,7 @@
 \begin{figure}[h]
 \centerfloat
 \input{parsing/refactoring-process-parsing}
-\caption{This chapter details parsing, converting a string formula to an AST.}
+\caption{Overview of the refactoring process. This chapter details parsing, converting a string formula to an AST.}
 \end{figure}
 
 
@@ -18,18 +18,18 @@ This chapter assumes the reader is familiar with basic parser theory, a good ove
 \section{Motivation}
 \label{sec:motivation}
 
-In order to implement refactorings of spreadsheets a refactoring tool must be able to manipulate spreadsheets.
-Excel exposes an API to retrieve and set the contents of a spreadsheet file, but this API only works on a formula string level.
+In order to implement refactorings of spreadsheets, a refactoring tool must be able to manipulate spreadsheets.
+Excel exposes an API to retrieve and update the contents of a spreadsheet file, but this API only works on a formula string level.
 The usual way to implement refactorings is by manipulating the original program's AST until it represents the desired program, and then print that back to a string.
 Because Excel does not expose the AST or parse tree of formulas, a refactoring tool needs to contain a parser for Excel formulas.
 
 Bumblebee relied on a parser developed over the years for previous research, however this parser suffered from having new rules added on over time, often in an inconsistent manner and not fully supporting the whole language.
 Furthermore the parser interpreted some language constructs wrong and missed several features, which made implementing refactorings hard.
-For example operator precedence was not taken into account, causing the formula \f{=A1 + A2 * A3} to be parsed as \f{=(A1 + A2) * A3}, which subtly and unexpectedly breaks numerous refactorings.
+For example, operator precedence was not taken into account, causing the formula \f{=A1 + A2 * A3} to be parsed as \f{=(A1 + A2) * A3}, which subtly and unexpectedly breaks numerous refactorings.
 The existing parser thus was insufficient to implement the Bumblebee refactorings.
 A better parser was needed, thus the goal of this thesis shifted toward procuring a better parser for Excel formulas.
 
-For Bumblebee and other research on spreadsheet formulas the following design goals were formulated for the parser and grammar within the spreadsheet lab group:
+For Bumblebee and other research on spreadsheet formulas the following design goals were formulated for the parser and grammar within the Spreadsheet lab group:
 
 \begin{enumerate}
 \label{sec:designgoals}
@@ -47,7 +47,7 @@ The end result of this effort is an independent, open-source parser for Excel fo
 
 \section{Improvements over existing parser}
 
-The improvements XLParser made over the existing parser generally fall into one of the following categories:
+The improvements XLParser made over the existing parser fall into one of the following categories:
 
 \subsection{More frequent rejecting of invalid formulas}
 
@@ -78,13 +78,12 @@ Several smaller corrections have also been made.
 For example in the previous version \f{=F(1,,1)} and \f{=F(1,1)} produced an identical AST, while they have a different meaning, especially in the case of user defined functions.
 
 \subsubsection{Homogenization}
-The previous parser was constructed with a relatively clean base grammar, but over time rules were added in a fairly ad-hoc manner.
-This caused the rules and therefore the AST to become quite messy in some cases.
-XLParser solved this by reducing the grammar to a relatively clean grammar again.
+The previous parser was constructed with a clean base grammar, over time additions were made to deal with constructs which could not be parsed.
+This caused the rules and therefore the AST to become inconsistent in some cases.
+XLParser solved this by reducing the grammar to a clean grammar again and solving inconcsistencies.
 However, this advantage is subjective and hard to quantify.
-An example of this are User Defined Functions which produces a very different AST depending on whether they were internal \f{=UDF()} or external \f{=[1]UDF()}.
+An example of this are user defined functions which produced a different AST depending on whether they were internal \f{=UDF()} or external \f{=[1]UDF()}.
 Another example are prefixes, all of the following used different tokens and productions rules: \f{=Sheet!A1}, \f{='Sheet'!A1}, \f{=[1]Sheet!A1} and \f{='[1]Sheet'!A1} while in XLParser the tokens are unformalized, and the production rules are cleaner in the authors opinion.
-
 
 \section{Parser implementation}
 
@@ -118,7 +117,7 @@ Some simple tokens (e.g. '\%', '!') are directly defined in the production rules
 The appearance of date and time values in spreadsheets depends on the presentation settings of cells. Internally, date and time values are stored as positive floating point numbers with the integer portion representing the number of days since a Jan 0 1900 epoch\footnote{Note that 1900 is incorrectly considered a leap year, due to a bug in Lotus 1-2-3 (first released in 1983) which was deliberately copied into the first Excel release and has since then been preserved for backwards compatibility reasons.} and the fractional portion representing the portion of the day passed.
 
 When extracting formulas from spreadsheets, only the floating point value is available.
-The parser will thus never see the formatted notation of the date.
+The parser will thus never encounter the formatted notation of the date.
 For this reason, the grammar only parses numeric dates and times and these are not distinguishable from other numbers.
 
 \newpage
@@ -136,7 +135,8 @@ For this reason, the grammar only parses numeric dates and times and these are n
 
 The complete production rules of the grammar are listed in Extended BNF syntax in Figure \ref{figure:productions}.
 Patterns inside \{ and \} can be repeated zero or more times.
-The start symbol is $Start$. An example parse tree produced using this grammar is drawn in Figure \ref{figure:parsetrees}(b).
+The start symbol is $Start$.
+%An example parse tree produced using this grammar is drawn in Figure \ref{figure:parsetrees}(b).
 
 The \synt{Formula} rule covers all types of spreadsheet formula expressions: they can be constants (\texttt{=5}), references (\texttt{=A3}), function calls and operators (\texttt{=SUM(A1,A2)}), array constants (\texttt{=\{1,2;3,4\}} or reserved names (\texttt{=_xlnm.Print_Area}).
 The \synt{Reference} rule covers a subset of expressions known as references expressions: internal or external cell and range references, functions and operators which can return references, named ranges, structured ranges and dynamic data exchanges.
@@ -183,13 +183,13 @@ The \synt{Reference} rule covers a subset of expressions known as references exp
 \footnotetext{This is contrary to most other languages, where the exponentiation operator is right-associative. \\
 In Excel \f{2\textasciicircum 1\textasciicircum 2} will be $(2^1)^2 = 4$, while in most other languages it will be $2^{1^2} = 2$}
 
-The production rules are ambiguous, which means they cannot be directly used in a parser generator based on the LALR algorithm like Irony.
+The production rules are ambiguous, which means they cannot be directly used in a parser generator based on the LALR(1) algorithm like Irony.
 
 To resolve ambiguity with operators, e.g. whether to parse \f{=1+2*3} as \f{=(1+2)*3} or \f{=1+(2*3)}, operator precedence and associativity rules are defined.
 These can be found in Table \ref{table:operatorprec}.
 
 However, even with precedence and associativity rules the grammar is still not fully un-ambigious.
-This is due to trade-offs on parsing references, see Section \ref{tradeoff:references}, and parsing unions (see section \ref{subsec:desing:unions}).
+This is due to trade-offs on parsing references ( see Section \ref{tradeoff:references}) and parsing unions (see Section \ref{subsec:desing:unions}).
 Ambiguity exists between the following production rules:
 \begin{enumerate}
 	\item \begin{grammar}<Reference> ::= `(' <Reference> `)'\end{grammar}
@@ -199,7 +199,7 @@ Ambiguity exists between the following production rules:
 
 A formula like \texttt{=(A1)} can be interpreted as either a bracketed reference, a union of one reference, or a reference within a bracketed formula.
 
-In a LALR parser, which Irony produces, this ambiguity manifests in a state where, on a \texttt{')'} token, shifting on rule 1 and reducing on either rule 2 or 3 are possibilities, causing a shift-reduce conflict.
+In a LALR(1) parser, which Irony produces, this ambiguity manifests in a state where, on a \texttt{')'} token, shifting on rule 1 and reducing on either rule 2 or 3 are possibilities, causing a shift-reduce conflict.
 This was solved by instructing the parser generator to shift on rule 1 in case of this conflict, because this always is a correct interpretation and thus results in correct ASTs.
 
 \newpage
@@ -234,7 +234,7 @@ For example the formula \f{=SUM(IF(\ldots):A1)} is valid, while \f{=SUM((1+1):A1
 This is not unique to reference expressions, for example the operator \f{+} only operates on numeric values, making the expression \f{="a"+1} invalid.
 What does make reference expressions special is how Excel treats them.
 A formula which uses a non-reference expression where a reference expression is required, like the previously mentioned \f{=SUM((1+1):A1)}, will result in a parse error which means excel will not accept this formula from the user.
-Meanwhile \f{="a"+1} will only result in a runtime error, an error value, but will be still parsed and evaluated.
+Meanwhile \f{="a"+1} will only result in a runtime error \f{\#VALUE!}, but will be still parsed and evaluated.
 
 For XLParser we had three options: do not concern ourselves with invalidly type expressions, incorporate the reference expression rules into the grammar, or implement a type system similar to how this would be done in a full compiler and reject invalidly typed expressions.
 The first option is by far the simplest, but would result in a lot of invalid formulas being accepted, the second option would result in a more complicated grammar and might not even be possible, while the third option would result in an additional layer on top of the parser generator.

@@ -11,7 +11,7 @@
 \caption{This chapter details the AST to AST transformations that implement the refactorings.}
 \end{figure}
 
-Refactoring a spreadsheet involves changing the worksheets, cells and formulas in a workbook in such a way that the desired change is performed.
+Refactoring a spreadsheet involves changing the worksheets, cells and formulas in a workbook.
 Excel provides an API to change the worksheet and cells, and most other elements of a workbook.
 When it is desired to refactor formulas this means the original formula string must be changed into a new formula string.
 This is usually implemented by parsing the formula, performing the desired transformations on the AST and then printing the AST back to a string form \cite{fowler1999refactoring}.
@@ -76,7 +76,7 @@ The goal of the \rf{extract formula} refactoring is to move part of a formula ex
 \label{fig:extractformulaexample2}
 \end{figure}
 
-This refactoring requires the user to select cell(s) to be refactored, type in the subformula to be extracted and select where the extraction should occur to.
+This refactoring requires the user to select cell(s) to be refactored, enter the subformula to be extracted and select where the extraction should occur to.
 Figure \ref{fig:extractformulaexample2} shows the process as experienced by the user.
 The user first selects the formulas to be extracted (Figure \ref{fig:extractformulaexample2}a) and clicks the Extract Formula entry in the refactoring context menu (not shown).
 A side-panel pops out which allows the user to enter the sub-formula to be extracted and where it should be extracted to (Figure \ref{fig:extractformulaexample2}b) and presses the Extract Formula button.
@@ -88,7 +88,7 @@ The author leaves this a future work.
 
 \subsection{Implementation}
 
-This section describes the details of the refactoring implementation, which consists of 2 parts: an AST tranformation of the formula, and a modification of the worksheet.
+This subsection describes the details of the refactoring implementation, which consists of 2 parts: an AST tranformation of the formula, and a modification of the worksheet.
 The first part operates solely on the formula and refactors it to the desired form, the second part handles actual placement of the formula in the cells and the moving if necessary.
 
 \subsubsection{AST Transformation}
@@ -106,7 +106,7 @@ In contrast, this transformation searches for the \f{[a]} "inner" formula, and r
 
 \subsubsection{Spreadsheet refactoring}
 
-The AST replacement is performed on the original formula yielding a new formula, which is assigned to the cell that needs to be refactored.
+The AST replacement is performed on the original formula yielding a new formula, which is assigned to the cell that is being refactored.
 If multiple cells are refactored at once, the AST replacement is performed on all of them.
 Formulas with the same original R1C1 formula will have the same new R1C1 formula, so the AST replacement is only performed once per unique R1C1 formula and the resulting formula is re-used.
 
@@ -132,7 +132,7 @@ The C\# code for the spreadsheet refactoring can be found in Listing \ref{lst:ex
 
 \subsection{Detection of applicability}
 
-Extract formula is always applicable to a formula cell, as even a very simple formula like \f{=A1} still has a component that can be extracted.
+\rf{Extract formula} is always applicable to a formula cell, as even a very simple formula like \f{=A1} still has a component that can be extracted.
 In this case if \f{=A1} would be extracted to \f{B1} the original cell would become \f{=B1}.
 This could be repeated endlessly, similarly to how one could always extract a method that only consists of a call to another method.
 Whether it is a good thing to perform this refactoring is dubious, but BumbleBee relies on the user to make this assessment.
@@ -212,8 +212,8 @@ Doing the full check would introduce significant delay every time the user would
 \section{\rf{Introduce Cell Name}}
 \label{refac:introducecellname}
 
-As noted in Chapter \ref{chapter:anatomy}, a cell or range can have a user defined name attached to it.
-In formulas the user can then reference that cell or range by name instead of its location.
+As noted in Chapter \ref{chapter:anatomy}, a cell or range can have a user defined name.
+If the user has defined a name for a cell or range, this name can be used in formulas instead of its location.
 
 This is the motivation for the \rf{Introduce Cell Name} refactoring which was defined by Badame and Dig \cite{badame2012refactoring}.
 With this refactoring, a user can define a name for a cell, and all references to that cell will be replaced the name.
@@ -274,13 +274,13 @@ The implementation traverses the formula AST, and, for every function with a var
 The function arguments then are replaced by grouped references and the AST is printed back to the formula cell.
 References are processed separately depending on their absolute markers, e.g. \f{A1},\f{\$A1}, \f{A\$1} and \f{\$A\$1}, because grouping references with different markers cannot be done without changing the meaning of the formula.
 
-If multiple cells are selected, the refactoring is repeated for every one.
+\noindent If multiple cells are selected, the refactoring is repeated for every one.
 
-The C\# code for this refactoring can be found in Listing \ref{lst:groupreferences}
+\noindent The C\# code for this refactoring can be found in Listing \ref{lst:groupreferences}
 
 \subsection{Detection of applicability}
 
-This refactoring will be available to the user if the formula contains 2 or more references.
+This refactoring will be available to the user if the formula contains two or more references.
 
 \section{\rf{Introduce Aggregate}}
 \label{refac:introduceaggregate}
@@ -325,7 +325,7 @@ However, BumbleBee does improve over RefBook in several ways related to this ref
 
 A first improvement in BumbleBee's implementation comes through the underlying parser: the RefBooks parser does not take operator precedence into account, and therefore a formula like \f{=1 + 2 * 3 + 4} would be refactored into \f{=SUM(1,2 * 3 + 4)} by RefBook, while BumbleBee refactors it into \f{=SUM(1,2 * 3,4)}.
 
-A second improvement comes by tying this refactoring into two other refactorings through the user interface.
+A second improvement comes by combining this refactoring with two other refactorings through the user interface.
 Combining this refactoring with \rf{Group References} allows a formula like \f{=A1+A2+A3+A4} to be rewritten into \f{=SUM(A1:A4)} instead of just \f{=SUM(A1,A2,A3,A4)}.
 Combining this refactoring with \rf{Introduce Conditional Aggregate} when the spreadsheet data allows for this enables a formula like \f{=B12+B24+B36} to be rewritten into \f{=SUMIF("2015", B:B)} instead of just \f{=SUM(B12,B24,B36)}.
 
