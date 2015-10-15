@@ -24,7 +24,7 @@ These three implementations are the systems studied because of their market shar
 
 \newpage
 
-Although exotic forms of spreadsheets are available and have been researched, all mainstream implementations use the following model:
+All mainstream implementations use the following model:
 \begin{itemize}
 \item A single spreadsheet \key{file} corresponds to a single (\key{work})\key{book}.
 \item A workbook can contain any number of (\key{work})\key{sheets}.
@@ -85,11 +85,9 @@ The spreadsheet model is Turing complete, as proven by an Excel 2010 implementat
 
 \section{Formulas}
 
-All spreadsheet programs currently use a 
-Currently two major formula languages exist in spreadsheets. The first is the Office Open XML spreadsheet language which is a standarization of the Excel language, which is currently used by Microsoft Excel.
-The second is OASIS OpenDocument OpenFormula, which is part of the OpenDocument format which is based on the OpenOffice.org format.
-Google Sheets claims to implement OpenFormula, but has some differences which are noted in their specific sections.
-Both languages are very similar and this section covers both unless otherwise noted.
+All spreadsheet programs currently use dialects of the same formula language.
+Two of these dialects have been standardized: Office Open XML spreadsheet language is a standardization of the Excel language and OASIS OpenFormula, which is part of the OpenDocument standard and aims to provide a specification for all dialects.
+Both dialects are very similar and this section covers both unless otherwise noted.
 
 Formulas consist of an expression which can contain constant values, function calls and operators and, most importantly, references to other cells.
 A cell is identified as a formula cell because all formulas must start with the equals sign \f{=}.
@@ -106,7 +104,7 @@ The binary operators \f{+ - * / = >= <= < >} and \f{<>} (inequality) can be used
 \f{+} and \f{-} are available both unary (\f{=-1}) and binary (\f{=1-1}).
 Additionally the \f{\%} postfix unary operator is defined to transform a number into a percentage (divining it by 100), \f{\textasciicircum} is the exponentiation operator and \f{\&} is the text concatenation operator.
 
-Spreadsheet program contain three fairly unique binary operators, the semantics of which are detailed in Section \ref{sec:references}.
+Spreadsheet program contain three fairly unique binary operators, the semantics of which are detailed in Subsection \ref{sec:references}.
 Firstly there is the range operator \f{:} then the union operator (\f{,} in Excel and \f{\textasciitilde} in OpenFormula) and lastly the intersection operator (\f{\char32} in Excel and \f{!} in OpenFormula).
 Note that OpenFormula diverges from the Excel syntax, possibly because the comma already is used in other places in the language and a single space as an operator is highly unusual.
 The Excel characters for the operators will be used in the remainder of this thesis.
@@ -130,7 +128,7 @@ The formula \f{=\$A\$1} will remain the same on copy while \f{=\$A1} will still 
 \end{figure}
 
 
-\subsection{Ranges}
+\subsubsection{Ranges}
 References can also be \emph{ranges}, which are collections of cells.
 Ranges can be constructed by three operators: the range operator \f{:}, the union operator \f{,} (a comma) and the intersection operator \f{\char32} (a space).
 The range operator \f{:} creates a rectangular range with the two cells as top-left and bottom-right corners, so \f{=SUM(A1:B10)} will sum all cells in columns A and B with row number 1 through 10.
@@ -141,9 +139,9 @@ Lastly the intersection operator takes only the cells which are in both argument
 A user can also give a name to any collection of cells, thus creating a \emph{named range} which can be referenced in formulas by name.
 For example one can give the name \f{TAX\_RATE} to cell \f{A2} and then use this in a formula: \f{=C3+C3*TAX\_RATE} instead of \f{=C3+C3*\$A\$2}.
 
-\subsection{Structured References}
+\subsubsection{Structured References}
 
-A recent, Excel 2007, addition to the Excel formula language are structured (table) references.
+A recent addition to the Excel formula language introduced in Excel 2007 are structured (table) references.
 To use this feature, a table must be given a name and column headers.
 One can then reference a column in the table by entering \f{TableName[ColumnName]}.
 Inside the square brackets reference operators can be used to construct more complex references, \f{TableName[Column1,Column4]} references two columns.
@@ -153,7 +151,7 @@ The \f{\#This Row} keyword and the \f{@} operator are used for this: \f{TableNam
 
 This feature is meant to make formulas easier to read, by references in a formula like \f{=SUM(F1:F10)-SUM(I1:I10)} with human-readable names like \f{=SUM(Budget[Revenue]) - SUM(Budget[Expenses])}.
 
-\subsection{R1C1 reference style}
+\subsubsection{R1C1 reference style}
 
 An alternate style called R1C1 as opposed to the above A1 style exists, but it is only rarely used by users in modern spreadsheet implementations.
 In R1C1 reference style one specifies either the offset to a cell between square brackets or its concrete location.
@@ -176,7 +174,7 @@ These properties make R1C1 useful as an internal representation in spreadsheet i
 \label{fig:r1c1comp}
 \end{figure}
 
-\subsection{Non-local references}
+\subsubsection{Non-local references}
 \label{subsection:ExternalRefsDDE}
 
 References refer to cells or ranges in the same sheet as the formula by default, but this can be modified with a prefix. A non-local reference consists a prefix indicating the location, followed by an exclamation mark, followed by the actual reference.
