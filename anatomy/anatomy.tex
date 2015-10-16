@@ -139,6 +139,13 @@ Lastly the intersection operator takes only the cells which are in both argument
 A user can also give a name to any collection of cells, thus creating a \emph{named range} which can be referenced in formulas by name.
 For example one can give the name \f{TAX\_RATE} to cell \f{A2} and then use this in a formula: \f{=C3+C3*TAX\_RATE} instead of \f{=C3+C3*\$A\$2}.
 
+\begin{figure}
+\centering
+\includegraphics{anatomy/structuredreferences}
+\caption{Example usage of structured references}
+\label{fig:structuredreferences}
+\end{figure}
+
 \subsubsection{Structured References}
 
 A recent addition to the Excel formula language introduced in Excel 2007 are structured (table) references.
@@ -149,7 +156,7 @@ Inside the square brackets reference operators can be used to construct more com
 There is no way to reference a specific row, except the current row, for example if a formula is placed in \f{A3} it can only reference row number 3.
 The \f{\#This Row} keyword and the \f{@} operator are used for this: \f{TableName[\#This Row]} and \f{TableName[@]} both reference the current row number in the provided table, and \f{TableName[@ColumnName]} references the cell in the provided column of the current row number.
 
-This feature is meant to make formulas easier to read, by references in a formula like \f{=SUM(F1:F10)-SUM(I1:I10)} with human-readable names like \f{=SUM(Budget[Revenue]) - SUM(Budget[Expenses])}.
+This feature is meant to make formulas easier to read, by replacing references with human readable names as can be seen in Figure \ref{fig:structuredreferences}: the formula \f{=SUM(B2:B6) - SUM(C2:C6)} can instead be written as \f{=SUM(Budget[Revenue]) - SUM(Budget[Expenses])}.
 
 \subsubsection{R1C1 reference style}
 
@@ -194,6 +201,8 @@ Formulas are case-insensitive outside of the trivial case of string literals.
 Identifiers have a canonical capitalization, and while user can type the identifier with any casing only the canonical form will be displayed.
 While the canonical capitalization of built-in identifiers,functions and reserved names is usually uppercase, the canonical capitalization of an user-defined identifier, an user defined function or a named range, is as the user defined it originally.
 
+\newpage
+
 \subsection{Whitespace sensitivity}
 
 The Excel formula language is whitespace sensitive in several places:
@@ -202,8 +211,6 @@ The Excel formula language is whitespace sensitive in several places:
 \item Whitespace is not allowed inside internal or external references: \f{=Sheet1 !A1} is invalid.
 \item The intersection operator is a single space: \f{=A:A 3:3} is the intersection of column \f{A} and row \f{3}, equivalent to \f{=A3}. (Excel formula language only)
 \end{itemize}
-
-\newpage
 
 \section{Array Formulas and Arrays}
 \label{sec:arrayformulas}

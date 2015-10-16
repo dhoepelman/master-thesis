@@ -19,15 +19,15 @@ This chapter assumes the reader is familiar with basic parser theory, a good ove
 \label{sec:motivation}
 
 In order to implement refactorings of spreadsheets, a refactoring tool must be able to manipulate spreadsheets.
-Excel exposes an API to retrieve and update the contents of a spreadsheet file, but this API only works on a formula string level.
 The usual way to implement refactorings is by manipulating the original program's AST until it represents the desired program, and then print that back to a string.
-Because Excel does not expose the AST or parse tree of formulas, a refactoring tool needs to contain a parser for Excel formulas.
+Excel exposes an API to retrieve and update the contents of a spreadsheet file, but this API only provides access to formula strings, and does not expose its parser or formula ASTs representations.
+Because of this, a refactoring tool needs to contain a parser for Excel formulas.
 
-Bumblebee relied on a parser developed over the years for previous research, however this parser suffered from having new rules added on over time, often in an inconsistent manner and not fully supporting the whole language.
-Furthermore the parser interpreted some language constructs wrong and missed several features, which made implementing refactorings hard.
-For example, operator precedence was not taken into account, causing the formula \f{=A1 + A2 * A3} to be parsed as \f{=(A1 + A2) * A3}, which subtly and unexpectedly breaks numerous refactorings.
-The existing parser thus was insufficient to implement the Bumblebee refactorings.
-A better parser was needed, thus the goal of this thesis shifted toward procuring a better parser for Excel formulas.
+Bumblebee relied on a parser developed over the years for previous research, however this parser had accrued technical debt due to new rules being added over time, sometimes in an inconsistent manner or not supporting the whole language.
+Furthermore the parser interpreted some language constructs wrong and missed several features, which made implementing refactorings hard and error-prone.
+For example, operator precedence was not taken into account, causing the formula \f{=A1 + A2 * A3} to be parsed as \f{=(A1 + A2) * A3}.
+The existing parser thus was insufficient to correctly implement the refactorings presented in this thesis.
+Thus an additional goal for this thesis became to create a better parser.
 
 For Bumblebee and other research on spreadsheet formulas the following design goals were formulated for the parser and grammar within the Spreadsheet lab group:
 
@@ -44,46 +44,6 @@ Secondly, because of the detail of the grammar and the large number of productio
 
 Because there is no suitable parser and grammar available that satisfy the above requirements, I decided to clean up and partially rewrite the parser in coorporation with other members of the Spreadsheet lab.
 The end result of this effort is an independent, open-source parser for Excel formulas called XLParser\footnote{https://github.com/PerfectXL/XLParser}, about which a paper was published in IEEE conference SCAM 2015 \cite{xlparser}.
-
-\section{Improvements over existing parser}
-
-The improvements XLParser made over the existing parser fall into one of the following categories:
-
-\subsection{More frequent rejecting of invalid formulas}
-
-XLParser is often less forgiving than the previous parser, and rejects more types of invalid formulas.
-This is most prominently noticable in reference expressions, becaues the old parser does not differentiate between reference and non-reference expressions.
-Therefore formulas like \f{=1 1} and \f{=LARGE((1,2,3),4)} are considered valid, while they are not and would be rejected by Excel.
-
-\subsection{Broader parsing of valid formulas}
-
-As can be found in Chapter \ref{chapter:evaluation}, XLParser has a very high parse success rate.
-
-Several language features were absent in the previous parser.
-Examples are ranges with multiple limits (\f{=SUM(A1:B2:C3:D4)}), structured table references (\f{=TableName[ColumnName]}), array constants \f{=SUM(\{1,2,3\})} and functions in reference expression (\f{=SUM(IF(TRUE,A1,B2):C5)}).
-While sometimes these features were very rare, they still were encountered in the available datasets.
-
-Furthermore the previous parser relied on a tool which extracted the formulas as stored in spreadsheets, while BumbleBee is used as an Excel add-in and therefore receives its formulas from Excel.
-These formulas sometimes slightly differ in at least one aspect: when external files are referenced a numeric reference is stored while Excel provides either the filename or the file path and name.
-Thus a formula could be received as \f{=[1]Sheet!A1} from the tool, and \f{=[File]Sheet!A1} or \f{='C:\textbackslash Path\textbackslash [File.xlxs]Sheet'!A1} by an Excel Add-In.
-XLParser supports al three formats, while the previous parser only supported the first.
-
-\subsection{AST improvements}
-
-\subsubsection{Correctness}
-
-While the AST correctness is unverified for both XLParser and the previous parser, several improvements have been made.
-Operator precedence has been mentioned before, this was not taken into consideration in the previous parser version, providing very problematic in BumbleBee's use-case.
-Several smaller corrections have also been made.
-For example in the previous version \f{=F(1,,1)} and \f{=F(1,1)} produced an identical AST, while they have a different meaning, especially in the case of user defined functions.
-
-\subsubsection{Homogenization}
-The previous parser was constructed with a clean base grammar, over time additions were made to deal with constructs which could not be parsed.
-This caused the rules and therefore the AST to become inconsistent in some cases.
-XLParser solved this by reducing the grammar to a clean grammar again and solving inconcsistencies.
-However, this advantage is subjective and hard to quantify.
-An example of this are user defined functions which produced a different AST depending on whether they were internal \f{=UDF()} or external \f{=[1]UDF()}.
-Another example are prefixes, all of the following used different tokens and productions rules: \f{=Sheet!A1}, \f{='Sheet'!A1}, \f{=[1]Sheet!A1} and \f{='[1]Sheet'!A1} while in XLParser the tokens are unformalized, and the production rules are cleaner in the authors opinion.
 
 \section{Parser implementation}
 
@@ -159,24 +119,24 @@ The \synt{Reference} rule covers a subset of expressions known as references exp
 
 \begin{table}
 \small
-\begin{tabular}{ll}
+\centering
+\begin{tabular}{lll}
 	\toprule
-	Precedence & Operator(s) \\
-	(higher is greater) & \\
+	Precedence & Operator(s) & Description \\
 	\midrule
-	1 & = \textless \  \textgreater \  \textless= \  \textgreater= \  \textless\textgreater          \\
-	2 & \&  \\
-	3 & + - (binary) \\
-	4 & $\ast$ / \\
-	5 & \textasciicircum \\
-	6 & \% \\
-	7 & + - (unary) \\
-	8 & , \\
-	9 & \texttt{\char32} \\
-	10 & : \\
+	1 & = \textless \  \textgreater \  \textless= \  \textgreater= \  \textless\textgreater   & Logical comparison       \\
+	2 & \& & Text concatenation \\
+	3 & + - (binary) & Addition and subtraction \\
+	4 & $\ast$ / & Multiplication and division \\
+	5 & \textasciicircum & Exponentiation \\
+	6 & \% & Division by 100 \\
+	7 & + - (unary) & No effect and inverting number sign \\
+	8 & , & Range union \\
+	9 & \texttt{\char32} & Range intersection \\
+	10 & : & Range construction \\
 	\bottomrule
 \end{tabular}
-\caption{Operator precedence in formulas}
+\caption{Operator precedence in formulas. Larger number means higher precedence.}
 \label{table:operatorprec}
 \end{table}
 
@@ -211,10 +171,10 @@ This was solved by instructing the parser generator to shift on rule 1 in case o
 	\caption{Section \ref{sec:printing} details AST pretty-printing, converting an AST to a string formula.}
 \end{figure}
 
-\section{Printing formula AST}
+\section{Pretty-printing the formula AST}
 \label{sec:printing}
 
-Printing a formula AST is the reverse operation of parsing, and is quite straightforward.
+Pretty-printing a formula AST is the reverse operation of parsing, and is quite straightforward.
 It can be done by describing for each tree node type how it can be translated back into a string, most of the time this is the exact reverse of the parser production rule.
 Nodes with children need to know the printed form of their children, this can be satisfied by starting at the root of the tree and calling the print function recursively for each child.
 A slightly simplified and compacted version of the XLParser code responsible for printing can be found in Appendix \ref{lst:xlparserprint}.
@@ -228,13 +188,13 @@ These are detailed in this section.
 \label{tradeoff:references}
 
 References play an important role in the spreadsheet paradigm and therefore in the formula language.
-In particular reference expressions, expressions which evaluate to a reference, are a subset of expressions and several operators and functions only accept reference expressions.
+Particularly reference expressions, expressions which evaluate to a reference, are a subset of expressions and several operators and functions only accept reference expressions.
 For example the formula \f{=SUM(IF(\ldots):A1)} is valid, while \f{=SUM((1+1):A1)} is not, because \f{IF} can return a reference while \f{+} cannot and the \f{:} operator only operates on references.
 
 This is not unique to reference expressions, for example the operator \f{+} only operates on numeric values, making the expression \f{="a"+1} invalid.
 What does make reference expressions special is how Excel treats them.
 A formula which uses a non-reference expression where a reference expression is required, like the previously mentioned \f{=SUM((1+1):A1)}, will result in a parse error which means excel will not accept this formula from the user.
-Meanwhile \f{="a"+1} will only result in a runtime error \f{\#VALUE!}, but will be still parsed and evaluated.
+By contrast, \f{="a"+1} will only result in a runtime error: \f{\#VALUE!}, but will be still parsed and evaluated.
 
 For XLParser we had three options: do not concern ourselves with invalidly type expressions, incorporate the reference expression rules into the grammar, or implement a type system similar to how this would be done in a full compiler and reject invalidly typed expressions.
 The first option is by far the simplest, but would result in a lot of invalid formulas being accepted, the second option would result in a more complicated grammar and might not even be possible, while the third option would result in an additional layer on top of the parser generator.
@@ -268,3 +228,46 @@ Additionally formulas that this grammar does not parse often result in an error 
 For example \texttt{=A1,A1} does parse in Excel, but produces the error \texttt{\#VALUE!} on evaluation.
 
 Implementing the straightforward rules above, while desirable, is not possible without using a more powerful grammar class.
+
+\section{Discussion}
+
+
+
+\subsection{Improvements over existing parser}
+
+Improvements made to XLParser compared to the existing parser fall into the following categories:
+
+\subsubsection{More frequent rejecting of invalid formulas}
+
+XLParser is often less forgiving than the previous parser, and rejects more types of invalid formulas.
+This is most prominently noticable in reference expressions, becaues the old parser does not differentiate between reference and non-reference expressions.
+Therefore formulas like \f{=1 1} and \f{=LARGE((1,2,3),4)} are considered valid, while they are not and would be rejected by Excel.
+
+\subsubsection{Broader parsing of valid formulas}
+
+As detailed in Chapter \ref{chapter:evaluation}, XLParser has a very high parse success rate.
+
+Several language features were absent in the previous parser.
+Examples are ranges with multiple limits (\f{=SUM(A1:B2:C3:D4)}), structured table references (\f{=TableName[ColumnName]}), array constants \f{=SUM(\{1,2,3\})} and functions in reference expression (\f{=SUM(IF(TRUE,A1,B2):C5)}).
+
+Furthermore the previous parser relied on a tool which extracted the formulas as stored in spreadsheets, while BumbleBee is used as an Excel add-in and therefore receives its formulas from Excel.
+These formulas sometimes slightly differ in at least one aspect: when external files are referenced a numeric reference is stored while Excel provides either the filename or the file path and name.
+Thus a formula could be received as \f{=[1]Sheet!A1} from the tool, and \f{=[File]Sheet!A1} or \f{='C:\textbackslash Path\textbackslash [File.xlxs]Sheet'!A1} by an Excel Add-In.
+XLParser supports al three formats, while the previous parser only supported the first.
+
+\subsubsection{AST improvements}
+
+\subsubsubsection{Correctness}
+
+While the AST correctness is unverified for both XLParser and the previous parser, several improvements have been made.
+Operator precedence has been mentioned before, this was not taken into consideration in the previous parser version, providing very problematic in BumbleBee's use-case.
+Several smaller corrections have also been made.
+For example in the previous version \f{=F(1,,1)} and \f{=F(1,1)} produced an identical AST, while they have a different meaning, especially in the case of user defined functions.
+
+\subsubsubsection{Homogenization}
+The previous parser was constructed with a clean base grammar, but over time additions were made to deal with constructs which could not be parsed.
+This caused the rules and therefore the AST to become inconsistent.
+XLParser solved this by reducing the grammar to a clean grammar again and solving inconsistencies.
+However, this advantage is subjective and hard to quantify.
+An example of this are user defined functions which produced a different AST depending on whether they were internal \f{=UDF()} or external \f{=[1]UDF()}.
+Another example are prefixes, all of the following used different tokens and productions rules: \f{=Sheet!A1}, \f{='Sheet'!A1}, \f{=[1]Sheet!A1} and \f{='[1]Sheet'!A1} while in XLParser the tokens are unformalized, and the production rules are cleaner in the authors opinion.
