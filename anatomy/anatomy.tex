@@ -181,7 +181,7 @@ These properties make R1C1 useful as an internal representation in spreadsheet i
 
 References refer to cells or ranges in the same sheet as the formula by default, but this can be modified with a prefix. A non-local reference consists a prefix indicating the location, followed by an exclamation mark, followed by the actual reference.
 
-The most common use case is to reference another sheet in the same workbook, where the prefix is simply the sheet name: \f{=Sheetname!A1}.
+The simplest case is a reference to another sheet in the same workbook, where the prefix is simply the sheet name: \f{=Sheetname!A1}.
 Sheet names can also be between single quotes if they contain special characters: \f{='Sheetname with space'!A1}. 
 References to external spreadsheet files are also possible, which is done by providing the file name in between square brackets and optionally the file path: \f{=[Filename]Sheetname!A1} or \f{='C:{\textbackslash}Path{\textbackslash}[Filename]Sheet'!A1}.
 A peculiar type of prefix are those that indicate multiple sheets: \f{=Sheet1:Sheet10!A1} means A1 in Sheet1 through Sheet10.
