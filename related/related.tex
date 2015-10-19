@@ -8,22 +8,22 @@
 
 Refactoring is ``the process of changing a software system in such a way that it does not alter the external behaviour of the code, yet improves its internal structure'' \cite{opdyke1992refactoring}.
 The process is probably as old as programming itself, and was known since at least 1986 as ``Restructuring'' \cite{arnold1986introduction}.
-The term ``Refactoring'' was coined by Opdyke in 1992 \cite{opdyke1992refactoring} and originally specifically meant the restructuring of Object Oriented Programs, but nowadays the term is also used in order paradigms.
-Over time the popularity of both the practice and the term ``Refactoring'' increased, greatly helped by Fowler's 1999 book ``Refactoring: improving the design of existing code'' \cite{fowler1999refactoring} which has become the canonical reference.
-Currently, all major programming Integrated Development Environments like Visual Studio, Eclipse, Netbeans and IntelliJ include support for automated software refactorings.
+The term ``Refactoring'' was coined by Opdyke in 1992 \cite{opdyke1992refactoring} and originally specifically meant the restructuring of Object Oriented Programs, but nowadays the term is also used in other paradigms.
+Over time the popularity of both the practice and the term ``Refactoring'' increased, greatly helped by Fowler's 1999 book ``Refactoring: improving the design of existing code'' \cite{fowler1999refactoring}, which has become the canonical reference.
+Currently, all major programming Integrated Development Environments like Visual Studio, Eclipse, Netbeans and IntelliJ include support for automated code refactorings.
 
 \section{Spreadsheet smells}
 
-Fowler \cite{fowler1999refactoring} also introduced the concept of ``code smells'', which are signs that code has design problems and would benefit from refactoring.
+Fowler \cite{fowler1999refactoring} also introduced the concept of ``code smells'': allegorical bad smells in code which are signs that it has design problems and could benefit from refactoring.
 The concept of code smells has been translated to the spreadsheet domain by both Cunha et. al \cite{cunha2012towards} and Hermans et. al \cite{hermans2012detecting, DBLP:conf/icsm/Hermans212, hermans2014detecting}.
-Of particular relevance are the \rf{Multiple References}, \rf{Multiple Operations}, \rf{Long Calculation Chain} nad \rf{Duplicated Formulas} ``formula smells'' defined by Hermans et. al \cite{DBLP:conf/icsm/Hermans212,hermans2014detecting} because these can be solved with the refactorings presented in this thesis.
+Of particular relevance are the \rf{Multiple References}, \rf{Multiple Operations}, \rf{Long Calculation Chain} and \rf{Duplicated Formulas} ``formula smells'' defined by Hermans et. al \cite{DBLP:conf/icsm/Hermans212,hermans2014detecting} because these can be solved with the refactorings presented in this thesis.
 
 \section{Spreadsheet models}
 
-The tool presented in this thesis, BumbleBee, aims to empower spreadsheet users from within their familiar environment, Microsoft Excel, to improve their spreadsheets by giving them additional capabilites.
+The tool presented in this thesis, BumbleBee, aims to empower spreadsheet users from within their familiar environment, Microsoft Excel, to improve their spreadsheets by giving them additional capabilities.
 
 A different approach is to restrict the options spreadsheet users have, resulting in safer spreadsheets similar to how schemas and foreign key constraints in databases and static typing in general purpose programming languages prevent certain categories of errors.
-This can be done by defining a high level model representing the spreadsheet and generating a type-safe spreadsheet from this model.
+This can be done by defining a high level model representing the data and generating a type-safe spreadsheet from this model, effectively using spreadsheets as the target environment for a compiler.
 The way this model is constructed differs, and has been done in general purpose programming languages \cite{paine2001ensuring, paine2006rapid}, templates \cite{engels2005classsheets, erwig2006gencel, bals2007classsheets, cunha2011type, cunha2011embedding, cunha2014model} and relational database schemas \cite{cunha2009spreadsheets}.
 Models can also be inferred from existing spreadsheets \cite{abraham2006inferring,cunha2010automatically}.
 
@@ -34,7 +34,7 @@ Several useful refactorings are already provided by Excel, although Excel does n
 The best example of this is the cut, copy and paste functionality of Excel.
 If a user cuts a selection of cells and pastes it elsewhere, all references to those cells made in other cells will be moved as well.
 For example if a user cut-pastes cell \f{A1} to location \f{C3}, the formula \f{=A1} will be changed to \f{=C3} in other cells, even though they were not selected by the user.
-This is very similar to the \rf{Move Method} \cite{fowler1999refactoring} refactoring, because not only are the cells (method contents) themselves moved, references to them (call sites) are a adjusted for the new location as well.
+This is very similar to the \rf{Move Method} \cite{fowler1999refactoring} refactoring, because not only are the cells (method contents) themselves moved, references to them (call sites) are adjusted for the new location as well.
 Another option Excel provides when copy-pasting is ``Paste Values'', with which a formula is replaced by its evaluated value and remains constant from that point on.
 
 Excel having built-in support for these refactorings shows that there is a need among spreadsheet users to change their spreadsheets without altering functionality, to refactor them, and that advanced spreadsheet users are likely already comfortable with the concept of refactoring, albeit it not by name.
@@ -58,7 +58,7 @@ The proposed \nameref{refac:groupreferences} refactoring is implemented in this 
 \newpage
 
 Hermans and Dig \cite{hermans2014bumblebee} developed a refactoring tool called ``BumbleBee'' for Excel which operates using a different principle.
-Instead of implementing a fixed set of refactorings, it works on the basis of  ``transformation rules'' which consist of two formulas, with extended syntax introducing placeholders for certain constructs such as formulas, cells or ranges.
+Instead of implementing a fixed set of refactorings, it uses  ``transformation rules'' which consist of two formulas, with extended syntax introducing placeholders for certain constructs such as formulas, cells or ranges.
 For example the transformation rule \f{=IF($F_1$>$F_2$, $F_1$, $F_2$)} $\leftrightarrow$ \f{MIN($F_1$,$F_2$)} indicates that these two formulas are equivalent to each other and can be transformed into each other.
 However this approach is contained within one formula and can thus only be used to implement intra-formula refactorings: refactorings which both only affect and require information from a single formula.
 This thesis was started as an attempt to introduce BumbleBee with inter-formula refactorings, refactorings which affect or require information from more than a single formula.
