@@ -82,10 +82,6 @@ The user first selects the formulas to be extracted (Figure \ref{fig:extractform
 A side-panel pops out which allows the user to enter the sub-formula to be extracted and where it should be extracted to (Figure \ref{fig:extractformulaexample2}b) and presses the Extract Formula button.
 In the example the \f{50\%} subformula was extracted to the left, and Figure \ref{fig:extractformulaexample2}c shows the situation after the user has named the new column.
 
-The UI could be improved in two ways: the user could select the subformula to extract or the options for extraction could be provided.
-The usability of both options is unclear, for example in large formulas the user might be overwhelmed by the options presented and both were not implemented.
-The author leaves this a future work.
-
 \subsection{Implementation}
 
 This subsection describes the details of the refactoring implementation, which consists of 2 parts: an AST tranformation of the formula, and a modification of the worksheet.
@@ -124,7 +120,7 @@ The C\# code for the spreadsheet refactoring can be found in Listing \ref{lst:ex
 \begin{figure}
 	\centering
 	\input{implementation/extractformula/bumblebeeTransformation.tex}
-	\caption{Bumblebee v1 transformation rule}
+	\caption{BumbleBee transformation rule}
 	\label{fig:bbv1transformationrule}
 \end{figure}
 
@@ -140,24 +136,23 @@ Whether it is a good thing to perform this refactoring is dubious, but BumbleBee
 \subsection{Improvements over RefBook's \rf{Extract row or column} and \rf{Extract Literal}}
 \label{subsubsec:improvementsextractformula}
 
-Two specialized versions of this refactorings where previously described by Bamade and Dig \cite{badame2012refactoring} and implemented in their RefBook tool.
+Two specialized versions of this refactoring where previously described by Bamade and Dig \cite{badame2012refactoring} and implemented in their RefBook tool.
 RefBook's \rf{Extract Row or column} and \rf{Extract Literal} refactorings can both be performed by \rf{Extract formula}.
-
-The author has chosen to not keep the \rf{extract row or column} refactoring name because it does not fully describe the refactoring (a full row or column does not necessarily have to be extracted) and to keep the name in line with refactoring names in other domains.
+We have chosen to not keep the \rf{extract row or column} refactoring name because it does not fully describe the refactoring (a full row or column does not necessarily have to be extracted) and to keep the name in line with refactoring names in other domains.
 
 The RefBook \rf{extract literal} refactoring can put a constant value into a cell and replace the occurrences of it with references to that cell, which can also be achieved with the BumbleBee \rf{extract formula} refactoring.
 In addition this is possible for any constant expression, an expression without references, instead of only for constants.
 
 The BumbleBee \rf{Extract Formula} refactoring has several advantages over Badame's implementation of \rf{Extract row or column}.
 Firstly RefBook does not handle operator precedence.
-This can be very problematic for this refactoring and in the authors opinion should prevent is from being implemented, because one of the prime properties of a refactoring should be that it does not change the program results.
+This can be very problematic for this refactoring, because one of the most important properties of a refactoring should be that it does not change the program results.
 Note that the RefBook authors were aware of this deficiency, and left this as future work.
 This future work has been performed by the thesis author.
 
-Secondly RefBook can only handle a single row or column, which has to have exactly the same R1C1 formula. It can only extract the subformula to a column to the right of or row up of the original range.
-BumbleBee can handle arbitrarily shaped ranges, with the only requirement that the subformula to be extracted occurs in all selected formulas.
-Furthermore in addition to extracting to a cell neighboring the original formula cell (up, down, left or right) it can also extract the subformula to a single shared cell location.
-This is very useful to remove duplication and makes the refactoring more universal by merging the \rf{extract literal} refactoring into it.
+Secondly RefBook can only handle a single row or column, which must have exactly the same R1C1 formula in every cell.
+It can only extract the subformula to a column to the right of the original range or a row above the original range.
+BumbleBee can handle arbitrarily shaped ranges, with the only requirement that the subformula to be extracted occurs in all selected cells.
+Furthermore in addition to extracting to a cell neighboring the original formula cell (up, down, left or right) it can also extract the subformula to a single shared cell location, which is very useful to remove duplication.
 
 \section{\rf{Inline Formula}}
 \label{refac:inlineformula}
@@ -184,9 +179,11 @@ If one of the selected cells is referenced as part of a range, the user gets the
 \begin{figure}
 	\centering
 	\input{implementation/extractformula/inlineformula.tex}
-	\caption{\rf{Inline Formula} reverse AST transformation of the \rf{Extract Formula} AST transformation of Figure \ref{fig:extractformulaASTtransformations}.}
+	\caption{The AST transformation for \rf{Inline Formula}, which is the inverse of the \rf{Extract Formula} transformation in Figure \ref{fig:extractformulaASTtransformations}.}
 	\label{fig:inlineformulaAST}
 \end{figure}
+
+\newpage
 
 \subsection{Implementation}
 \label{subsec:inlineformulaimplementation}
@@ -209,6 +206,8 @@ The C\# code for this spreadsheet refactoring can be found in Listing \ref{lst:i
 As described in the introduction of this section, \rf{Inline Formula} is applicable to all cells which have dependents but are not referenced as part of ranges.
 For speed purposed however, the BumbleBee refactoring context menu only check whether the cell has any dependents.
 Doing the full check would introduce significant delay every time the user would right click.
+
+\newpage
 
 \section{\rf{Introduce Cell Name}}
 \label{refac:introducecellname}
@@ -244,13 +243,16 @@ This refactoring shares the detection of applicability with \rf{Inline Formula}:
 
 BumbleBee's version incorporates a small improvements over RefBook's refactoring: it not only works on cells, but also on ranges.
 
+\newpage
+
 \section{\rf{Group References}}
 \label{refac:groupreferences}
 
 In the spreadsheet formula language, some built-in functions have the ability to accept a variable number of arguments, most prominently \f{SUM}, the most commonly used function \cite{hermans2015enron}.
 These functions also accept ranges, and thus the formulas \f{=SUM(A1,A2,A3,A4)} and \f{=SUM(A1:A4)} are equivalent.
-The \rf{Group References} was defined but not implemented by Hermans et. al \cite{hermans2014detecting} and assumes spreadsheet users prefer range usage like \f{=SUM(A1:A4)} over individual cell references like \f{SUM(A1,A2,A3,A4)}, and merges multiple adjacent cell references into a single range reference.
-The refactoring can be used to solve the \rf{Multiple References} \cite{hermans2014bumblebee} smell in some cases, but only if the referenced cells are adjacent but referred to separately.
+The \rf{Group References} refactoring assumes spreadsheet users prefer the latter, and merges multiple adjacent cell references into a single range reference.
+The refactoring can be used to solve the \rf{Multiple References} \cite{hermans2014detecting} smell if the referenced cells are adjacent but referred to separately.
+The refactoring was defined but not implemented by Hermans et. al \cite{hermans2014detecting}
 
 \subsection{User Interface}
 
@@ -319,6 +321,8 @@ The C\# code for this refactoring can be found in listing \ref{lst:introduceaggr
 
 This refactoring will only be offered to the user if the top layer of a formula cell consisting of one of the applicable operators (\f{+},\f{*} or \f{\&})
 
+\newpage
+
 \subsection{Improvements over RefBook's \rf{Replace Awkward Formula}}
 
 The concept of the \rf{Introduce Aggregate}/\rf{Replace Awkward Formula} refactoring is not complicated, and therefore not many improvements can be made.
@@ -330,21 +334,23 @@ A second improvement comes by combining this refactoring with two other refactor
 Combining this refactoring with \rf{Group References} allows a formula like \f{=A1+A2+A3+A4} to be rewritten into \f{=SUM(A1:A4)} instead of just \f{=SUM(A1,A2,A3,A4)}.
 Combining this refactoring with \rf{Introduce Conditional Aggregate} when the spreadsheet data allows for this enables a formula like \f{=B12+B24+B36} to be rewritten into \f{=SUMIF("2015", B:B)} instead of just \f{=SUM(B12,B24,B36)}.
 
+\clearpage
+
 \section{\rf{Introduce Conditional Aggregate}}
 \label{refac:introduceconditionalaggregate}
 
 \begin{figure}
-\centering
-\includegraphics{implementation/aggregate/sumifexample}
-\caption{An example spreadsheet which uses \f{SUMIF}.}
-\label{fig:sumifexample}
+	\centering
+	\includegraphics{implementation/aggregate/sumifexample}
+	\caption{An example spreadsheet which uses \f{SUMIF}.}
+	\label{fig:sumifexample}
 \end{figure}
 
 \begin{figure}
 	\centering
-	\includegraphics[height=8cm]{implementation/aggregate/condaggrexample}
+	\includegraphics{implementation/aggregate/condaggrexample}
 	\caption{An example where \f{SUMIF} could be used, but is not.}
-	\label{fig:sumifexample}
+	\label{fig:sumifcouldbeused}
 \end{figure}
 
 Three aggregate functions also have conditional counterparts: \f{SUMIF}, \f{AVERAGEIF} and \f{COUNTIF}.
@@ -355,7 +361,7 @@ These functions evaluate the \textbf{condition} on every cell of \textbf{operati
 Examples make this clearer: \f{=SUMIF(A:A, "> 10")} sums all cells in column \f{A} that contain a value larger than \f{10}, and \f{=SUMIF(A:A, E2, C:C)} sums the cell from column \f{C} of every row where the cell value from column \f{A} equals \f{E2} , as illustrated in Figure \ref{fig:sumifexample}.
 
 The conditional aggregate functions are powerful tools, but they are not always used. 
-Instead what we often encountered is the ``Manual'' selection of the correct cells and summing these, as illustrated in Figure \ref{fig:introcondaggrScenario}.
+Instead what we often encountered is the ``Manual'' selection of the correct cells and summing these, as illustrated in Figure \ref{fig:sumifcouldbeused}.
 When combining this refactoring with the \rf{Introduce Aggregate} refactoring we can rewrite \f{=B3+B7+B11} to \f{=SUM(B3,B7,B11)}, and that to \f{=SUMIF(A:A, "2015", B:B)}.
 Because this was the most common pattern we will focus on \f{SUM} and \f{SUMIF}, but the refactoring works identical for \f{COUNT} to \f{COUNTIF} and \f{AVERAGE} to \f{AVERAGEIF}.
 
@@ -367,13 +373,11 @@ This refactoring shares a context menu entry with \rf{Introduce Aggregate}.
 
 In order to see if a \f{SUM} can be rewritten to a \f{SUMIF}, we must determine if there is another range of cells with a value that uniquely identifies the summed cells.
 In relational database theory, this is a concept known as a \emph{functional dependency}.
+Several algorithms exist to automatically find functional dependencies, such as Dep-Miner \cite{lopes2000efficient}, FUN \cite{novelli2001fun} and TANE \cite{huhtala1999tane}, where FUN has been applied in a spreadsheet context \cite{cunha2009spreadsheets}.
 
-In a relational database, it is usually left to the developer to indicate that a column is functional dependent through defining which column(s) are keys.
-Furthermore, while in a relational database data is associated with a schema that describes it layout, in Excel the layout of the data is free-form which complicates the issue.
-
-Because of these reasons, the author has decided to only support a very simple but useful and likely scenario: the summed values are in a single row- or column, and it needs to be determined if there is a single row or column that has a unique identical value in it which can serve as the condition for \f{SUMIF}.
+Due to implementation time constraints, these algorithms were not used, and instead only a very simple but useful scenario is supported: the summed values are in a single row or column, and there is a single row or column that has a single unique value in it which can serve as the condition for \f{SUMIF}.
 Figure \ref{fig:introcondaggrScenario1} shows such a scenario: column \f{A} uniquely determines the summed values and the formula can thus be rewritten to \f{=SUMIF(A:A, "A", B:B)}.
-Figure \ref{fig:introcondaggrScenario2} shows a case where this is not possible: \f{A4} differs from \f{A1} and \f{A2} so there is no column that determines the summed values.
+Figure \ref{fig:introcondaggrScenario2} shows a case where this is not possible: \f{A4} differs from \f{A1} and \f{A2} meaning there is no column that determines the summed values.
 Figure \ref{fig:introcondaggrScenario2} shows another impossible case: here column \f{A} determines the summed values, but there is an additional row with an identical value in cell \f{A5} and thus column \f{A} does not \emph{uniquely} determine the summed values.
 Additionally, the refactoring is not supported if the summed cells are not in a single row or column.
 
@@ -404,7 +408,7 @@ The C\# code that performs the refactoring if the above conditions are met can b
 
 \subsection{Detection of applicability}
 
-This refactoring is activated only as part of the \rf{Introduce Aggregate} refactoring, and therefor shares its detection of applicability.
+This refactoring is activated only as part of the \rf{Introduce Aggregate} refactoring, and therefore shares its detection of applicability.
 Any further detection is performed within the code that implements the refactoring itself.
 
 %\section{\rf{Fixate References}}
@@ -416,6 +420,8 @@ Any further detection is performed within the code that implements the refactori
 %
 %"Fixate references" beschrijft 100x beter wat de refactoring doet dan "Make cell constant". "Make cell constant" zou eerder impliceren dat je het resultaat van de cell berekening neemt en dat opslaat i.p.v. de formula. Wat trouwens ook weer een potentiele refactoring is, maar misschien een beetje een anti-pattern in excel.
 %
+
+\newpage
 
 \section{Discussion}
 
@@ -431,3 +437,24 @@ In an industrial-strength application this functionality would be essential.
 A workaround is possible by manually maintaining an undo stack, however we deemed this outside of the scope of this thesis.
 This workaround also does not integrate well with Excel and does not allow changes made outside of the Add-In to be undone. 
 As long as Excel keeps this restriction this will always be a severe limitation to any tool that automatically changes spreadsheet files for the user.
+
+\subsection{Future improvement possibilities}
+
+\rf{Extract formula} could benefit from more UI support.
+If the user could select the formula to be extracted from within the Excel formula editor the user interface could be streamlined, but this is not possible because of Excel limitations.
+Another possibility would be to determine candidate subformulas that the user could extract, and present these in a list.
+Generating a list of all subformulas is fairly trivial, but this list can become very large, especially in the longer formulas that would benefit from this refactoring.
+A heuristic which can prune the list of subformulas could improve this experience.
+
+A minor deficiency in the current \rf{Extract Formula} code is that is does not fully handle the commutative operators \f{+} and \f{*}.
+An operator is commutative if the order of the operands does not matter: \f{1 + 2} is equal to \f{2 + 1}.
+BumbleBee's equality comparer takes this into account, and tries the reverse order of the operands for \f{+} and \f{*} if it does not find a match.
+However, this does not fully solve the problem: the formula \f{=1 + 2 + 3} is parsed as \f{=(1 + 2) + 3}, thus if the user wishes to extract \f{2 + 3} BumbleBee will report an error since it does not encounter \f{2 + 3} in the AST.
+
+The \rf{Introduce Aggregate} automated refactoring currently only supports a very basic scenario.
+This could be improved by properly determining functional dependencies using an established algorithm.
+The conditional aggregate functions function \f{SUMIF}, \f{COUNTIF} and \f{AVERAGEIF} are higher-order functions because they accept a predicate (a function which takes a single argument and produces a boolean), although Excel does not support first-class functions and thus the predicate must be supplied as a string.
+This means more complex situations can be supported, for example \f{SUMIF(A:A, ">10")} sums every value from column \f{A} that is larger than \f{10}.
+The conditional aggregate functions also have variants that support more than one predicate: \f{SUMIFS}, \f{AVERAGEIFS} and \f{COUNTIFS}.
+For example \f{=SUMIFS(A:A,B:B,2015,C:C,"John")} sums the values from column \f{A} of the rows where column \f{B} contains \f{2015} and column \f{C} contains \f{"John"}.
+This can be used to support multivalued dependencies, functional dependencies where two or more columns determine if a value must be summed.

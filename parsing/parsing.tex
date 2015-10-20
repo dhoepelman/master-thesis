@@ -196,6 +196,8 @@ What does make reference expressions special is how Excel treats them.
 A formula which uses a non-reference expression where a reference expression is required, like the previously mentioned \f{=SUM((1+1):A1)}, will result in a parse error which means excel will not accept this formula from the user.
 By contrast, \f{="a"+1} will only result in a runtime error: \f{\#VALUE!}, but will be still parsed and evaluated.
 
+\newpage
+
 For XLParser we had three options: do not concern ourselves with invalidly type expressions, incorporate the reference expression rules into the grammar, or implement a type system similar to how this would be done in a full compiler and reject invalidly typed expressions.
 The first option is by far the simplest, but would result in a lot of invalid formulas being accepted, the second option would result in a more complicated grammar and might not even be possible, while the third option would result in an additional layer on top of the parser generator.
 
@@ -208,7 +210,7 @@ An additional downside of this approach turned out to be some additional ambigui
 The comma serves both as an union operator and a function argument separator.
 This proves challenging to correctly implement in a LALR(1) grammar.
 
-A straightforward implementation would use production rules similar to this:
+\noindent A straightforward implementation would use production rules similar to this:
 \begin{grammar}
 <Union> ::= <Reference> `,' <Reference>
 
@@ -229,11 +231,9 @@ For example \texttt{=A1,A1} does parse in Excel, but produces the error \texttt{
 
 Implementing the straightforward rules above, while desirable, is not possible without using a more powerful grammar class.
 
-\section{Discussion}
+\newpage
 
-
-
-\subsection{Improvements over existing parser}
+\section{Improvements over existing parser}
 
 Improvements made to XLParser compared to the existing parser fall into the following categories:
 

@@ -3,17 +3,17 @@
 
 \chapter*{Preface}
 
-{\small
+\noindent{\small
 \begin{tabular}{@{}lll@{}}
 Author: & David Jonathan Hoepelman \\
 Student ID: & 1521969 \\
 Master: & Computer Science \\
 Specialization: & Software technology \\
 Version: & \today \\
-Defense: & 17-11-2015 16:00 \\
+Defense date: & 17-11-2015 16:00 \\
+Defense location: & Snijderszaal, Faculty EWI room LB01.010, Mekelweg 4, Delft \\
 \end{tabular}
 }
-
 \vspace{0.5cm}
 
 \begin{abstract}
@@ -22,12 +22,15 @@ This leads to increased complexity and technical debt.
 In software engineering, refactoring is used to combat these problems by improving software structure without altering behavior.
 This technique can also be applied to spreadsheets.
 
-In this thesis we present an improved version of the spreadsheet refactoring tool BumbleBee, extended with six refactorings, three of which were not implemented in previous literature and two of which improve upon previous implementations.
+In this thesis we present an improved version of the spreadsheet refactoring tool BumbleBee, extended with six refactorings: \rf{Extract Formula}, \rf{Inline Formula}, \rf{Introduce Cell Name}, \rf{Group References}, \rf{Introduce Aggregate} and \rf{Introduce Conditional Aggregate}.
+The \rf{Inline formula}, \rf{Group References} and \rf{Introduce Conditional Aggregate} refactorings were not implemented before and \rf{Extract Formula} and \rf{Introduce Cell Name} improve upon previous implementations.
 To support this tool and to facilitate future spreadsheet research, XLParser, a stand-alone parser for spreadsheet formulas, was developed and released as open-source software.
 This parser was evaluated on more than a million unique formulas from industrial datasets, and successfully parsed 99.999\%.
 \end{abstract}
 
 \vspace{\fill}
+
+
 
 \noindent{\small
 \begin{tabular}{@{}lll@{}}

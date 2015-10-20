@@ -4,12 +4,11 @@
 \chapter{Evaluation}
 \label{chapter:evaluation}
 
-Two parts of this thesis can be evaluated, the stand-alone parser and the new refactorings implemented in BumbleBee.
-
 \section{Refactorings}
 
 The refactorings implemented in BumbleBee were not formally evaluated as part of this thesis.
-Some of the refactorings implemented in this thesis are based on RefBook \cite{badame2012refactoring}, which did perform an evaluation, in which it was found that the more people preferred formulas after the \nameref{refac:extractformula} and \nameref{refac:introduceaggregate} refactorings were applied, while more people preferred the unrefactored formulas after the \nameref{refac:introducecellname} was applied.
+Some of the refactorings implemented in this thesis are based on RefBook \cite{badame2012refactoring}, which did perform an evaluation, in which it was found that the more people preferred formulas after the \nameref{refac:extractformula} and \nameref{refac:introduceaggregate} refactorings were applied, while more people preferred the unrefactored formulas after the \nameref{refac:introducecellname} refactoring was applied.
+
 
 \section{Parser}
 
@@ -21,10 +20,12 @@ A combined 22.310.406 formulas were found in these spreadsheets.
 Duplicate formulas were filtered on a sheet-level by using the formula's R1C1 notation.
 This resulted in 1.035.586 unique formulas.
 26 formulas were discarded, because they were corrupted by the scan tool, bringing the total to 1.035.558 formulas.
-The extracted list of formulas is available as part of XLParser in its repository for both the Enron \footnote{\url{https://github.com/spreadsheetlab/XLParser/blob/master/src/XLParser.Tests/data/enron/formulas.txt}} and the EUSES \footnote{\url{https://github.com/spreadsheetlab/XLParser/blob/master/src/XLParser.Tests/data/euses/formulas.txt}} datasets.
+The extracted list of formulas is available as part of XLParser in its repository for both the Enron \footnote{\tiny\url{https://github.com/spreadsheetlab/XLParser/blob/v1.2.1/src/XLParser.Tests/data/enron/formulas.txt}} and the EUSES \footnote{\tiny\url{https://github.com/spreadsheetlab/XLParser/blob/v1.2.1/src/XLParser.Tests/data/euses/formulas.txt}} datasets.
 
 Of these formulas, exactly two could not be parsed: \f{=-NOX, Regi} and \f{-_SO2, regi}, a successful parse rate of 99.999\%.
 The unparsable formulas are examples of unions without brackets which the parser cannot parse due to reasons outlined in Section \ref{subsec:desing:unions}.
+ 
+\newpage 
  
 It must be noted that both datasets used only contain spreadsheets created before 2005.
 This means that they do not contain structured table references, as these were introduced in Excel 2007.
