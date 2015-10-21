@@ -8,12 +8,14 @@
 \begin{figure}[h]
 \centerfloat
 \input{parsing/refactoring-process-parsing}
-\caption{Overview of the refactoring process. This chapter details parsing, converting a string formula to an AST.}
+\caption{Overview of the refactoring process.}
+\label{fig:chapterparsingintrofigure}
 \end{figure}
 
 
 \noindent
-This chapter assumes the reader is familiar with basic parser theory, a good overview of which can be found in \cite{dragonbook}.
+This chapter details parsing, converting a string formula to an AST, shown boxed in Figure \ref{fig:chapterparsingintrofigure}.
+It assumes the reader is familiar with basic parser theory, a good overview of which can be found in \cite{dragonbook}.
 
 \section{Motivation}
 \label{sec:motivation}
@@ -23,13 +25,13 @@ The usual way to implement refactorings is by manipulating the original program'
 Excel exposes an API to retrieve and update the contents of a spreadsheet file, but this API only provides access to formula strings, and does not expose its parser or formula ASTs representations.
 Because of this, a refactoring tool needs to contain a parser for Excel formulas.
 
-Bumblebee relied on a parser developed over the years for previous research, however this parser had accrued technical debt due to new rules being added over time, sometimes in an inconsistent manner or not supporting the whole language.
+BumbleBee relied on a parser developed over the years for previous research, however this parser had accrued technical debt due to new rules being added over time, sometimes in an inconsistent manner or not supporting the whole language.
 Furthermore the parser interpreted some language constructs wrong and missed several features, which made implementing refactorings hard and error-prone.
 For example, operator precedence was not taken into account, causing the formula \f{=A1 + A2 * A3} to be parsed as \f{=(A1 + A2) * A3}.
 The existing parser thus was insufficient to correctly implement the refactorings presented in this thesis.
 Thus an additional goal for this thesis became to create a better parser.
 
-For Bumblebee and other research on spreadsheet formulas the following design goals were formulated for the parser and grammar within the Spreadsheet lab group:
+For BumbleBee and other research on spreadsheet formulas the following design goals were formulated for the parser and grammar within the Spreadsheet lab group:
 
 \begin{enumerate}
 \label{sec:designgoals}
@@ -42,7 +44,7 @@ While an official grammar for Excel formulas is published \cite{ExcelOfficialGra
 Firstly, it is over 30 pages long and contains hundreds of production rules and thus fails Requirement 3.
 Secondly, because of the detail of the grammar and the large number of production rules the resulting parse trees are very complex and fail requirement 2.
 
-Because there is no suitable parser and grammar available that satisfy the above requirements, I decided to clean up and partially rewrite the parser in coorporation with other members of the Spreadsheet lab.
+Because there is no suitable parser and grammar available that satisfy the above requirements, we decided to clean up and partially rewrite the parser.
 The end result of this effort is an independent, open-source parser for Excel formulas called XLParser\footnote{https://github.com/PerfectXL/XLParser}, about which a paper was published in IEEE conference SCAM 2015 \cite{xlparser}.
 
 \section{Parser implementation}
@@ -50,7 +52,7 @@ The end result of this effort is an independent, open-source parser for Excel fo
 The existing parsing was built using the Irony parser framework\footnote{https://irony.codeplex.com/}, which is a C\# parser generator that produces parsers based on the LALR(1) algorithm using a grammar defined in C\#.
 
 Strictly speaking Irony produces a parse tree, however this tree is fairly high-level for a parse tree, leaving out elements such as punctuation and whitespace, and no separate AST is (currently) constructed in XLParser or BumbleBee, instead this tree is directly manipulated.
-To avoid confusion and use usual nomenclature I will from now on refer to this tree as the AST.
+To avoid confusion and use usual nomenclature we will from now on refer to this tree as the AST.
 
 \subsection{Lexical Analysis}
 \label{sec:lexanalysis}
@@ -65,7 +67,7 @@ To avoid confusion and use usual nomenclature I will from now on refer to this t
 \end{table}
 
 Table \ref{table:tokens} contains the lexical tokens of the grammar, along with their identification patterns in a simple regular expression language. All tokens are case-insensitive.
-Characters are defined as Unicode code points x9 (tab),xA (newline),xD (carriage return) and x20 (space) and upwards.
+Characters are defined as Unicode code points x9 (tab), xA (newline), xD (carriage return) and x20 (space) and upwards.
 
 This grammar requires the parser to support token priorities, which Irony does.
 Removing the necessity for token priorities is possible by altering the tokens and production rules, but makes the grammar more complicated and the resulting tree harder to use, thus being detrimental to design goals 2 and 3.
@@ -94,12 +96,13 @@ For this reason, the grammar only parses numeric dates and times and these are n
 \end{figure}
 
 The complete production rules of the grammar are listed in Extended BNF syntax in Figure \ref{figure:productions}.
-Patterns inside \{ and \} can be repeated zero or more times.
+Patterns between \{ and \} can be repeated zero or more times.
 The start symbol is $Start$.
 %An example parse tree produced using this grammar is drawn in Figure \ref{figure:parsetrees}(b).
 
-The \synt{Formula} rule covers all types of spreadsheet formula expressions: they can be constants (\texttt{=5}), references (\texttt{=A3}), function calls and operators (\texttt{=SUM(A1,A2)}), array constants (\texttt{=\{1,2;3,4\}} or reserved names (\texttt{=_xlnm.Print_Area}).
-The \synt{Reference} rule covers a subset of expressions known as references expressions: internal or external cell and range references, functions and operators which can return references, named ranges, structured ranges and dynamic data exchanges.
+The \synt{Formula} rule covers all the expressions which can be used in spreadsheet formulas: constants (\texttt{=5}), references (\texttt{=A3}), function calls and operators (\texttt{=SUM(A1,A2)}), array constants (\texttt{=\{1,2;3,4\}} and reserved names (\texttt{=_xlnm.Print_Area}).
+The \synt{Reference} rule covers a subset of expressions known as references expressions, expressions which can return a reference.
+These can be internal or external cell and range references, functions and operators which can return references, named ranges, structured references and dynamic data exchanges.
 
 %\begin{figure}
 %	\caption{Syntax diagram of the \synt{Formula} production rule with most production rules expanded}
@@ -168,15 +171,18 @@ This was solved by instructing the parser generator to shift on rule 1 in case o
 \begin{figure}[h!]
 	\hspace*{0.003\textwidth}
 	\input{implementation/refactoring-process-print}
-	\caption{Section \ref{sec:printing} details AST pretty-printing, converting an AST to a string formula.}
+	%\caption{Section \ref{sec:printing} details AST pretty-printing, converting an AST to a string formula.}
+	\caption{Overview of the refactoring process.}
+	\label{fig:chapterparsingintrofigure}
 \end{figure}
 
 \section{Pretty-printing the formula AST}
 \label{sec:printing}
 
-Pretty-printing a formula AST is the reverse operation of parsing, and is quite straightforward.
-It can be done by describing for each tree node type how it can be translated back into a string, most of the time this is the exact reverse of the parser production rule.
-Nodes with children need to know the printed form of their children, this can be satisfied by starting at the root of the tree and calling the print function recursively for each child.
+Pretty-printing a formula AST is the reverse operation of parsing, and must be done to convert a refactored AST back to a string as seen in Figure \ref{fig:chapterparsingintrofigure}.
+
+Pretty-printing is quite straightforward: it can be done by describing for each tree node type how it can be translated back into a string, most of the time this is the exact reverse of the parser production rule.
+Printing is done by starting at the root of the tree and calling the print function recursively for each child, because nodes with children need to know the printed form of their children.
 A slightly simplified and compacted version of the XLParser code responsible for printing can be found in Appendix \ref{lst:xlparserprint}.
 
 \section{Trade-offs}
@@ -194,7 +200,7 @@ For example the formula \f{=SUM(IF(\ldots):A1)} is valid, while \f{=SUM((1+1):A1
 This is not unique to reference expressions, for example the operator \f{+} only operates on numeric values, making the expression \f{="a"+1} invalid.
 What does make reference expressions special is how Excel treats them.
 A formula which uses a non-reference expression where a reference expression is required, like the previously mentioned \f{=SUM((1+1):A1)}, will result in a parse error which means excel will not accept this formula from the user.
-By contrast, \f{="a"+1} will only result in a runtime error: \f{\#VALUE!}, but will be still parsed and evaluated.
+By contrast, \f{="a"+1} will only result in the runtime error \f{\#VALUE!}, but will still be parsed and evaluated.
 
 \newpage
 
@@ -202,12 +208,12 @@ For XLParser we had three options: do not concern ourselves with invalidly type 
 The first option is by far the simplest, but would result in a lot of invalid formulas being accepted, the second option would result in a more complicated grammar and might not even be possible, while the third option would result in an additional layer on top of the parser generator.
 
 Because references are of great interest when analyzing formulas and already had additional grammar rules, the second option seemed to be achievable and acceptable and this is the route XLParser took and successfully implemented.
-An additional downside of this approach turned out to be some additional ambiguity, as explained in Section \ref{sec:ambiguity}.
+A downside of this approach turned out to be some additional ambiguity, as explained in Section \ref{sec:ambiguity}.
 
 \subsection{Unions}
 \label{subsec:desing:unions}
 
-The comma serves both as an union operator and a function argument separator.
+The comma serves both as the union operator and the function argument separator.
 This proves challenging to correctly implement in a LALR(1) grammar.
 
 \noindent A straightforward implementation would use production rules similar to this:
@@ -264,10 +270,11 @@ Operator precedence has been mentioned before, this was not taken into considera
 Several smaller corrections have also been made.
 For example in the previous version \f{=F(1,,1)} and \f{=F(1,1)} produced an identical AST, while they have a different meaning, especially in the case of user defined functions.
 
-\subsubsubsection{Homogenization}
+\noindent\subsubsubsection{Homogenization}
+
 The previous parser was constructed with a clean base grammar, but over time additions were made to deal with constructs which could not be parsed.
 This caused the rules and therefore the AST to become inconsistent.
-XLParser solved this by reducing the grammar to a clean grammar again and solving inconsistencies.
+XLParser solves this by reducing the grammar to a clean grammar again and removing inconsistencies.
 However, this advantage is subjective and hard to quantify.
 An example of this are user defined functions which produced a different AST depending on whether they were internal \f{=UDF()} or external \f{=[1]UDF()}.
 Another example are prefixes, all of the following used different tokens and productions rules: \f{=Sheet!A1}, \f{='Sheet'!A1}, \f{=[1]Sheet!A1} and \f{='[1]Sheet'!A1} while in XLParser the tokens are unformalized, and the production rules are cleaner in the authors opinion.

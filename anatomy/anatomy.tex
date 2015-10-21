@@ -8,18 +8,23 @@
 \begin{figure}[h]
 \centerfloat
 \input{anatomy/refactoring-process-anatomy}
-\caption{This chapter details the boxed elements of the refactoring process: the properties and syntax of spreadsheets and formulas strings.}
+%\caption{This chapter details the boxed elements of the refactoring process: the properties and syntax of spreadsheets and formulas strings.}
+\caption{Overview of the refactoring process.}
+\label{fig:chapteranatomyintrofigure}
 \end{figure}
 
+
 In order to be able to create a parser or refactor-tool for spreadsheets, a solid understanding of their inner workings is necessary, especially of the formula language.
+This chapter details the properties and syntax of spreadsheet and formula strings, shown boxed in Figure \ref{fig:chapteranatomyintrofigure}.
 
 By a large margin, the most widely used spreadsheet system is Microsoft Office Excel, which has a self-reported install base of 1.2 billion users \cite{microsoftByTheNumbers}.
 Two less-popular but still common implementations are Apache OpenOffice Calc and LibreOffice Calc, which evolved from the same product and thus have largely identical semantics.
-LibreOffice has a self-reported install base of 75 million users.
-Google Sheets is another common implementation, and is special because it was the first large web-based collaborative spreadsheet program.
-Google does not report usage numbers, but in 2010 has said it is used by "tens of millions" of users.
-There are many other spreadsheet implementations, but none of them come close to Microsoft Excel's market share, and most are smaller than LibreOffice and Google Spreadsheets.
-When referencing "all" spreadsheet programs, this indicates the three implementations previously mentioned: Microsoft Excel, LibreOffice and Google Sheets.
+Apache OpenOffice has a self-reported \emph{total} download count of 150 million \cite{aoodownloadcount}, while LibreOffice has a self-reported download count of 120 million \emph{from unqiue IP adresses} \cite{libreofficedownloadcount}, both excluding external download locations like Linux distribution repositories.
+Google Sheets is another common implementation, and is special because it was the first widely used web-based collaborative spreadsheet program.
+Google does not report usage numbers, but in 2010 has said it is used by ``tens of millions'' of users \cite{googlsheetscount}.
+There are many other spreadsheet implementations, but none of them come close to the user base of the above programs.
+
+When referencing ``all'' spreadsheet programs, this indicates the three implementations previously mentioned: Microsoft Excel, LibreOffice and Google Sheets.
 These three implementations are the systems studied because of their market share.
 
 \newpage
@@ -104,16 +109,16 @@ The binary operators \f{+ - * / = >= <= < >} and \f{<>} (inequality) can be used
 \f{+} and \f{-} are available both unary (\f{=-1}) and binary (\f{=1-1}).
 Additionally the \f{\%} postfix unary operator is defined to transform a number into a percentage (divining it by 100), \f{\textasciicircum} is the exponentiation operator and \f{\&} is the text concatenation operator.
 
-Spreadsheet program contain three fairly unique binary operators, the semantics of which are detailed in Subsection \ref{sec:references}.
+Spreadsheet programs contain three fairly unique binary operators, the semantics of which are detailed in Subsection \ref{sec:references}.
 Firstly there is the range operator \f{:} then the union operator (\f{,} in Excel and \f{\textasciitilde} in OpenFormula) and lastly the intersection operator (\f{\char32} in Excel and \f{!} in OpenFormula).
-Note that OpenFormula diverges from the Excel syntax, possibly because the comma already is used in other places in the language and a single space as an operator is highly unusual.
+Note that OpenFormula diverges from the Excel syntax, possibly because the comma is already used in other places in the language and a single space as an operator is highly unusual.
 The Excel characters for the operators will be used in the remainder of this thesis.
 
 \subsection{References}
 \label{sec:references}
 References are the core component of spreadsheets.
 The value of any cell can be used in a formula by concatenating its column and row number, producing a reference like \f{B5}.
-This is called A1-style referencing and is by far the most comment in modern spreadsheet implementations.
+This is called A1-style referencing and is by far the most common in modern spreadsheet implementations.
 If the value of a cell changes, this new value will be propagated to all formulas that use it.
 
 When copying a cell to another cell, by default references will be adjusted by the offset, for example copying \f{=A1} from cell B1 to C2 will cause the copied formula to become \f{=B2}.
@@ -142,7 +147,7 @@ For example one can give the name \f{TAX\_RATE} to cell \f{A2} and then use this
 \begin{figure}
 \centering
 \includegraphics{anatomy/structuredreferences}
-\caption{Example usage of structured references}
+\caption{Example usage of structured references.}
 \label{fig:structuredreferences}
 \end{figure}
 
@@ -177,29 +182,29 @@ These properties make R1C1 useful as an internal representation in spreadsheet i
 \includegraphics[width=1\textwidth]{anatomy/r1c1comp-r1c1}
 \caption{R1C1-style formulas}
 \end{subfigure}
-\caption{A1 vs R1C1 behavior on identical formulas with respect to cell position}
+\caption{A1 vs R1C1 behavior on identical formulas with respect to cell position.}
 \label{fig:r1c1comp}
 \end{figure}
 
 \subsubsection{Non-local references}
 \label{subsection:ExternalRefsDDE}
 
-References refer to cells or ranges in the same sheet as the formula by default, but this can be modified with a prefix. A non-local reference consists a prefix indicating the location, followed by an exclamation mark, followed by the actual reference.
+References refer to cells or ranges in the same sheet as the formula by default, but this can be modified with a prefix. A non-local reference consists of a prefix indicating the location, followed by an exclamation mark, followed by the actual reference.
 
 The simplest case is a reference to another sheet in the same workbook, where the prefix is simply the sheet name: \f{=Sheetname!A1}.
 Sheet names can also be between single quotes if they contain special characters: \f{='Sheetname with space'!A1}. 
 References to external spreadsheet files are also possible, which is done by providing the file name in between square brackets and optionally the file path: \f{=[Filename]Sheetname!A1} or \f{='C:{\textbackslash}Path{\textbackslash}[Filename]Sheet'!A1}.
 A peculiar type of prefix are those that indicate multiple sheets: \f{=Sheet1:Sheet10!A1} means A1 in Sheet1 through Sheet10.
 
-In Windows versions of Microsoft Excel formulas can also call external programs through Dynamic Data Exchange (DDE).
+In Windows versions of Microsoft Excel, formulas can also call external programs through Dynamic Data Exchange (DDE).
 DDE links are a special case of references, used for receiving data from other applications.
 They take the form of \f{=Program|Topic!Arguments}, e.g. \f{=Database|TableA!Column1}.
 
 \subsection{Case sensitivity}
 
 Formulas are case-insensitive outside of the trivial case of string literals.
-Identifiers have a canonical capitalization, and while user can type the identifier with any casing only the canonical form will be displayed.
-While the canonical capitalization of built-in identifiers,functions and reserved names is usually uppercase, the canonical capitalization of an user-defined identifier, an user defined function or a named range, is as the user defined it originally.
+Identifiers have a canonical capitalization, and while a user can type the identifier with any casing only the canonical form will be displayed.
+While the canonical capitalization of built-in identifiers, functions and reserved names is mostly uppercase, the canonical capitalization of user defined identifiers and named ranges, is as the user defined them originally.
 
 \newpage
 
@@ -209,7 +214,7 @@ The Excel formula language is whitespace sensitive in several places:
 \begin{itemize}
 \item Whitespace is not allowed between function names and the argument list: \f{=SUM  (1)} is invalid.
 \item Whitespace is not allowed inside internal or external references: \f{=Sheet1 !A1} is invalid.
-\item The intersection operator is a single space: \f{=A:A 3:3} is the intersection of column \f{A} and row \f{3}, equivalent to \f{=A3}. (Excel formula language only)
+\item The intersection operator is a single space: \f{=A:A 3:3} is the intersection of column \f{A} and row \f{3}, equivalent to \f{=A3} (Excel formula language only).
 \end{itemize}
 
 \section{Array Formulas and Arrays}
@@ -233,11 +238,11 @@ The array formula \f{\{=\{1,2,3\}*\{4,5,6\}\}} will show \f{4}, \f{10} and \f{18
 
 \section{Type system}
 
-The type system in Microsoft Excel is weak with most types being able to be coerced into others.
-For values inside formulas, the following types exist:
+The formula language uses a weak type system, because most types can be coerced into others.
+T he following types exist:
 
 \begin{itemize}
-\item[Boolean] values are either \f{TRUE} or \f{FALSE}. Booleans can be coerced to numbers where \f{TRUE} will become 1 and \f{FALSE} will become 0 and strings.
+\item[Boolean] values are either \f{TRUE} or \f{FALSE}. Booleans can be coerced to string and numbers, where \f{TRUE} will become \f{"True"} and \f{1} and \f{FALSE} will become \f{"False"} and \f{0}.
 \item[Numeric] values are in the range of 8-byte IEEE doubles. Numbers can be provided as integers, decimals or in scientific notation.
 When coerced to booleans 0 will become \f{FALSE}, all other values will be \f{TRUE}. Numbers can also be coerced into strings, or type-casted with the \f{TEXT} function.
 
@@ -253,7 +258,7 @@ Errors behave similar to exceptions in that they will propagate throughout a cal
 
 \item[Ranges and arrays] are one- or two-dimensional matrices of any non-array values. Arrays are rarely used outside of array formulas, but ranges are very common in formulas.
 However, these types usually only serve as inputs for functions and are thus fairly transparent to the user outside of array formulas.
-Both types usually cannot generally be coerced, doing so will result in the \f{\#VALUE!} error.
+Both types usually cannot be coerced, doing so will result in the \f{\#VALUE!} error.
 \end{itemize}
 
 Some other "display types" exists, these can change the way the data is presented to or validated from the user and can have implications when inter-operating with other programs.
