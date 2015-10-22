@@ -8,7 +8,9 @@
 \begin{figure}[h!]
 \hspace*{0.003\textwidth}
 \input{implementation/refactoring-process-impl}
-\caption{This chapter details the AST to AST transformations that implement the refactorings.}
+%\caption{This chapter details the AST to AST transformations that implement the refactorings.}
+\caption{Overview of the refactoring process.}
+\label{fig:chapterrefactoringintrofigure}
 \end{figure}
 
 Refactoring a spreadsheet involves changing the worksheets, cells and formulas in a workbook.
@@ -16,7 +18,7 @@ Excel provides an API to change the worksheet and cells, and most other elements
 When it is desired to refactor formulas this means the original formula string must be changed into a new formula string.
 This is usually implemented by parsing the formula, performing the desired transformations on the AST and then printing the AST back to a string form \cite{fowler1999refactoring}.
 The inner workings of the parser are described in Chapter \ref{chapter:parsing}.
-This chapter covers how the AST is transformed for each refactoring.
+This chapter covers how the AST is transformed for each refactoring, as seen in Figure \ref{fig:chapterrefactoringintrofigure}.
 
 The refactorings are implemented in the BumbleBee Excel Add-In\footnote{\url{http://spreadsheetlab.org/2015/10/12/bumblebee-an-excel-refactoring-add-in/}}, and presented to the user through a context menu as seen in Figure \ref{fig:contextmenu}.
 This context-menu automatically determines if a refactoring can be performed on the specific selected cell(s) and disables inapplicable refactorings.
@@ -96,8 +98,8 @@ The C\# code for the AST replacement can be found in Listing \ref{lst:astreplace
 
 This transformation is somewhat similar to the BumbleBee formula transformation rules.
 However, it is complimentary rather than identical as can be seen by comparing Figure \ref{fig:extractformulaASTtransformations} and Figure \ref{fig:bbv1transformationrule}.
-We could have tried to written this transformation as a rule "\f{=I2 + [a] * I2}".
-However, using transormation rules BumbleBee would have searched for the "outer" formula, keeping the \f{[a]} $\gets$ \f{50\%} available for the replacement rule.
+It might seem like the transformation rule "\f{=I2 + [a] * I2}" is suitable for this refactoring.
+However, using transformation rules BumbleBee would have searched for the "outer" formula, keeping the \f{[a]} $\gets$ \f{50\%} available for the replacement rule.
 In contrast, this transformation searches for the \f{[a]} "inner" formula, and replaces it with something different.
 
 \subsubsection{Spreadsheet refactoring}
@@ -130,13 +132,13 @@ The C\# code for the spreadsheet refactoring can be found in Listing \ref{lst:ex
 
 \rf{Extract formula} is always applicable to a formula cell, as even a very simple formula like \f{=A1} still has a component that can be extracted.
 In this case if \f{=A1} would be extracted to \f{B1} the original cell would become \f{=B1}.
-This could be repeated endlessly, similarly to how one could always extract a method that only consists of a call to another method.
+This could be repeated endlessly, similar to how one could always extract a method that only consists of a call to another method.
 Whether it is a good thing to perform this refactoring is dubious, but BumbleBee relies on the user to make this assessment.
 
 \subsection{Improvements over RefBook's \rf{Extract row or column} and \rf{Extract Literal}}
 \label{subsubsec:improvementsextractformula}
 
-Two specialized versions of this refactoring where previously described by Bamade and Dig \cite{badame2012refactoring} and implemented in their RefBook tool.
+Two specialized versions of this refactoring were previously described by Bamade and Dig \cite{badame2012refactoring} and implemented in their RefBook tool.
 RefBook's \rf{Extract Row or column} and \rf{Extract Literal} refactorings can both be performed by \rf{Extract formula}.
 We have chosen to not keep the \rf{extract row or column} refactoring name because it does not fully describe the refactoring (a full row or column does not necessarily have to be extracted) and to keep the name in line with refactoring names in other domains.
 
@@ -162,7 +164,7 @@ For example if \f{A1} would contain \f{=1+1} and \f{B1} contains \f{=A1*2}, afte
 The main potential use case for this formula is when the contents of a cell are clearer or just as clear as a cell reference.
 It can also be used to solve the \rf{Long Calculation Chain} smell \cite{hermans2014detecting}.
 
-While single cell references (e.g. \f{=SUM(A1,A2,A3)}) can always be inlined, if a cell is referenced as part of a range (e.g. \f{=SUM(A1:A3)}) it can not always be inlined.
+While single cell references (e.g. \f{=SUM(A1,A2,A3)}) can always be inlined, a cell referenced as part of a range (e.g. \f{=SUM(A1:A3)}) can not always be inlined.
 If in the previous example \f{A1} would contain \f{20}, the first formula would turn out fine: \f{=SUM(20,A2,A3)}, while the formula \f{=SUM(20:A3)} is invalid.
 It might be possible to handle inlining into ranges using array formulas, but the extra complexity this would introduce in the formulas never outweighs the benefit of inlining in the authors opinion.
 Some formulas might be able to be rewritten, e.g. \f{=SUM(A1:A3)} could become \f{=SUM(20,A2:A3)}, but this does not work in every case (e.g. \f{A1} cannot be inlined into \f{=A1:A5 3:3}) and thus such behavior has a higher chance to introduce errors and confuse users.
@@ -172,7 +174,7 @@ For similar reasons, this refactoring cannot be performed on cells which are par
 
 \subsection{User interface}
 
-The refactoring is a one-click refactoring that is activated from the cell context menu, no additional user input in normally needed.
+The refactoring is a one-click refactoring that is activated from the cell context menu, no additional user input is normally needed.
 
 If one of the selected cells is referenced as part of a range, the user gets the choice to either abort the refactoring or continue replacing all references where the cell isn't part of a range.
 
@@ -222,8 +224,8 @@ BumbleBee re-implements this refactoring, with as an additional functionality to
 
 \subsection{User Interface}
 
-Excel has a \emph{Defined Name} option in cell the context-menu, but it lacks the functionality to also perform this refactoring.
-The refactoring context-menu for this option closely mirrors the Excel user interface, and is called \emph{Define and Use Name}.
+Excel has a ``Define Name'' option in cell the context-menu, but it lacks the functionality to also perform this refactoring.
+The refactoring context-menu for this option closely mirrors the Excel user interface, and is called ``Define and Use Name''.
 After the user clicks it, he enters a new name in a dialog box and the refactoring is performed.
 
 \subsection{Implementation}
@@ -434,7 +436,7 @@ The reason that undo and redo functionality is not available in BumbleBee is a t
 Instead, as soon as a Excel Add-In changes the Excel spreadsheet file, in fact as soon as it interacts with the internal document model even if it does not change anything, the Excel undo-redo stack gets cleared.
 In an industrial-strength application this functionality would be essential.
 
-A workaround is possible by manually maintaining an undo stack, however we deemed this outside of the scope of this thesis.
+A workaround is possible by manually maintaining an undo stack, however this was deemed outside of the scope of this thesis.
 This workaround also does not integrate well with Excel and does not allow changes made outside of the Add-In to be undone. 
 As long as Excel keeps this restriction this will always be a severe limitation to any tool that automatically changes spreadsheet files for the user.
 
