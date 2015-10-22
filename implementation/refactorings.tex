@@ -427,11 +427,11 @@ Any further detection is performed within the code that implements the refactori
 
 \subsection{Undo and redo functionality}
 
-It must be noted that all refactorings have a major deficiency: they cannot be undone.
-This is not a limitation inherent to the refactorings, the previous state could easily be remembered and some refactorings even have a well-defined inverse refactoring.
+It must be noted that all refactorings have a major deficiency: they cannot be undone with the Excel undo function.
+This is not a limitation inherent to the refactorings, the previous state could be remembered and some refactorings even have a well-defined inverse refactoring.
 
 The reason that undo and redo functionality is not available in BumbleBee is a technical limitation imposed by Excel: the Excel undo-redo stack is not available to Excel Add-Ins.
-Instead as soon as a Excel Add-In changes the Excel spreadsheet file, in fact as soon as it interacts with the internal document model even if it does not change anything, the Excel undo-redo stack gets cleared.
+Instead, as soon as a Excel Add-In changes the Excel spreadsheet file, in fact as soon as it interacts with the internal document model even if it does not change anything, the Excel undo-redo stack gets cleared.
 In an industrial-strength application this functionality would be essential.
 
 A workaround is possible by manually maintaining an undo stack, however we deemed this outside of the scope of this thesis.
@@ -441,7 +441,7 @@ As long as Excel keeps this restriction this will always be a severe limitation 
 \subsection{Future improvement possibilities}
 
 \rf{Extract formula} could benefit from more UI support.
-If the user could select the formula to be extracted from within the Excel formula editor the user interface could be streamlined, but this is not possible because of Excel limitations.
+If the user could select the formula to be extracted from within the Excel formula editor the user interface could be streamlined.
 Another possibility would be to determine candidate subformulas that the user could extract, and present these in a list.
 Generating a list of all subformulas is fairly trivial, but this list can become very large, especially in the longer formulas that would benefit from this refactoring.
 A heuristic which can prune the list of subformulas could improve this experience.
@@ -451,10 +451,7 @@ An operator is commutative if the order of the operands does not matter: \f{1 + 
 BumbleBee's equality comparer takes this into account, and tries the reverse order of the operands for \f{+} and \f{*} if it does not find a match.
 However, this does not fully solve the problem: the formula \f{=1 + 2 + 3} is parsed as \f{=(1 + 2) + 3}, thus if the user wishes to extract \f{2 + 3} BumbleBee will report an error since it does not encounter \f{2 + 3} in the AST.
 
-The \rf{Introduce Aggregate} automated refactoring currently only supports a very basic scenario.
-This could be improved by properly determining functional dependencies using an established algorithm.
-The conditional aggregate functions function \f{SUMIF}, \f{COUNTIF} and \f{AVERAGEIF} are higher-order functions because they accept a predicate (a function which takes a single argument and produces a boolean), although Excel does not support first-class functions and thus the predicate must be supplied as a string.
-This means more complex situations can be supported, for example \f{SUMIF(A:A, ">10")} sums every value from column \f{A} that is larger than \f{10}.
-The conditional aggregate functions also have variants that support more than one predicate: \f{SUMIFS}, \f{AVERAGEIFS} and \f{COUNTIFS}.
-For example \f{=SUMIFS(A:A,B:B,2015,C:C,"John")} sums the values from column \f{A} of the rows where column \f{B} contains \f{2015} and column \f{C} contains \f{"John"}.
-This can be used to support multivalued dependencies, functional dependencies where two or more columns determine if a value must be summed.
+The \rf{Introduce Conditional Aggregate} automated refactoring currently only supports a very basic scenario.
+The algorithm only checks if a single column determines another column, and furthermore the algorithm is not proven correct.
+Both of these problems could be solved by properly determining functional dependencies using an established algorithm.
+Functional dependencies where two or more columns determine the content of a single column can be supported through the \f{SUMIFS}, \f{AVERAGEIFS} and \f{COUNTIFS} functions. For example \f{=SUMIFS(C:C,A:A,2015,B:B,"John")} sums the values from column \f{C} of the rows where column \f{A} contains \f{2015} and column \f{B} contains \f{"John"}, which corresponds to column \f{C} being dependent on columns \f{A} and \f{B}.

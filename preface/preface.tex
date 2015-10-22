@@ -24,8 +24,9 @@ This technique can also be applied to spreadsheets.
 
 In this thesis we present an improved version of the spreadsheet refactoring tool BumbleBee, extended with six refactorings: \rf{Extract Formula}, \rf{Inline Formula}, \rf{Introduce Cell Name}, \rf{Group References}, \rf{Introduce Aggregate} and \rf{Introduce Conditional Aggregate}.
 The \rf{Inline formula}, \rf{Group References} and \rf{Introduce Conditional Aggregate} refactorings were not implemented before and \rf{Extract Formula} and \rf{Introduce Cell Name} improve upon previous implementations.
-To support this tool and to facilitate future spreadsheet research, XLParser, a stand-alone parser for spreadsheet formulas, was developed and released as open-source software.
-This parser was evaluated on more than a million unique formulas from industrial datasets, and successfully parsed 99.999\%.
+To support these refactorings and facilitate future spreadsheet research the formula parser used needed improvements.
+We implemented these improvements and released the result as the open-source software package XLParser, a stand-alone C\# parser for spreadsheet formulas.
+XLParser was evaluated on more than a million unique formulas from industrial datasets, and successfully parsed 99.999\%.
 \end{abstract}
 
 \vspace{\fill}

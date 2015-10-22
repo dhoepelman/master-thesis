@@ -14,7 +14,7 @@ Currently, all major programming Integrated Development Environments like Visual
 
 \section{Spreadsheet smells}
 
-Fowler \cite{fowler1999refactoring} also introduced the concept of ``code smells'': allegorical bad smells in code which are signs that it has design problems and could benefit from refactoring.
+Fowler \cite{fowler1999refactoring} also introduced the concept of ``code smells'': allegorical bad smells in code which are signs that the code has design problems and could benefit from refactoring.
 The concept of code smells has been translated to the spreadsheet domain by both Cunha et. al \cite{cunha2012towards} and Hermans et. al \cite{hermans2012detecting, DBLP:conf/icsm/Hermans212, hermans2014detecting}.
 Of particular relevance are the \rf{Multiple References}, \rf{Multiple Operations}, \rf{Long Calculation Chain} and \rf{Duplicated Formulas} ``formula smells'' defined by Hermans et. al \cite{DBLP:conf/icsm/Hermans212,hermans2014detecting} because these can be solved with the refactorings presented in this thesis.
 
@@ -22,7 +22,9 @@ Of particular relevance are the \rf{Multiple References}, \rf{Multiple Operation
 
 The tool presented in this thesis, BumbleBee, aims to empower spreadsheet users from within their familiar environment, Microsoft Excel, to improve their spreadsheets by giving them additional capabilities.
 
-A different approach is to restrict the options spreadsheet users have, resulting in safer spreadsheets similar to how schemas and foreign key constraints in databases and static typing in general purpose programming languages prevent certain categories of errors.
+\newpage
+
+An alternative approach is to restrict the options spreadsheet users have, resulting in safer spreadsheets similar to how schemas and foreign key constraints in databases and static typing in general purpose programming languages prevent certain categories of errors.
 This can be done by defining a high level model representing the data and generating a type-safe spreadsheet from this model, effectively using spreadsheets as the target environment for a compiler.
 The way this model is constructed differs, and has been done in general purpose programming languages \cite{paine2001ensuring, paine2006rapid}, templates \cite{engels2005classsheets, erwig2006gencel, bals2007classsheets, cunha2011type, cunha2011embedding, cunha2014model} and relational database schemas \cite{cunha2009spreadsheets}.
 Models can also be inferred from existing spreadsheets \cite{abraham2006inferring,cunha2010automatically}.
@@ -37,7 +39,7 @@ For example if a user cut-pastes cell \f{A1} to location \f{C3}, the formula \f{
 This is very similar to the \rf{Move Method} \cite{fowler1999refactoring} refactoring, because not only are the cells (method contents) themselves moved, references to them (call sites) are adjusted for the new location as well.
 Another option Excel provides when copy-pasting is ``Paste Values'', with which a formula is replaced by its evaluated value and remains constant from that point on.
 
-Excel having built-in support for these refactorings shows that there is a need among spreadsheet users to change their spreadsheets without altering functionality, to refactor them, and that advanced spreadsheet users are likely already comfortable with the concept of refactoring, albeit it not by name.
+The fact that Excel has built-in support for these refactorings shows that there is a need among spreadsheet users to change their spreadsheets without altering functionality, to refactor them, and that spreadsheet users are likely already comfortable with the concept of refactoring, albeit it not by name.
 
 \section{Spreadsheet refactoring}
 
